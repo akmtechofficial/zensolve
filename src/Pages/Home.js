@@ -9,16 +9,7 @@ import { motion } from 'framer-motion'; // For smooth animations
 
 const Home = () => {
   return (
-    <div className="container mx-auto my-8">
-      <motion.h2
-        className="text-4xl font-extrabold text-center text-blue-700 mb-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
-        ZenSolve Infotech Solution
-      </motion.h2>
-
+    <div className="">
       {/* Slideshow Section */}
       <section className="my-6 text-center">
         <motion.div
