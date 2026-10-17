@@ -19,7 +19,7 @@ import { cn } from '../utils/cn';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { user, userData, isEmployer, logout } = useAuth();
+  const { user, userData, isEmployer, isCompany, isCandidate, isAdmin, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -92,19 +92,58 @@ const Navbar = () => {
               </Link>
             ))}
 
-            {/* Direct Dashboard Link */}
-            <Link
-              to="/dashboard"
-              className={cn(
-                "px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 flex items-center gap-1.5",
-                isActive('/dashboard')
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-                  : "text-slate-700 hover:text-indigo-600 hover:bg-slate-100/70"
-              )}
-            >
-              <FaBriefcase className="text-xs text-indigo-600" />
-              <span>HR SaaS</span>
-            </Link>
+            {/* Direct Portal Link */}
+            {isAdmin ? (
+              <Link
+                to="/admin"
+                className={cn(
+                  "px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 flex items-center gap-1.5",
+                  isActive('/admin')
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
+                    : "text-indigo-700 hover:bg-indigo-50"
+                )}
+              >
+                <span>Super-Admin</span>
+              </Link>
+            ) : (isCompany || isEmployer) ? (
+              <Link
+                to="/hr"
+                className={cn(
+                  "px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 flex items-center gap-1.5",
+                  isActive('/hr') || isActive('/dashboard')
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
+                    : "text-slate-700 hover:text-indigo-600 hover:bg-slate-100/70"
+                )}
+              >
+                <FaBriefcase className="text-xs text-indigo-600" />
+                <span>HR Recruiter</span>
+              </Link>
+            ) : user ? (
+              <Link
+                to="/candidate"
+                className={cn(
+                  "px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 flex items-center gap-1.5",
+                  isActive('/candidate')
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
+                    : "text-slate-700 hover:text-indigo-600 hover:bg-slate-100/70"
+                )}
+              >
+                <span>Candidate Portal</span>
+              </Link>
+            ) : (
+              <Link
+                to="/hr"
+                className={cn(
+                  "px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 flex items-center gap-1.5",
+                  isActive('/dashboard') || isActive('/hr')
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
+                    : "text-slate-700 hover:text-indigo-600 hover:bg-slate-100/70"
+                )}
+              >
+                <FaBriefcase className="text-xs text-indigo-600" />
+                <span>HR SaaS</span>
+              </Link>
+            )}
           </nav>
 
           {/* Desktop Actions & Auth */}
@@ -140,14 +179,68 @@ const Navbar = () => {
 
                 {/* Dropdown Menu */}
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 glass-surface-3 border border-slate-200/90 rounded-2xl shadow-xl p-2 z-50">
+                  <div className="absolute right-0 mt-2 w-60 glass-surface-3 border border-slate-200/90 rounded-2xl shadow-xl p-2 z-50">
                     <div className="px-3 py-2 border-b border-slate-200/80 mb-1">
                       <p className="text-xs text-slate-500">Signed in as</p>
                       <p className="text-sm font-semibold text-slate-900 truncate">{user.email}</p>
                       <Badge variant="primary" size="sm" className="mt-1.5 capitalize">
-                        {userData?.role || (isEmployer ? 'Employer' : 'Candidate')}
+                        {isAdmin ? 'Super-Admin' : (isCompany || isEmployer) ? 'Employer' : 'Candidate'}
                       </Badge>
                     </div>
+
+                    {/* Role-Specific Portal Links */}
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-slate-100/70 transition"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <FaBriefcase className="text-indigo-600" />
+                        <span>Super-Admin Console</span>
+                      </Link>
+                    )}
+
+                    {(isCompany || isEmployer) && (
+                      <>
+                        <Link
+                          to="/hr"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-slate-100/70 transition"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          <FaBriefcase className="text-indigo-600" />
+                          <span>HR Recruiter Portal</span>
+                        </Link>
+                        <Link
+                          to="/hr/jobs/new"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-emerald-600 hover:bg-slate-100/70 transition"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          <FaPlus className="text-emerald-600" />
+                          <span>Post Job Opening</span>
+                        </Link>
+                      </>
+                    )}
+
+                    {(!isCompany && !isEmployer) && (
+                      <>
+                        <Link
+                          to="/candidate"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-slate-100/70 transition"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          <FaUser className="text-indigo-600" />
+                          <span>Candidate Dashboard</span>
+                        </Link>
+                        <Link
+                          to="/candidate/applications"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-slate-100/70 transition"
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          <FaBriefcase className="text-indigo-600" />
+                          <span>My Applications</span>
+                        </Link>
+                      </>
+                    )}
 
                     <Link
                       to="/saved-jobs"
@@ -161,24 +254,6 @@ const Navbar = () => {
                           {savedCount}
                         </span>
                       )}
-                    </Link>
-
-                    <Link
-                      to="/dashboard"
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-slate-100/70 transition"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <FaBriefcase className="text-indigo-600" />
-                      <span>HR Dashboard</span>
-                    </Link>
-
-                    <Link
-                      to="/dashboard/post-job"
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-emerald-600 hover:bg-slate-100/70 transition"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <FaPlus className="text-emerald-600" />
-                      <span>Post New Job</span>
                     </Link>
 
                     <div className="border-t border-slate-200/80 mt-1 pt-1">
@@ -207,8 +282,8 @@ const Navbar = () => {
                   variant="primary"
                   size="sm"
                   icon={<FaPlus className="text-xs" />}
-                  onClick={() => navigate('/register')}
-                  className="rounded-xl shadow-sm"
+                  onClick={() => navigate('/signup')}
+                  className="rounded-xl shadow-xs"
                 >
                   Sign Up
                 </Button>

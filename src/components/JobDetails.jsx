@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link, useParams } from 'react-router-dom';
 import {
   FaMapMarkerAlt,
   FaMoneyBillWave,
@@ -24,21 +24,22 @@ import { Button } from './ui/Button';
 const JobDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { id: paramId, jobId: paramJobId } = useParams();
   const { user } = useAuth();
 
   const [job, setJob] = useState(location.state?.job || null);
   const [loading, setLoading] = useState(!job);
   const [isSaved, setIsSaved] = useState(false);
 
-  // If job wasn't passed via state, try to get ID from search params
+  // If job wasn't passed via state, try to get ID from params or search params
   useEffect(() => {
     let isMounted = true;
     const loadJob = async () => {
       if (!job) {
         const queryParams = new URLSearchParams(location.search);
-        const jobId = queryParams.get('id');
-        if (jobId) {
-          const fetched = await getJobById(jobId);
+        const resolvedJobId = paramJobId || paramId || queryParams.get('id');
+        if (resolvedJobId) {
+          const fetched = await getJobById(resolvedJobId);
           if (isMounted) {
             setJob(fetched);
             setLoading(false);
@@ -52,7 +53,7 @@ const JobDetails = () => {
     return () => {
       isMounted = false;
     };
-  }, [location.search, job]);
+  }, [location.search, paramJobId, paramId, job]);
 
   useEffect(() => {
     let isMounted = true;
@@ -69,7 +70,7 @@ const JobDetails = () => {
   }, [user?.uid, job?.id]);
 
   const handleApply = () => {
-    navigate('/apply-job', { state: { job } });
+    navigate(`/jobs/${job.id}/apply`, { state: { job } });
   };
 
   const toggleSave = async () => {

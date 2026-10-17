@@ -1,0 +1,40 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email in [
+          'admin@zensolve.com',
+          'admin@zensolve.in',
+          'superadmin@zensolve.com',
+          'akmtechofficial@gmail.com'
+        ]
+      );
+    }
+
+    // Candidate Resumes: Strictly Private
+    // Accessible only to the candidate, authorized recruiters, or super-admin. Never exposed publicly.
+    match /resumes/{userId}/{fileName} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin() || request.auth.token.firebase.sign_in_provider != null);
+      allow write: if isAuthenticated() && request.auth.uid == userId && request.resource.size < 10 * 1024 * 1024;
+      allow delete: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
+    }
+
+    // Company Logos & Public Branding Assets
+    match /company_logos/{companyId}/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin()) && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // General user profile avatars
+    match /avatars/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.uid == userId && request.resource.size < 3 * 1024 * 1024;
+    }
+  }
+}

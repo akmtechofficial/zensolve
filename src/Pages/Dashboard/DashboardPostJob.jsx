@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
 import { createJob } from '../../services/recruitmentService';
 import { Button } from '../../components/ui/Button';
 import JobCard from '../../components/JobCard';
-import { FaCheckCircle, FaBriefcase, FaEye } from 'react-icons/fa';
+import { FaCheckCircle, FaBriefcase, FaEye, FaLock, FaExclamationTriangle } from 'react-icons/fa';
+import { useAuth } from '../../components/useAuth';
 
 const categories = [
   'IT & Software',
@@ -19,20 +20,32 @@ const categories = [
 
 const DashboardPostJob = () => {
   const navigate = useNavigate();
+  const { user, userData, isApprovedCompany } = useAuth();
 
   const [formData, setFormData] = useState({
     position: '',
-    companyName: '',
-    companyLogo: '',
+    companyName: userData?.companyName || userData?.companyData?.companyName || '',
+    companyLogo: userData?.logo || userData?.companyData?.logo || '',
     category: 'IT & Software',
     jobType: 'Full-time',
-    location: '',
+    location: userData?.location || userData?.companyData?.location || '',
     vacancies: '1',
     salaryFrom: '',
     salaryTo: '',
     experience: '1-3 Years',
     description: '',
   });
+
+  useEffect(() => {
+    if (userData) {
+      setFormData(prev => ({
+        ...prev,
+        companyName: prev.companyName || userData.companyName || userData.companyData?.companyName || '',
+        companyLogo: prev.companyLogo || userData.logo || userData.companyData?.logo || '',
+        location: prev.location || userData.location || userData.companyData?.location || '',
+      }));
+    }
+  }, [userData]);
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -47,6 +60,11 @@ const DashboardPostJob = () => {
     e.preventDefault();
     setError(null);
 
+    if (!isApprovedCompany) {
+      setError('Your company account is pending administrative approval. Unapproved companies cannot publish public jobs.');
+      return;
+    }
+
     if (!formData.position || !formData.companyName || !formData.location) {
       setError('Please fill in the Job Title, Company Name, and Location.');
       return;
@@ -55,6 +73,8 @@ const DashboardPostJob = () => {
     setLoading(true);
     const res = await createJob({
       ...formData,
+      companyId: user?.uid || null,
+      postedBy: user?.email || null,
       salaryFrom: formData.salaryFrom || 'Not specified',
       salaryTo: formData.salaryTo || 'Not specified',
       vacancies: Number(formData.vacancies) || 1,
@@ -63,7 +83,7 @@ const DashboardPostJob = () => {
     if (res.success) {
       setSuccess(true);
       setTimeout(() => {
-        navigate('/dashboard/jobs');
+        navigate('/hr/jobs');
       }, 1500);
     } else {
       setError(res.error || 'Failed to publish job.');
@@ -281,6 +301,16 @@ const DashboardPostJob = () => {
               </div>
             </div>
 
+            {!isApprovedCompany && (
+              <div className="p-4 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex items-start gap-3 text-amber-800 text-xs leading-relaxed">
+                <FaExclamationTriangle className="text-amber-500 mt-0.5 shrink-0 text-sm" />
+                <div>
+                  <span className="font-bold text-amber-900 block mb-0.5">Account Pending Super-Admin Approval</span>
+                  Your company profile is under verification. Unapproved companies cannot publish live jobs. You may fill in the details and preview how your listing will look once your account is active.
+                </div>
+              </div>
+            )}
+
             {error && (
               <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl">
                 {error}
@@ -299,9 +329,17 @@ const DashboardPostJob = () => {
               variant="primary"
               size="lg"
               loading={loading}
-              className="w-full"
+              disabled={!isApprovedCompany}
+              className="w-full flex items-center justify-center gap-2"
             >
-              Publish Job Opening
+              {!isApprovedCompany ? (
+                <>
+                  <FaLock className="text-xs opacity-75" />
+                  <span>Approval Required to Publish</span>
+                </>
+              ) : (
+                'Publish Job Opening'
+              )}
             </Button>
 
           </form>

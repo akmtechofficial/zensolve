@@ -1,0 +1,137 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email in [
+          'admin@zensolve.com',
+          'admin@zensolve.in',
+          'superadmin@zensolve.com',
+          'akmtechofficial@gmail.com'
+        ] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isApprovedCompany() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['company', 'employer'] &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.approved == true;
+    }
+
+    // ==========================================
+    // 1. Users Collection
+    // ==========================================
+    match /users/{userId} {
+      // Anyone authenticated can read their own profile; public can read approved company profiles; admin reads all
+      allow read: if isOwner(userId) || isSuperAdmin() ||
+        (resource.data.role in ['company', 'employer'] && resource.data.approved == true);
+
+      // Registration: candidates and companies create their initial profile (cannot grant themselves approved or admin status)
+      allow create: if isAuthenticated() && request.auth.uid == userId &&
+        (request.resource.data.role in ['candidate', 'company', 'employer']) &&
+        (request.resource.data.approved == false || !('approved' in request.resource.data));
+
+      // Updates: user can update their profile but CANNOT self-promote to admin or self-approve
+      allow update: if isSuperAdmin() || (
+        isOwner(userId) &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.approved == resource.data.approved &&
+        request.resource.data.suspended == resource.data.suspended
+      );
+
+      // Only super-admin can delete user profiles
+      allow delete: if isSuperAdmin();
+    }
+
+    // ==========================================
+    // 2. Jobs Collection
+    // ==========================================
+    match /jobs/{jobId} {
+      // Public can read active verified jobs; employers and admin can read their own/all
+      allow read: if true;
+
+      // Only approved companies or super-admin can publish jobs
+      allow create: if isSuperAdmin() || (
+        isApprovedCompany() &&
+        request.resource.data.companyId == request.auth.uid
+      );
+
+      // Only job owner or super-admin can update/delete listings
+      allow update: if isSuperAdmin() || (
+        isAuthenticated() &&
+        resource.data.companyId == request.auth.uid
+      );
+
+      allow delete: if isSuperAdmin() || (
+        isAuthenticated() &&
+        resource.data.companyId == request.auth.uid
+      );
+    }
+
+    // ==========================================
+    // 3. Job Applications Collection
+    // ==========================================
+    match /jobApplications/{applicationId} {
+      // Strictly private: Candidate owner, Target company employer, or Super-Admin
+      allow read: if isSuperAdmin() || (
+        isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          resource.data.companyId == request.auth.uid
+        )
+      );
+
+      // Candidates can submit applications
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status == 'Applied';
+
+      // Candidate can withdraw; Employer can update status, schedule interviews & notes; Super-Admin full access
+      allow update: if isSuperAdmin() || (
+        isAuthenticated() && (
+          // Candidate withdrawing their application
+          (resource.data.userId == request.auth.uid && request.resource.data.status == 'Withdrawn') ||
+          // Company recruiter updating candidate status
+          (resource.data.companyId == request.auth.uid)
+        )
+      );
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ==========================================
+    // 4. Audit Logs (Super-Admin only)
+    // ==========================================
+    match /auditLogs/{logId} {
+      allow read: if isSuperAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Immutable audit log
+    }
+
+    // ==========================================
+    // 5. Reports & Platform Settings
+    // ==========================================
+    match /reports/{reportId} {
+      allow read: if isSuperAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isSuperAdmin();
+    }
+
+    match /platformSettings/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+  }
+}

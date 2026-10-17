@@ -42,12 +42,12 @@ const JobCard = ({ job, onQuickApply }) => {
     if (onQuickApply) {
       onQuickApply(job);
     } else {
-      navigate('/apply-job', { state: { job } });
+      navigate(`/jobs/${job.id}/apply`, { state: { job } });
     }
   };
 
   const handleCardClick = () => {
-    navigate('/job-details', { state: { job } });
+    navigate(`/jobs/${job.id}`, { state: { job } });
   };
 
   const toggleSave = async (e) => {

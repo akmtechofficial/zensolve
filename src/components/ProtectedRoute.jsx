@@ -3,8 +3,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './useAuth';
 import { FaSpinner } from 'react-icons/fa';
 
-const ProtectedRoute = ({ children, requireEmployer = false }) => {
-  const { user, loading, isEmployer } = useAuth();
+const ProtectedRoute = ({ children, requiredRole = null, requireEmployer = false }) => {
+  const { user, loading, role, isAdmin, isCompany, isEmployer, isCandidate } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -19,9 +19,27 @@ const ProtectedRoute = ({ children, requireEmployer = false }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requireEmployer && !isEmployer) {
-    // If route requires employer and user is candidate, redirect to home or dashboard notice
-    return <Navigate to="/" replace />;
+  // Admin route protection
+  if (requiredRole === 'admin') {
+    if (!isAdmin) {
+      return <Navigate to="/" replace />;
+    }
+  }
+
+  // Company / HR route protection
+  if (requiredRole === 'company' || requireEmployer) {
+    if (!isCompany && !isEmployer && !isAdmin) {
+      // Candidate tried accessing HR panel
+      return <Navigate to="/candidate" replace />;
+    }
+  }
+
+  // Candidate route protection
+  if (requiredRole === 'candidate') {
+    if (isCompany && !isAdmin) {
+      // Company tried accessing Candidate dashboard
+      return <Navigate to="/hr" replace />;
+    }
   }
 
   return children;
