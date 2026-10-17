@@ -106,19 +106,19 @@ const DashboardJobs = () => {
               placeholder="Search published roles..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500 shadow-md"
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl glass-input text-sm text-slate-900 placeholder:text-slate-400 font-medium shadow-sm"
             />
           </div>
-          <span className="text-xs text-slate-300 glass-surface-1 px-3 py-1.5 rounded-full border border-white/10">
-            Total Openings: <strong className="text-white">{filteredJobs.length}</strong>
+          <span className="text-xs text-slate-600 glass-surface-1 px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
+            Total Openings: <strong className="text-slate-900">{filteredJobs.length}</strong>
           </span>
         </div>
 
         {/* Data Table */}
-        <div className="glass-surface-2 glass-specular rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+        <div className="glass-surface-2 glass-specular rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-200">
-              <thead className="text-xs text-slate-300 uppercase glass-surface-1 border-b border-white/10">
+            <table className="w-full text-left text-sm text-slate-700">
+              <thead className="text-xs text-slate-500 uppercase glass-surface-1 border-b border-slate-200">
                 <tr>
                   <th className="py-3.5 px-5">Position & Company</th>
                   <th className="py-3.5 px-4">Category</th>
@@ -128,26 +128,26 @@ const DashboardJobs = () => {
                   <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {filteredJobs.map((job) => (
-                  <tr key={job.id} className="hover:glass-surface-1 transition">
+                  <tr key={job.id} className="hover:bg-slate-50 transition">
                     <td className="py-4 px-5">
-                      <div className="font-bold text-white text-base tracking-tight font-display">{job.position}</div>
-                      <div className="text-xs text-slate-400 mt-0.5">{job.companyName}</div>
+                      <div className="font-bold text-slate-900 text-base tracking-tight font-display">{job.position}</div>
+                      <div className="text-xs text-slate-500 mt-0.5">{job.companyName}</div>
                     </td>
                     <td className="py-4 px-4">
                       <Badge variant="primary" size="sm">
                         {job.category || 'General'}
                       </Badge>
                     </td>
-                    <td className="py-4 px-4 text-xs text-slate-300">
+                    <td className="py-4 px-4 text-xs text-slate-600">
                       <div>{job.jobType || 'Full-time'}</div>
-                      <div className="text-slate-400 flex items-center gap-1 mt-0.5">
-                        <FaMapMarkerAlt size={10} className="text-indigo-400" />
+                      <div className="text-slate-500 flex items-center gap-1 mt-0.5">
+                        <FaMapMarkerAlt size={10} className="text-indigo-600" />
                         <span>{job.location || 'India'}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-4 text-xs font-semibold text-emerald-400">
+                    <td className="py-4 px-4 text-xs font-semibold text-emerald-600">
                       ₹{job.salaryFrom} - ₹{job.salaryTo}
                     </td>
                     <td className="py-4 px-4">
@@ -167,14 +167,14 @@ const DashboardJobs = () => {
                     <td className="py-4 px-5 text-right space-x-2">
                       <button
                         onClick={() => setEditingJob(job)}
-                        className="p-2 rounded-xl glass-surface-1 border border-white/10 text-slate-300 hover:text-white hover:border-indigo-500/40 transition"
+                        className="p-2 rounded-xl glass-surface-1 border border-slate-200 text-slate-700 hover:text-slate-900 transition shadow-xs"
                         title="Edit Job"
                       >
                         <FaEdit size={13} />
                       </button>
                       <button
                         onClick={() => handleDelete(job.id)}
-                        className="p-2 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:text-rose-200 transition"
+                        className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 transition shadow-xs"
                         title="Delete Job"
                       >
                         <FaTrash size={13} />
@@ -184,7 +184,7 @@ const DashboardJobs = () => {
                 ))}
                 {filteredJobs.length === 0 && !loading && (
                   <tr>
-                    <td colSpan="6" className="py-12 text-center text-slate-400 text-sm">
+                    <td colSpan="6" className="py-12 text-center text-slate-500 text-sm">
                       No jobs match your search.
                     </td>
                   </tr>
@@ -208,22 +208,22 @@ const DashboardJobs = () => {
           <form onSubmit={handleSaveEdit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Job Title</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Job Title</label>
                 <input
                   type="text"
                   value={editingJob.position || ''}
                   onChange={(e) => setEditingJob({ ...editingJob, position: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
                   required
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Company Name</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Company Name</label>
                 <input
                   type="text"
                   value={editingJob.companyName || ''}
                   onChange={(e) => setEditingJob({ ...editingJob, companyName: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
                   required
                 />
               </div>
@@ -231,20 +231,20 @@ const DashboardJobs = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Category</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Category</label>
                 <input
                   type="text"
                   value={editingJob.category || ''}
                   onChange={(e) => setEditingJob({ ...editingJob, category: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Job Type</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Job Type</label>
                 <select
                   value={editingJob.jobType || 'Full-time'}
                   onChange={(e) => setEditingJob({ ...editingJob, jobType: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
                 >
                   <option value="Full-time">Full-time</option>
                   <option value="Part-time">Part-time</option>
@@ -253,44 +253,44 @@ const DashboardJobs = () => {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Location</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Location</label>
                 <input
                   type="text"
                   value={editingJob.location || ''}
                   onChange={(e) => setEditingJob({ ...editingJob, location: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Salary From (₹)</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Salary From (₹)</label>
                 <input
                   type="number"
                   value={editingJob.salaryFrom || ''}
                   onChange={(e) => setEditingJob({ ...editingJob, salaryFrom: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Salary To (₹)</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Salary To (₹)</label>
                 <input
                   type="number"
                   value={editingJob.salaryTo || ''}
                   onChange={(e) => setEditingJob({ ...editingJob, salaryTo: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Job Description</label>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Job Description</label>
               <textarea
                 value={editingJob.description || ''}
                 onChange={(e) => setEditingJob({ ...editingJob, description: e.target.value })}
                 rows="4"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
               />
             </div>
 

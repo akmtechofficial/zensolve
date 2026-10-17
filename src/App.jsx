@@ -40,7 +40,7 @@ const Layout = ({ children }) => {
   const isDashboard = location.pathname.startsWith('/dashboard');
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="flex flex-col min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-indigo-600 selection:text-white">
       {!isDashboard && <Navbar />}
       <div className="flex-1">{children}</div>
       {!isDashboard && <Footer />}

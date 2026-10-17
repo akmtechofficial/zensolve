@@ -67,22 +67,22 @@ const CompanyProfile = () => {
   }, [decodedName]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20 relative overflow-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 pb-20 relative overflow-hidden">
       {/* Background Ambient Glass Texture */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-[0.10] bg-cover bg-center mix-blend-screen z-0"
+        className="fixed inset-0 pointer-events-none opacity-[0.03] bg-cover bg-center z-0"
         style={{ backgroundImage: "url('/images/glass_ambient_backdrop.jpg')" }}
       />
 
       {/* Cover Header Banner */}
-      <div className="relative h-64 sm:h-72 w-full bg-gradient-to-r from-indigo-950/80 via-slate-900 to-slate-950 overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 bg-grid-pattern opacity-30 mask-radial-top" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/15 blur-3xl pointer-events-none rounded-full" />
+      <div className="relative h-64 sm:h-72 w-full bg-gradient-to-r from-indigo-100 via-indigo-50 to-slate-100 overflow-hidden border-b border-slate-200">
+        <div className="absolute inset-0 bg-grid-pattern opacity-50 mask-radial-top" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-3xl pointer-events-none rounded-full" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-start pt-6 relative z-10">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-white glass-surface-1 px-4 py-2 rounded-full border border-white/10 transition"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white/90 shadow-sm px-4 py-2 rounded-full border border-slate-200 transition"
           >
             <FaArrowLeft />
             <span>Back</span>
@@ -92,12 +92,12 @@ const CompanyProfile = () => {
 
       {/* Main Profile Header Info (Overlapping Cover) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10 mb-12">
-        <div className="glass-surface-3 glass-specular border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl">
+        <div className="glass-surface-3 glass-specular border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xl bg-white/95">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
               {/* Company Logo */}
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl glass-surface-1 border-2 border-indigo-500/40 p-2 shadow-2xl flex items-center justify-center flex-shrink-0 overflow-hidden shadow-inner">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white border-2 border-indigo-200 p-2 shadow-md flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {companyData?.logo ? (
                   <img
                     src={companyData.logo}
@@ -109,7 +109,7 @@ const CompanyProfile = () => {
                     }}
                   />
                 ) : (
-                  <span className="text-4xl font-black text-indigo-400 font-display">
+                  <span className="text-4xl font-black text-indigo-600 font-display">
                     {decodedName.charAt(0)}
                   </span>
                 )}
@@ -118,23 +118,23 @@ const CompanyProfile = () => {
               {/* Title & Metadata */}
               <div>
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight font-display">
+                  <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
                     {decodedName}
                   </h1>
                   {companyData?.verified && <VerifiedBadge text="Verified Partner" size="md" />}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 mt-3 text-xs sm:text-sm text-slate-300">
+                <div className="flex flex-wrap items-center gap-4 mt-3 text-xs sm:text-sm text-slate-600">
                   <div className="flex items-center gap-1.5">
-                    <FaBuilding className="text-indigo-400" />
+                    <FaBuilding className="text-indigo-600" />
                     <span>{companyData?.industry}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <FaMapMarkerAlt className="text-indigo-400" />
+                    <FaMapMarkerAlt className="text-indigo-600" />
                     <span>{companyData?.location}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <FaUsers className="text-indigo-400" />
+                    <FaUsers className="text-indigo-600" />
                     <span>{companyData?.teamSize}</span>
                   </div>
                 </div>
@@ -148,7 +148,7 @@ const CompanyProfile = () => {
                 size="md"
                 icon={<FaGlobe className="text-xs" />}
                 onClick={() => window.open(companyData?.website, '_blank')}
-                className="glass-surface-1 rounded-2xl border-white/10 hover:border-indigo-500/40 text-slate-200"
+                className="bg-white rounded-2xl border-slate-200 hover:border-indigo-400 text-slate-700 shadow-sm"
               >
                 Website
               </Button>
@@ -160,7 +160,7 @@ const CompanyProfile = () => {
                   const el = document.getElementById('open-jobs-section');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="rounded-2xl shadow-glow-sm"
+                className="rounded-2xl shadow-md shadow-indigo-500/10"
               >
                 View {companyJobs.length} Open Roles
               </Button>
@@ -175,46 +175,46 @@ const CompanyProfile = () => {
         
         {/* Left Column: About & Overview */}
         <div className="space-y-6">
-          <div className="glass-surface-2 glass-specular p-6 rounded-3xl border border-white/10 space-y-4 shadow-xl">
-            <h3 className="text-lg font-bold text-white tracking-tight font-display">About Company</h3>
-            <p className="text-sm text-slate-300 leading-relaxed">
+          <div className="glass-surface-2 glass-specular p-6 rounded-3xl border border-slate-200/90 space-y-4 shadow-sm bg-white/90">
+            <h3 className="text-lg font-bold text-slate-900 tracking-tight font-display">About Company</h3>
+            <p className="text-sm text-slate-600 leading-relaxed">
               {companyData?.about}
             </p>
           </div>
 
-          <div className="glass-surface-2 glass-specular p-6 rounded-3xl border border-white/10 space-y-3.5 text-xs text-slate-300 shadow-xl">
-            <h4 className="text-sm font-bold text-white mb-2 font-display">Company Overview</h4>
-            <div className="flex justify-between py-1.5 border-b border-white/10">
-              <span className="text-slate-400">Founded</span>
-              <span className="font-semibold text-white">{companyData?.founded}</span>
+          <div className="glass-surface-2 glass-specular p-6 rounded-3xl border border-slate-200/90 space-y-3.5 text-xs text-slate-600 shadow-sm bg-white/90">
+            <h4 className="text-sm font-bold text-slate-900 mb-2 font-display">Company Overview</h4>
+            <div className="flex justify-between py-1.5 border-b border-slate-100">
+              <span className="text-slate-500">Founded</span>
+              <span className="font-semibold text-slate-900">{companyData?.founded}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-white/10">
-              <span className="text-slate-400">Headquarters</span>
-              <span className="font-semibold text-white">{companyData?.location}</span>
+            <div className="flex justify-between py-1.5 border-b border-slate-100">
+              <span className="text-slate-500">Headquarters</span>
+              <span className="font-semibold text-slate-900">{companyData?.location}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-white/10">
-              <span className="text-slate-400">Industry</span>
-              <span className="font-semibold text-white">{companyData?.industry}</span>
+            <div className="flex justify-between py-1.5 border-b border-slate-100">
+              <span className="text-slate-500">Industry</span>
+              <span className="font-semibold text-slate-900">{companyData?.industry}</span>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-400">Active Openings</span>
-              <span className="font-bold text-indigo-300">{companyJobs.length} Roles</span>
+              <span className="text-slate-500">Active Openings</span>
+              <span className="font-bold text-indigo-600">{companyJobs.length} Roles</span>
             </div>
           </div>
         </div>
 
         {/* Right Column: Active Jobs Published by this company */}
         <div id="open-jobs-section" className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between pb-2 border-b border-white/10">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200">
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight font-display">
+              <h3 className="text-xl font-bold text-slate-900 tracking-tight font-display">
                 Active Openings at {decodedName}
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Apply directly to the recruiting team for these positions.
               </p>
             </div>
-            <span className="text-xs px-3 py-1 rounded-full glass-surface-1 text-indigo-300 font-semibold border border-indigo-500/30">
+            <span className="text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200">
               {companyJobs.length} Open
             </span>
           </div>
@@ -222,9 +222,9 @@ const CompanyProfile = () => {
           {loading ? (
             <div className="space-y-4">
               {[1, 2].map((n) => (
-                <div key={n} className="glass-surface-2 p-6 rounded-3xl animate-pulse space-y-3 border border-white/10">
-                  <div className="h-5 bg-white/5 rounded w-1/3" />
-                  <div className="h-4 bg-white/5 rounded w-2/3" />
+                <div key={n} className="glass-surface-2 bg-white/80 p-6 rounded-3xl animate-pulse space-y-3 border border-slate-200">
+                  <div className="h-5 bg-slate-200 rounded w-1/3" />
+                  <div className="h-4 bg-slate-200 rounded w-2/3" />
                 </div>
               ))}
             </div>
@@ -239,10 +239,10 @@ const CompanyProfile = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-14 px-4 glass-surface-2 glass-specular rounded-3xl border border-white/10 shadow-xl">
-              <FaBriefcase className="text-3xl text-slate-500 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-white">No active listings</p>
-              <p className="text-xs text-slate-400 mt-1">
+            <div className="text-center py-14 px-4 glass-surface-2 glass-specular bg-white/95 rounded-3xl border border-slate-200/90 shadow-sm">
+              <FaBriefcase className="text-3xl text-slate-400 mx-auto mb-3" />
+              <p className="text-sm font-semibold text-slate-900">No active listings</p>
+              <p className="text-xs text-slate-500 mt-1">
                 This company currently has no published openings. Check back soon.
               </p>
             </div>

@@ -10,13 +10,13 @@ export const Badge = ({
   icon,
 }) => {
   const variants = {
-    default: "bg-slate-800/80 text-slate-300 border-slate-700/60",
-    primary: "bg-indigo-500/15 text-indigo-300 border-indigo-500/30",
-    success: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-    warning: "bg-amber-500/15 text-amber-300 border-amber-500/30",
-    danger: "bg-rose-500/15 text-rose-300 border-rose-500/30",
-    purple: "bg-purple-500/15 text-purple-300 border-purple-500/30",
-    verified: "bg-blue-500/15 text-blue-300 border-blue-500/30",
+    default: "bg-slate-100 text-slate-700 border-slate-200",
+    primary: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    success: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    warning: "bg-amber-50 text-amber-700 border-amber-200",
+    danger: "bg-rose-50 text-rose-700 border-rose-200",
+    purple: "bg-purple-50 text-purple-700 border-purple-200",
+    verified: "bg-blue-50 text-blue-700 border-blue-200",
   };
 
   const sizes = {
@@ -45,7 +45,7 @@ export const VerifiedBadge = ({ text = "Verified Company", className }) => {
     <Badge
       variant="verified"
       size="sm"
-      icon={<FaCheckCircle className="text-blue-400 w-3 h-3" />}
+      icon={<FaCheckCircle className="text-blue-600 w-3 h-3" />}
       className={cn("font-medium", className)}
     >
       {text}

@@ -76,21 +76,21 @@ const HeroSection = () => {
           {/* Left Column: Editorial Headline & Actions */}
           <div className="lg:col-span-7 text-left">
             {/* Luminous Platform Pill */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full glass-surface-1 border border-indigo-500/30 text-indigo-300 text-xs sm:text-sm font-semibold tracking-wide mb-6 shadow-glow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full glass-surface-1 border border-indigo-200 text-indigo-700 text-xs sm:text-sm font-semibold tracking-wide mb-6 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Verified Glassmorphism Talent Network</span>
-              <span className="text-slate-500">•</span>
-              <span className="text-slate-300">Direct Recruiter Console</span>
+              <span className="text-slate-300">•</span>
+              <span className="text-slate-600">Direct Recruiter Console</span>
             </div>
 
             {/* Primary Headline: "Make Career With Us" */}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6 font-display leading-[1.08]">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 font-display leading-[1.08]">
               Make Career <br />
               <span className="text-gradient-accent">With Us</span>
             </h1>
 
             {/* Editorial Subtitle */}
-            <p className="text-base sm:text-lg text-slate-300 max-w-xl mb-8 font-normal leading-relaxed">
+            <p className="text-base sm:text-lg text-slate-600 max-w-xl mb-8 font-normal leading-relaxed">
               Connect with India's most credible verified employers. Discover high-growth roles, transparent compensation, and accelerated recruitment workflows through an authentic glass interface.
             </p>
 
@@ -110,53 +110,53 @@ const HeroSection = () => {
               <Button
                 variant="ghost"
                 size="lg"
-                icon={<FaBuilding className="text-emerald-400" />}
+                icon={<FaBuilding className="text-emerald-600" />}
                 onClick={() => navigate('/dashboard/post-job')}
-                className="rounded-2xl glass-surface-1 border border-white/10 hover:border-indigo-500/40 text-slate-200 hover:text-white"
+                className="rounded-2xl glass-surface-1 border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-slate-900 shadow-sm"
               >
                 For Employers: Post a Job
               </Button>
             </div>
 
             {/* Micro Trust Indicators */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-white/10 max-w-xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-slate-200 max-w-xl">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg glass-surface-1 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                <div className="w-7 h-7 rounded-lg glass-surface-1 text-indigo-600 flex items-center justify-center border border-indigo-200">
                   <FaShieldAlt size={11} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white leading-tight">Verified</p>
-                  <p className="text-[10px] text-slate-400">100% Genuine</p>
+                  <p className="text-xs font-bold text-slate-900 leading-tight">Verified</p>
+                  <p className="text-[10px] text-slate-500">100% Genuine</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg glass-surface-1 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                <div className="w-7 h-7 rounded-lg glass-surface-1 text-emerald-600 flex items-center justify-center border border-emerald-200">
                   <FaMoneyBillWave size={11} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white leading-tight">Transparent</p>
-                  <p className="text-[10px] text-slate-400">Salary Disclosed</p>
+                  <p className="text-xs font-bold text-slate-900 leading-tight">Transparent</p>
+                  <p className="text-[10px] text-slate-500">Salary Disclosed</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg glass-surface-1 text-violet-400 flex items-center justify-center border border-violet-500/20">
+                <div className="w-7 h-7 rounded-lg glass-surface-1 text-violet-600 flex items-center justify-center border border-violet-200">
                   <FaBolt size={11} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white leading-tight">Fast Review</p>
-                  <p className="text-[10px] text-slate-400">Direct Recruiter</p>
+                  <p className="text-xs font-bold text-slate-900 leading-tight">Fast Review</p>
+                  <p className="text-[10px] text-slate-500">Direct Recruiter</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg glass-surface-1 text-sky-400 flex items-center justify-center border border-sky-500/20">
+                <div className="w-7 h-7 rounded-lg glass-surface-1 text-sky-600 flex items-center justify-center border border-sky-200">
                   <FaCheckCircle size={11} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white leading-tight">Zero Fee</p>
-                  <p className="text-[10px] text-slate-400">Free For Seekers</p>
+                  <p className="text-xs font-bold text-slate-900 leading-tight">Zero Fee</p>
+                  <p className="text-[10px] text-slate-500">Free For Seekers</p>
                 </div>
               </div>
             </div>
@@ -166,10 +166,10 @@ const HeroSection = () => {
           {/* Right Column: Original AI Visual Asset Centerpiece (Asset A) */}
           <div className="lg:col-span-5 relative">
             {/* Ambient Background Aura behind glass art */}
-            <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-500/20 via-sky-500/20 to-purple-500/20 blur-2xl rounded-3xl pointer-events-none" />
+            <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-500/10 via-sky-500/10 to-purple-500/10 blur-2xl rounded-3xl pointer-events-none" />
 
             {/* Glass Container Housing Signature Architecture Artwork */}
-            <div className="relative glass-surface-2 glass-specular rounded-3xl p-3 border border-white/15 shadow-2xl overflow-hidden group">
+            <div className="relative glass-surface-2 glass-specular rounded-3xl p-3 border border-slate-200/90 shadow-xl overflow-hidden group">
               
               {/* The Actual Generated Visual Asset */}
               <div className="relative rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[16/10]">
@@ -180,13 +180,13 @@ const HeroSection = () => {
                 />
 
                 {/* Subtle Refractive Glass Film Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/15 to-transparent pointer-events-none" />
 
                 {/* Specular internal reflection highlight */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/15 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/20 pointer-events-none" />
 
                 {/* Floating Glass Telemetry Chip Top-Right */}
-                <div className="absolute top-3.5 right-3.5 glass-surface-3 glass-specular px-3 py-1.5 rounded-full border border-white/20 flex items-center gap-2 shadow-lg backdrop-blur-xl">
+                <div className="absolute top-3.5 right-3.5 glass-surface-3 glass-specular px-3 py-1.5 rounded-full border border-white/40 flex items-center gap-2 shadow-lg backdrop-blur-xl">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   <span className="text-[11px] font-semibold text-white tracking-wide">
                     Live Openings: 1,240+
@@ -194,7 +194,7 @@ const HeroSection = () => {
                 </div>
 
                 {/* Floating Glass Candidate Metric Card Bottom-Left */}
-                <div className="absolute bottom-3.5 left-3.5 right-3.5 glass-surface-3 glass-specular p-3 rounded-xl border border-white/15 shadow-2xl backdrop-blur-2xl">
+                <div className="absolute bottom-3.5 left-3.5 right-3.5 glass-surface-3 glass-specular p-3 rounded-xl border border-white/30 shadow-xl backdrop-blur-2xl">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 flex items-center justify-center font-bold text-xs">
@@ -202,7 +202,7 @@ const HeroSection = () => {
                       </div>
                       <div>
                         <p className="text-xs font-bold text-white">Multi-Enterprise Portal</p>
-                        <p className="text-[10px] text-slate-300">Verified HR screening speed: &lt; 48 hrs</p>
+                        <p className="text-[10px] text-slate-200">Verified HR screening speed: &lt; 48 hrs</p>
                       </div>
                     </div>
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
@@ -220,7 +220,7 @@ const HeroSection = () => {
         </div>
 
         {/* Floating Glass Search Dock */}
-        <div className="glass-dock glass-specular p-3 sm:p-4 rounded-3xl border border-white/15 shadow-2xl max-w-5xl mx-auto">
+        <div className="glass-dock glass-specular p-3 sm:p-4 rounded-3xl border border-slate-200/90 shadow-xl max-w-5xl mx-auto">
           <form onSubmit={handleSearch}>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
               
@@ -232,7 +232,7 @@ const HeroSection = () => {
                   placeholder="Job title, keywords, or company..."
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 rounded-2xl glass-input text-sm text-white placeholder:text-slate-400"
+                  className="w-full pl-11 pr-4 py-3 rounded-2xl glass-input text-sm text-slate-900 placeholder:text-slate-400 font-medium"
                 />
               </div>
 
@@ -242,10 +242,10 @@ const HeroSection = () => {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 rounded-2xl glass-input text-sm text-white appearance-none cursor-pointer"
+                  className="w-full pl-11 pr-4 py-3 rounded-2xl glass-input text-sm text-slate-900 font-medium appearance-none cursor-pointer"
                 >
                   {categories.map((c) => (
-                    <option key={c} value={c} className="bg-slate-900 text-white">
+                    <option key={c} value={c} className="bg-white text-slate-900">
                       {c}
                     </option>
                   ))}
@@ -270,8 +270,8 @@ const HeroSection = () => {
           </form>
 
           {/* Quick-filter Chips Under Dock */}
-          <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mr-1">
+          <div className="mt-3 pt-3 border-t border-slate-200/80 flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mr-1">
               Popular Searches:
             </span>
             {quickTags.map((tag) => (
@@ -279,7 +279,7 @@ const HeroSection = () => {
                 key={tag}
                 type="button"
                 onClick={() => handleTagClick(tag)}
-                className="text-xs px-2.5 py-1 rounded-full glass-surface-1 hover:glass-surface-2 text-slate-300 hover:text-white border border-white/10 hover:border-indigo-500/40 transition"
+                className="text-xs px-2.5 py-1 rounded-full glass-surface-1 hover:glass-surface-2 text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-indigo-400 transition shadow-xs"
               >
                 {tag}
               </button>

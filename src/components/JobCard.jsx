@@ -76,7 +76,7 @@ const JobCard = ({ job, onQuickApply }) => {
   return (
     <div
       onClick={handleCardClick}
-      className="group relative rounded-3xl glass-surface-2 glass-specular glass-card-interactive p-5 sm:p-6 cursor-pointer flex flex-col justify-between border border-white/10 shadow-xl"
+      className="group relative rounded-3xl glass-surface-2 glass-specular glass-card-interactive p-5 sm:p-6 cursor-pointer flex flex-col justify-between border border-slate-200/90 shadow-sm hover:shadow-md"
     >
       <div>
         {/* Header: Company Logo & Details + Save Button */}
@@ -86,7 +86,7 @@ const JobCard = ({ job, onQuickApply }) => {
               <img
                 src={job.companyLogo}
                 alt={`${job.companyName} logo`}
-                className="w-12 h-12 rounded-2xl object-cover bg-slate-900/90 border border-white/15 p-1 flex-shrink-0 group-hover:border-indigo-500/50 transition shadow-inner"
+                className="w-12 h-12 rounded-2xl object-cover bg-white border border-slate-200 p-1 flex-shrink-0 group-hover:border-indigo-400 transition shadow-xs"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
@@ -95,7 +95,7 @@ const JobCard = ({ job, onQuickApply }) => {
             ) : null}
             <div
               className={cn(
-                "w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-sky-500/20 border border-white/15 text-indigo-300 font-bold text-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition shadow-inner",
+                "w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition shadow-xs",
                 job?.companyLogo ? "hidden" : "flex"
               )}
             >
@@ -107,7 +107,7 @@ const JobCard = ({ job, onQuickApply }) => {
                 <Link
                   to={`/company/${encodeURIComponent(job.companyName || 'zen')}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="text-xs font-semibold text-slate-300 hover:text-indigo-300 transition truncate flex items-center gap-1.5"
+                  className="text-xs font-semibold text-slate-600 hover:text-indigo-600 transition truncate flex items-center gap-1.5"
                 >
                   <FaBuilding className="text-xs text-slate-400 flex-shrink-0" />
                   <span className="truncate">{job?.companyName || 'Verified Employer'}</span>
@@ -115,7 +115,7 @@ const JobCard = ({ job, onQuickApply }) => {
                 {job?.verified !== false && <VerifiedBadge text="Verified" size="sm" />}
               </div>
 
-              <h3 className="text-lg font-bold text-white group-hover:text-indigo-200 transition tracking-tight mt-0.5 truncate font-display">
+              <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition tracking-tight mt-0.5 truncate font-display">
                 {job?.position || 'Job Opening'}
               </h3>
             </div>
@@ -127,8 +127,8 @@ const JobCard = ({ job, onQuickApply }) => {
             className={cn(
               "w-9 h-9 rounded-2xl flex items-center justify-center transition border flex-shrink-0",
               isSaved
-                ? "bg-rose-500/15 border-rose-500/30 text-rose-400"
-                : "glass-surface-1 border-white/10 text-slate-400 hover:text-rose-400 hover:border-rose-500/30"
+                ? "bg-rose-50 border-rose-200 text-rose-500"
+                : "glass-surface-1 border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200"
             )}
             title={isSaved ? "Saved" : "Save Job"}
           >
@@ -159,17 +159,17 @@ const JobCard = ({ job, onQuickApply }) => {
 
         {/* Short description preview if available */}
         {job?.description && (
-          <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed mb-4">
+          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-4">
             {job.description}
           </p>
         )}
       </div>
 
       {/* Footer: Salary & Action CTA */}
-      <div className="pt-3.5 border-t border-white/10 flex items-center justify-between gap-2 mt-2">
+      <div className="pt-3.5 border-t border-slate-200/80 flex items-center justify-between gap-2 mt-2">
         <div>
-          <span className="text-[11px] text-slate-400 block font-medium">Compensation</span>
-          <span className="text-sm font-bold text-emerald-400">
+          <span className="text-[11px] text-slate-500 block font-medium">Compensation</span>
+          <span className="text-sm font-bold text-emerald-600">
             {formattedSalary}
           </span>
         </div>
@@ -182,7 +182,7 @@ const JobCard = ({ job, onQuickApply }) => {
               e.stopPropagation();
               navigate('/job-details', { state: { job } });
             }}
-            className="text-xs px-2.5 py-1.5 glass-surface-1 border border-white/10 text-slate-200 hover:text-white rounded-xl"
+            className="text-xs px-2.5 py-1.5 glass-surface-1 border border-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-xs"
           >
             Details
           </Button>

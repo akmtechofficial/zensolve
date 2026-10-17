@@ -6,7 +6,7 @@ export const Tabs = ({ tabs, activeTab, onChange, className }) => {
   return (
     <div
       className={cn(
-        "flex items-center p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-md overflow-x-auto",
+        "flex items-center p-1.5 rounded-2xl bg-white/90 border border-slate-200/90 shadow-sm backdrop-blur-md overflow-x-auto",
         className
       )}
     >
@@ -18,7 +18,7 @@ export const Tabs = ({ tabs, activeTab, onChange, className }) => {
             onClick={() => onChange(tab.id)}
             className={cn(
               "relative px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2",
-              isActive ? "text-white" : "text-slate-400 hover:text-slate-200"
+              isActive ? "text-white" : "text-slate-600 hover:text-slate-900"
             )}
           >
             {isActive && (
@@ -37,7 +37,7 @@ export const Tabs = ({ tabs, activeTab, onChange, className }) => {
                     "text-[10px] px-1.5 py-0.5 rounded-full font-semibold",
                     isActive
                       ? "bg-white/20 text-white"
-                      : "bg-slate-800 text-slate-400"
+                      : "bg-slate-100 text-slate-600"
                   )}
                 >
                   {tab.count}

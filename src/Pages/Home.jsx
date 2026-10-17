@@ -54,11 +54,11 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 relative overflow-hidden">
       
-      {/* Asset B: Ambient Glass Environment Texture */}
+      {/* Ambient Subtle Background Texture */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-[0.12] bg-cover bg-center mix-blend-screen z-0"
+        className="fixed inset-0 pointer-events-none opacity-[0.04] bg-cover bg-center mix-blend-multiply z-0"
         style={{ backgroundImage: "url('/images/glass_ambient_backdrop.jpg')" }}
       />
 
@@ -78,14 +78,14 @@ const Home = () => {
             
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
               <div>
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-surface-1 border border-emerald-500/30 text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-3">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-surface-1 border border-emerald-200 text-emerald-700 text-xs font-semibold uppercase tracking-wider mb-3 shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   Live Openings
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-display">
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
                   Featured Career Opportunities
                 </h2>
-                <p className="text-slate-300 text-base mt-2 max-w-xl">
+                <p className="text-slate-600 text-base mt-2 max-w-xl">
                   Explore recently posted roles with competitive compensation, verified company credentials, and fast response times.
                 </p>
               </div>
@@ -96,7 +96,7 @@ const Home = () => {
                 icon={<FaArrowRight className="text-xs" />}
                 iconPosition="right"
                 onClick={() => navigate('/jobs')}
-                className="mt-4 md:mt-0 glass-surface-1 rounded-2xl border-white/10 hover:border-indigo-500/40"
+                className="mt-4 md:mt-0 glass-surface-1 rounded-2xl border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-slate-900 shadow-sm"
               >
                 View All Openings
               </Button>
@@ -112,17 +112,17 @@ const Home = () => {
         </section>
 
         {/* 5. How ZenSolve Works (Workflow Section) */}
-        <section className="py-24 border-y border-white/10 relative">
+        <section className="py-24 border-y border-slate-200/80 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-500/30">
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-700 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-200 shadow-sm">
                 Streamlined Glass Process
               </span>
-              <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mt-4 font-display">
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mt-4 font-display">
                 How ZenSolve Accelerates Your Career
               </h2>
-              <p className="text-slate-300 text-base mt-3">
+              <p className="text-slate-600 text-base mt-3">
                 We eliminate friction from the hiring process with transparent requirements and direct employer connectivity.
               </p>
             </div>
@@ -131,20 +131,20 @@ const Home = () => {
               {workflowSteps.map((ws) => (
                 <div
                   key={ws.step}
-                  className="glass-surface-2 glass-specular glass-card-interactive p-6 sm:p-7 rounded-3xl border border-white/10 relative group"
+                  className="glass-surface-2 glass-specular glass-card-interactive p-6 sm:p-7 rounded-3xl border border-slate-200/90 relative group shadow-sm"
                 >
                   <div className="flex items-center justify-between mb-5">
-                    <span className="text-2xl font-black text-indigo-400/50 group-hover:text-indigo-400 transition-colors font-display">
+                    <span className="text-2xl font-black text-indigo-600/70 group-hover:text-indigo-600 transition-colors font-display">
                       {ws.step}
                     </span>
-                    <div className="w-12 h-12 rounded-2xl glass-surface-1 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-indigo-500/40 transition">
+                    <div className="w-12 h-12 rounded-2xl glass-surface-1 border border-slate-200 flex items-center justify-center group-hover:scale-110 group-hover:border-indigo-400 transition shadow-sm">
                       {ws.icon}
                     </div>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-200 transition">
+                  <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition">
                     {ws.title}
                   </h3>
-                  <p className="text-sm text-slate-300 leading-relaxed">
+                  <p className="text-sm text-slate-600 leading-relaxed">
                     {ws.desc}
                   </p>
                 </div>
@@ -157,44 +157,44 @@ const Home = () => {
         {/* 6. Employer Recruitment Showcase with Asset C (Editorial Team Photography) */}
         <section className="py-24 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="relative rounded-3xl overflow-hidden glass-surface-3 glass-specular border border-white/15 p-8 sm:p-12 shadow-2xl">
+            <div className="relative rounded-3xl overflow-hidden glass-surface-3 glass-specular border border-slate-200/90 p-8 sm:p-12 shadow-xl">
               
               {/* Ambient backlight */}
-              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/15 blur-3xl pointer-events-none rounded-full" />
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-3xl pointer-events-none rounded-full" />
               
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
                 
                 {/* Left Column: Employer Proposition */}
                 <div className="lg:col-span-7">
-                  <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-500/30 text-indigo-300 text-xs font-semibold mb-4">
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-200 text-indigo-700 text-xs font-semibold mb-4 shadow-sm">
                     <FaBuilding className="text-xs" />
                     For Recruiters & Enterprise Hiring Teams
                   </span>
-                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-5 font-display leading-[1.15]">
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight mb-5 font-display leading-[1.15]">
                     Scale Your High-Performance Teams with Verified Talent
                   </h2>
-                  <p className="text-slate-300 text-base leading-relaxed mb-6">
+                  <p className="text-slate-600 text-base leading-relaxed mb-6">
                     Join hundreds of registered enterprises using ZenSolve's multi-company HR recruitment dashboard. Post openings, filter pre-screened applicants, and conduct candidate reviews in one centralized glass SaaS portal.
                   </p>
 
                   <div className="space-y-3 mb-8">
                     <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
                         <FaCheckCircle />
                       </div>
-                      <span className="text-sm text-slate-200">100% Verified applicant credentials and portfolio links</span>
+                      <span className="text-sm text-slate-700">100% Verified applicant credentials and portfolio links</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
                         <FaCheckCircle />
                       </div>
-                      <span className="text-sm text-slate-200">Integrated multi-stage applicant tracking system (ATS)</span>
+                      <span className="text-sm text-slate-700">Integrated multi-stage applicant tracking system (ATS)</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
                         <FaCheckCircle />
                       </div>
-                      <span className="text-sm text-slate-200">Custom company profile page showcasing your engineering culture</span>
+                      <span className="text-sm text-slate-700">Custom company profile page showcasing your engineering culture</span>
                     </div>
                   </div>
 
@@ -213,7 +213,7 @@ const Home = () => {
                       variant="outline"
                       size="lg"
                       onClick={() => navigate('/register?role=employer')}
-                      className="rounded-2xl glass-surface-1 border-white/10 hover:border-indigo-500/40 text-slate-200"
+                      className="rounded-2xl glass-surface-1 border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-slate-900 shadow-sm"
                     >
                       Register Company Profile
                     </Button>
@@ -222,17 +222,17 @@ const Home = () => {
 
                 {/* Right Column: Asset C (workplace_editorial_team.jpg) in Glass Frame */}
                 <div className="lg:col-span-5 relative">
-                  <div className="glass-surface-2 glass-specular p-3 rounded-3xl border border-white/20 shadow-2xl relative group">
+                  <div className="glass-surface-2 glass-specular p-3 rounded-3xl border border-slate-200/90 shadow-xl relative group">
                     <div className="relative rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[3/2]">
                       <img
                         src="/images/workplace_editorial_team.jpg"
                         alt="ZenSolve Modern Workplace Team"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
                       
                       {/* Floating Metric Badge */}
-                      <div className="absolute bottom-3 left-3 right-3 glass-surface-3 glass-specular p-3 rounded-xl border border-white/15 backdrop-blur-xl">
+                      <div className="absolute bottom-3 left-3 right-3 glass-surface-3 glass-specular p-3 rounded-xl border border-white/20 backdrop-blur-xl">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center text-xs">
@@ -240,7 +240,7 @@ const Home = () => {
                             </div>
                             <div>
                               <p className="text-xs font-bold text-white">98% Recruiter Satisfaction</p>
-                              <p className="text-[10px] text-slate-300">Across 200+ Enterprise Partners</p>
+                              <p className="text-[10px] text-slate-200">Across 200+ Enterprise Partners</p>
                             </div>
                           </div>
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
@@ -258,16 +258,16 @@ const Home = () => {
         </section>
 
         {/* 7. Testimonials & Candidate Feedback */}
-        <section className="py-24 border-t border-white/10 relative">
+        <section className="py-24 border-t border-slate-200/80 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-14">
-              <span className="text-xs font-semibold uppercase tracking-wider text-amber-300 px-3.5 py-1 rounded-full glass-surface-1 border border-amber-500/30">
+              <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 px-3.5 py-1 rounded-full glass-surface-1 border border-amber-200 shadow-sm">
                 Proven Placement Impact
               </span>
-              <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mt-4 font-display">
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mt-4 font-display">
                 What Candidates & Recruiters Say
               </h2>
-              <p className="text-slate-300 text-base mt-3">
+              <p className="text-slate-600 text-base mt-3">
                 Genuine feedback from professionals who accelerated their careers through ZenSolve.
               </p>
             </div>

@@ -93,20 +93,20 @@ const PopularCategories = () => {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-200 text-indigo-700 text-xs font-semibold uppercase tracking-wider mb-3 shadow-sm">
               Specialized Industry Tracks
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
               Explore Popular Categories
             </h2>
-            <p className="text-slate-400 text-base mt-2 max-w-xl">
+            <p className="text-slate-600 text-base mt-2 max-w-xl">
               Discover curated career opportunities tailored to your specialized domain and industry skill set.
             </p>
           </div>
 
           <button
             onClick={() => navigate('/jobs')}
-            className="mt-4 md:mt-0 text-sm font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-2 group transition"
+            className="mt-4 md:mt-0 text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group transition"
           >
             <span>View All Categories</span>
             <FaArrowRight className="group-hover:translate-x-1 transition-transform" />

@@ -149,76 +149,76 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
   return (
     <div className="w-full">
       {/* Target Role Pill */}
-      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 mb-6 flex items-center justify-between">
+      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 mb-6 flex items-center justify-between">
         <div>
-          <span className="text-xs text-slate-400 font-semibold block">Applying for position</span>
-          <span className="text-base font-bold text-white">{job.position}</span>
-          <span className="text-xs text-indigo-400 block mt-0.5">{job.companyName} • {job.location || 'India'}</span>
+          <span className="text-xs text-slate-500 font-semibold block">Applying for position</span>
+          <span className="text-base font-bold text-slate-900">{job.position}</span>
+          <span className="text-xs text-indigo-600 font-medium block mt-0.5">{job.companyName} • {job.location || 'India'}</span>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 text-left">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-              Full Legal Name <span className="text-rose-400">*</span>
+            <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+              Full Legal Name <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <FaUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs" />
+              <FaUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
               <input
                 type="text"
                 value={applicantName}
                 onChange={(e) => setApplicantName(e.target.value)}
                 placeholder="e.g. Rahul Sharma"
                 required
-                className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-              Email Address <span className="text-rose-400">*</span>
+            <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+              Email Address <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs" />
+              <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
               <input
                 type="email"
                 value={applicantEmail}
                 onChange={(e) => setApplicantEmail(e.target.value)}
                 placeholder="e.g. rahul@example.com"
                 required
-                className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
               />
             </div>
           </div>
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 block mb-1.5">
             Phone / WhatsApp Number
           </label>
           <div className="relative">
-            <FaPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs" />
+            <FaPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
             <input
               type="tel"
               value={applicantPhone}
               onChange={(e) => setApplicantPhone(e.target.value)}
               placeholder="+91 9876543210"
-              className="w-full pl-10 pr-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
             />
           </div>
         </div>
 
         {/* Drag and Drop Resume Box */}
         <div>
-          <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 block mb-1.5">
             Attach Resume / CV (PDF, DOC, DOCX - Max 10MB)
           </label>
           <div
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            className="border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-2xl p-6 text-center bg-slate-900/50 hover:bg-slate-900/80 transition cursor-pointer relative"
+            className="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-6 text-center bg-slate-50/70 hover:bg-indigo-50/30 transition cursor-pointer relative"
           >
             <input
               type="file"
@@ -227,8 +227,8 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
             {resume ? (
-              <div className="flex items-center justify-center gap-2 text-indigo-300 font-semibold text-sm">
-                <FaFilePdf size={18} className="text-rose-400" />
+              <div className="flex items-center justify-center gap-2 text-indigo-700 font-semibold text-sm">
+                <FaFilePdf size={18} className="text-rose-500" />
                 <span>{resume.name}</span>
                 <span className="text-xs text-slate-500">
                   ({(resume.size / 1024 / 1024).toFixed(2)} MB)
@@ -236,9 +236,9 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
               </div>
             ) : (
               <div className="space-y-1.5">
-                <FaFileUpload className="mx-auto text-slate-500 text-2xl mb-2" />
-                <p className="text-sm font-semibold text-slate-200">
-                  Drag and drop your resume here, or <span className="text-indigo-400">browse files</span>
+                <FaFileUpload className="mx-auto text-indigo-500 text-2xl mb-2" />
+                <p className="text-sm font-semibold text-slate-800">
+                  Drag and drop your resume here, or <span className="text-indigo-600 underline">browse files</span>
                 </p>
                 <p className="text-xs text-slate-500">PDF format recommended for best recruiter readability</p>
               </div>
@@ -248,7 +248,7 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
 
         {/* Optional Cover Note */}
         <div>
-          <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 block mb-1.5">
             Brief Pitch / Cover Note (Optional)
           </label>
           <textarea
@@ -256,12 +256,12 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
             onChange={(e) => setNotes(e.target.value)}
             rows="3"
             placeholder="Highlight why your skills make you an ideal fit for this role..."
-            className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
           />
         </div>
 
         {error && (
-          <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-xl flex items-center gap-2">
+          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
             <FaExclamationTriangle className="flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -269,13 +269,13 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
 
         {isSubmitting && (
           <div className="space-y-1.5">
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
               <div
                 className="bg-indigo-600 h-full rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-right text-[11px] text-slate-400">Uploading credentials... {progress}%</p>
+            <p className="text-right text-[11px] text-slate-500">Uploading credentials... {progress}%</p>
           </div>
         )}
 
@@ -284,7 +284,7 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
           variant="primary"
           size="lg"
           loading={isSubmitting}
-          className="w-full font-bold shadow-glow-sm"
+          className="w-full font-bold shadow-md shadow-indigo-500/10"
         >
           Submit Official Application
         </Button>

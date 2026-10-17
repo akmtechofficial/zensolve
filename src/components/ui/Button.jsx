@@ -17,19 +17,19 @@ export const Button = ({
 }) => {
   const variants = {
     primary:
-      "bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 border border-indigo-400/30 active:scale-[0.98]",
+      "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 border border-indigo-500 active:scale-[0.98]",
     glow:
-      "relative group bg-slate-900 text-white border border-indigo-500/40 hover:border-indigo-400 shadow-glow-sm hover:shadow-glow-md overflow-hidden",
+      "relative group bg-slate-900 text-white border border-indigo-500/40 hover:border-indigo-400 shadow-md hover:shadow-lg overflow-hidden",
     secondary:
-      "bg-slate-800 hover:bg-slate-750 text-slate-100 border border-slate-700/80 hover:border-slate-600 active:scale-[0.98]",
+      "bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 active:scale-[0.98]",
     outline:
-      "bg-transparent hover:bg-slate-800/60 text-slate-200 border border-slate-700 hover:border-slate-500 active:scale-[0.98]",
+      "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm hover:border-slate-300 active:scale-[0.98]",
     ghost:
-      "bg-transparent hover:bg-slate-800/50 text-slate-300 hover:text-white active:scale-[0.98]",
+      "bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-900 active:scale-[0.98]",
     emerald:
-      "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/20 border border-emerald-400/30 active:scale-[0.98]",
+      "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-500/20 border border-emerald-500 active:scale-[0.98]",
     danger:
-      "bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 active:scale-[0.98]",
+      "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 active:scale-[0.98]",
   };
 
   const sizes = {

@@ -73,13 +73,13 @@ const DashboardApplicants = () => {
         {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative max-w-md w-full">
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" />
             <input
               type="text"
               placeholder="Search by candidate name, email, or role..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500 shadow-md"
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl glass-input text-sm text-slate-900 placeholder:text-slate-400 font-medium shadow-sm"
             />
           </div>
 
@@ -90,8 +90,8 @@ const DashboardApplicants = () => {
                 onClick={() => setSelectedStatus(status)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
                   selectedStatus === status
-                    ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                    : 'glass-surface-1 text-slate-300 hover:text-white border border-white/10'
+                    ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'glass-surface-1 text-slate-600 hover:text-slate-900 border border-slate-200 shadow-xs'
                 }`}
               >
                 {status}
@@ -101,10 +101,10 @@ const DashboardApplicants = () => {
         </div>
 
         {/* Applicants Table */}
-        <div className="glass-surface-2 glass-specular rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+        <div className="glass-surface-2 glass-specular rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-200">
-              <thead className="text-xs text-slate-300 uppercase glass-surface-1 border-b border-white/10">
+            <table className="w-full text-left text-sm text-slate-700">
+              <thead className="text-xs text-slate-500 uppercase glass-surface-1 border-b border-slate-200">
                 <tr>
                   <th className="py-3.5 px-5">Candidate</th>
                   <th className="py-3.5 px-4">Applied Role</th>
@@ -113,19 +113,19 @@ const DashboardApplicants = () => {
                   <th className="py-3.5 px-5">Hiring Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {filtered.map((app) => (
-                  <tr key={app.id} className="hover:glass-surface-1 transition">
+                  <tr key={app.id} className="hover:bg-slate-50 transition">
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center font-bold text-white text-xs flex-shrink-0 shadow-glow-sm">
+                        <div className="w-9 h-9 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs">
                           {app.applicantName ? app.applicantName.charAt(0) : <FaUser size={11} />}
                         </div>
                         <div>
-                          <div className="font-bold text-white font-display">{app.applicantName || 'Applicant'}</div>
+                          <div className="font-bold text-slate-900 font-display">{app.applicantName || 'Applicant'}</div>
                           <a
                             href={`mailto:${app.applicantEmail}`}
-                            className="text-xs text-slate-400 hover:text-indigo-300 flex items-center gap-1 mt-0.5"
+                            className="text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1 mt-0.5"
                           >
                             <FaEnvelope size={10} />
                             <span>{app.applicantEmail}</span>
@@ -135,11 +135,11 @@ const DashboardApplicants = () => {
                     </td>
 
                     <td className="py-4 px-4">
-                      <div className="font-semibold text-white">{app.jobPosition || 'General Role'}</div>
-                      <div className="text-xs text-slate-400">{app.companyName}</div>
+                      <div className="font-semibold text-slate-800">{app.jobPosition || 'General Role'}</div>
+                      <div className="text-xs text-slate-500">{app.companyName}</div>
                     </td>
 
-                    <td className="py-4 px-4 text-xs text-slate-400">
+                    <td className="py-4 px-4 text-xs text-slate-500">
                       {app.appliedAt?.toDate
                         ? app.appliedAt.toDate().toLocaleDateString('en-IN', {
                             day: 'numeric',
@@ -155,14 +155,14 @@ const DashboardApplicants = () => {
                           href={app.resume}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-surface-1 text-indigo-300 border border-indigo-500/30 hover:border-indigo-500/60 text-xs font-semibold transition"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-surface-1 text-indigo-600 border border-indigo-200 hover:border-indigo-400 text-xs font-semibold transition shadow-xs"
                         >
                           <FaFileAlt size={12} />
                           <span>View Resume</span>
                           <FaExternalLinkAlt size={9} />
                         </a>
                       ) : (
-                        <span className="text-xs text-slate-500">No file</span>
+                        <span className="text-xs text-slate-400">No file</span>
                       )}
                     </td>
 
@@ -171,30 +171,30 @@ const DashboardApplicants = () => {
                         value={app.status || 'Pending'}
                         onChange={(e) => handleStatusChange(app.id, e.target.value)}
                         disabled={updatingId === app.id}
-                        className={`text-xs font-semibold px-3 py-1.5 rounded-xl border focus:outline-none transition cursor-pointer ${
+                        className={`text-xs font-semibold px-3 py-1.5 rounded-xl border focus:outline-none transition cursor-pointer shadow-xs ${
                           app.status === 'Shortlisted'
-                            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : app.status === 'Rejected'
-                            ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                            ? 'bg-rose-50 text-rose-700 border-rose-200'
                             : app.status === 'Reviewed'
-                            ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
                             : app.status === 'Hired'
-                            ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
-                            : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                            ? 'bg-purple-50 text-purple-700 border-purple-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
                         }`}
                       >
-                        <option value="Pending" className="bg-slate-900 text-white">Pending</option>
-                        <option value="Reviewed" className="bg-slate-900 text-white">Reviewed</option>
-                        <option value="Shortlisted" className="bg-slate-900 text-white">Shortlisted</option>
-                        <option value="Rejected" className="bg-slate-900 text-white">Rejected</option>
-                        <option value="Hired" className="bg-slate-900 text-white">Hired</option>
+                        <option value="Pending" className="bg-white text-slate-900">Pending</option>
+                        <option value="Reviewed" className="bg-white text-slate-900">Reviewed</option>
+                        <option value="Shortlisted" className="bg-white text-slate-900">Shortlisted</option>
+                        <option value="Rejected" className="bg-white text-slate-900">Rejected</option>
+                        <option value="Hired" className="bg-white text-slate-900">Hired</option>
                       </select>
                     </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && !loading && (
                   <tr>
-                    <td colSpan="5" className="py-12 text-center text-slate-400 text-sm">
+                    <td colSpan="5" className="py-12 text-center text-slate-500 text-sm">
                       No applications found matching this status or search.
                     </td>
                   </tr>

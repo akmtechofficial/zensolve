@@ -36,7 +36,7 @@ export const Modal = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
           />
 
           {/* Modal Card */}
@@ -46,7 +46,7 @@ export const Modal = ({
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              "relative w-full max-h-[90vh] overflow-y-auto glass-panel bg-slate-900/95 border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8 z-10",
+              "relative w-full max-h-[90vh] overflow-y-auto glass-panel bg-white/95 border border-slate-200/90 rounded-3xl shadow-2xl p-6 sm:p-8 z-10",
               maxWidth
             )}
           >
@@ -54,17 +54,17 @@ export const Modal = ({
             <div className="flex items-start justify-between mb-6">
               <div>
                 {title && (
-                  <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-display">
                     {title}
                   </h3>
                 )}
                 {subtitle && (
-                  <p className="text-sm text-slate-400 mt-1">{subtitle}</p>
+                  <p className="text-sm text-slate-600 mt-1">{subtitle}</p>
                 )}
               </div>
               <button
                 onClick={onClose}
-                className="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition border border-slate-700/50 flex-shrink-0 ml-4"
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition border border-slate-200 flex-shrink-0 ml-4"
                 aria-label="Close modal"
               >
                 <FaTimes size={14} />

@@ -37,10 +37,10 @@ const CompanyDirectory = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 py-12 relative overflow-hidden">
       {/* Background Ambient Glass Texture */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-[0.10] bg-cover bg-center mix-blend-screen z-0"
+        className="fixed inset-0 pointer-events-none opacity-[0.03] bg-cover bg-center z-0"
         style={{ backgroundImage: "url('/images/glass_ambient_backdrop.jpg')" }}
       />
 
@@ -48,13 +48,13 @@ const CompanyDirectory = () => {
         
         {/* Header */}
         <div className="mb-12 text-center max-w-2xl mx-auto">
-          <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-500/30">
+          <span className="text-xs font-semibold uppercase tracking-wider text-indigo-700 px-3.5 py-1 rounded-full bg-indigo-50 border border-indigo-200">
             Employer Network
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight font-display mt-3">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight font-display mt-3">
             Verified Partner Companies
           </h1>
-          <p className="text-slate-300 text-base mt-2">
+          <p className="text-slate-600 text-base mt-2">
             Explore credible organizations hiring through ZenSolve. Learn about company cultures, benefits, and view active roles.
           </p>
 
@@ -66,7 +66,7 @@ const CompanyDirectory = () => {
               placeholder="Search companies by name, industry, or city..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-2xl glass-input text-sm text-white placeholder:text-slate-400 shadow-xl"
+              className="w-full pl-11 pr-4 py-3 rounded-2xl glass-input text-sm text-slate-900 placeholder:text-slate-400 shadow-sm"
             />
           </div>
         </div>
@@ -75,15 +75,15 @@ const CompanyDirectory = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((n) => (
-              <div key={n} className="glass-surface-2 p-6 rounded-3xl border border-white/10 animate-pulse space-y-4">
+              <div key={n} className="glass-surface-2 bg-white/80 p-6 rounded-3xl border border-slate-200 animate-pulse space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/5 rounded-2xl" />
+                  <div className="w-12 h-12 bg-slate-200 rounded-2xl" />
                   <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-white/5 rounded w-1/2" />
-                    <div className="h-3 bg-white/5 rounded w-1/3" />
+                    <div className="h-4 bg-slate-200 rounded w-1/2" />
+                    <div className="h-3 bg-slate-200 rounded w-1/3" />
                   </div>
                 </div>
-                <div className="h-10 bg-white/5 rounded-2xl" />
+                <div className="h-10 bg-slate-200 rounded-2xl" />
               </div>
             ))}
           </div>
@@ -93,12 +93,12 @@ const CompanyDirectory = () => {
               <Link
                 key={comp.name}
                 to={`/company/${encodeURIComponent(comp.name)}`}
-                className="group glass-surface-2 glass-specular glass-card-interactive p-6 rounded-3xl border border-white/10 shadow-xl flex flex-col justify-between"
+                className="group glass-surface-2 glass-specular glass-card-interactive p-6 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col justify-between bg-white/90"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl glass-surface-1 border border-white/15 p-1 flex items-center justify-center font-bold text-indigo-400 text-lg flex-shrink-0 group-hover:scale-105 transition shadow-inner">
+                      <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 p-1 flex items-center justify-center font-bold text-indigo-600 text-lg flex-shrink-0 group-hover:scale-105 transition shadow-sm">
                         {comp.logo ? (
                           <img
                             src={comp.logo}
@@ -114,11 +114,11 @@ const CompanyDirectory = () => {
                         )}
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-white group-hover:text-indigo-200 transition tracking-tight font-display">
+                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition tracking-tight font-display">
                           {comp.name}
                         </h3>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
-                          <FaMapMarkerAlt className="text-indigo-400 text-[10px]" />
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                          <FaMapMarkerAlt className="text-indigo-600 text-[10px]" />
                           <span>{comp.location || 'India'}</span>
                         </div>
                       </div>
@@ -127,16 +127,16 @@ const CompanyDirectory = () => {
                     {comp.verified && <VerifiedBadge text="Verified" size="sm" />}
                   </div>
 
-                  <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed mb-4">
+                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-4">
                     {comp.about}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-indigo-300 group-hover:text-indigo-200">
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-indigo-600 group-hover:text-indigo-700">
                     Explore Profile & Jobs
                   </span>
-                  <div className="w-8 h-8 rounded-xl glass-surface-1 text-slate-300 group-hover:text-white flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-600 group-hover:bg-indigo-50 group-hover:text-indigo-600 flex items-center justify-center group-hover:translate-x-1 transition-transform border border-slate-200">
                     <FaArrowRight size={10} />
                   </div>
                 </div>
@@ -144,15 +144,15 @@ const CompanyDirectory = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 px-4 glass-surface-2 glass-specular rounded-3xl border border-white/15 max-w-md mx-auto shadow-2xl">
-            <div className="w-16 h-16 rounded-2xl glass-surface-1 border border-indigo-500/30 text-indigo-400 flex items-center justify-center mx-auto mb-4">
+          <div className="text-center py-20 px-4 glass-surface-2 glass-specular rounded-3xl border border-slate-200 max-w-md mx-auto shadow-sm bg-white/95">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center mx-auto mb-4">
               <FaBuilding size={24} />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2 font-display">No Companies Found</h3>
-            <p className="text-slate-300 text-xs mb-4">
+            <h3 className="text-lg font-bold text-slate-900 mb-2 font-display">No Companies Found</h3>
+            <p className="text-slate-600 text-xs mb-4">
               Try adjusting your search query to find matching employers.
             </p>
-            <Button variant="ghost" size="sm" onClick={() => setSearch('')} className="rounded-xl glass-surface-1">
+            <Button variant="ghost" size="sm" onClick={() => setSearch('')} className="rounded-xl border border-slate-200">
               Clear Search
             </Button>
           </div>

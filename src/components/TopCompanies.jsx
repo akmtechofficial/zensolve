@@ -41,22 +41,22 @@ const TopCompanies = () => {
   }, []);
 
   return (
-    <section className="py-14 border-y border-slate-850/80 bg-slate-950/40 relative overflow-hidden">
+    <section className="py-14 border-y border-slate-200/80 glass-surface-1 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-indigo-600 text-xs font-semibold uppercase tracking-wider mb-1">
               <FaBuilding className="text-xs" />
               Verified Hiring Network
             </div>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-display">
               Top Companies Recruiting on ZenSolve
             </h3>
           </div>
 
           <Link
             to="/companies"
-            className="text-xs sm:text-sm font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition group"
+            className="text-xs sm:text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1.5 transition group"
           >
             <span>View All Partner Companies</span>
             <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
@@ -72,9 +72,9 @@ const TopCompanies = () => {
               <Link
                 key={idx}
                 to={`/company/${encodeURIComponent(comp.name)}`}
-                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl glass-panel bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 hover:bg-slate-850 transition duration-300 flex-shrink-0 group"
+                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl glass-surface-2 border border-slate-200 hover:border-indigo-400 hover:shadow-md transition duration-300 flex-shrink-0 group shadow-xs"
               >
-                <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center font-bold text-indigo-300 text-sm overflow-hidden flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-bold text-indigo-600 text-sm overflow-hidden flex-shrink-0 shadow-xs">
                   {comp.logo ? (
                     <img
                       src={comp.logo}
@@ -92,12 +92,12 @@ const TopCompanies = () => {
 
                 <div className="text-left">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-bold text-white group-hover:text-indigo-300 transition">
+                    <span className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition">
                       {comp.name}
                     </span>
-                    <FaCheckCircle className="text-blue-400 text-xs flex-shrink-0" />
+                    <FaCheckCircle className="text-blue-500 text-xs flex-shrink-0" />
                   </div>
-                  <span className="text-[11px] text-slate-400 block">
+                  <span className="text-[11px] text-slate-500 block">
                     {comp.openRolesCount} Open Role{comp.openRolesCount > 1 ? 's' : ''} • {comp.industry}
                   </span>
                 </div>
@@ -110,12 +110,12 @@ const TopCompanies = () => {
             ).map((partner, idx) => (
               <div
                 key={idx}
-                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl glass-panel bg-slate-900/80 border border-slate-800 flex-shrink-0"
+                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl glass-surface-2 border border-slate-200 flex-shrink-0 shadow-xs"
               >
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 font-bold flex items-center justify-center text-sm">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 font-bold flex items-center justify-center text-sm border border-indigo-100">
                   {partner.charAt(0)}
                 </div>
-                <span className="text-sm font-semibold text-slate-300">{partner}</span>
+                <span className="text-sm font-semibold text-slate-700">{partner}</span>
                 <VerifiedBadge text="Verified" size="sm" />
               </div>
             ))

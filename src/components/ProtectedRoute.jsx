@@ -9,8 +9,8 @@ const ProtectedRoute = ({ children, requireEmployer = false }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">
-        <FaSpinner className="animate-spin text-indigo-500 text-3xl" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] text-slate-500">
+        <FaSpinner className="animate-spin text-indigo-600 text-3xl" />
       </div>
     );
   }

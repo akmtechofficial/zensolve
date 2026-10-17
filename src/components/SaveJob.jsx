@@ -41,21 +41,21 @@ const SaveJob = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-        <FaSpinner className="animate-spin text-indigo-500 text-3xl" />
+      <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center">
+        <FaSpinner className="animate-spin text-indigo-600 text-3xl" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 py-20 px-4">
-        <div className="max-w-md mx-auto text-center glass-panel p-8 rounded-3xl border border-slate-800">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen bg-[#F8FAFC] text-slate-900 py-20 px-4">
+        <div className="max-w-md mx-auto text-center glass-panel bg-white/95 p-8 rounded-3xl border border-slate-200/90 shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-4">
             <FaBookmark size={22} />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Saved Jobs</h2>
-          <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Saved Jobs</h2>
+          <p className="text-slate-600 text-sm mb-6 leading-relaxed">
             Please log in to your candidate account to view and manage your bookmarked job openings.
           </p>
           <div className="flex gap-3 justify-center">
@@ -72,19 +72,19 @@ const SaveJob = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-12">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-850">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-200">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold uppercase tracking-wider mb-2">
               Candidate Bookmarks
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-display">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
               Saved Jobs ({savedJobs.length})
             </h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-600 text-sm mt-1">
               Roles you have saved for later review or application.
             </p>
           </div>
@@ -111,13 +111,13 @@ const SaveJob = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 px-4 glass-panel rounded-3xl border border-slate-800 max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-4">
+          <div className="text-center py-20 px-4 glass-panel bg-white/95 rounded-3xl border border-slate-200/90 shadow-sm max-w-md mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-4">
               <FaBookmark size={24} />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">No Saved Jobs Yet</h3>
-            <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-              When browsing through job listings, click the heart bookmark icon to save opportunities here.
+            <h3 className="text-xl font-bold text-slate-900 mb-2">No Saved Jobs Yet</h3>
+            <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+              When browsing through job listings, click the bookmark icon to save opportunities here.
             </p>
             <Button
               variant="primary"

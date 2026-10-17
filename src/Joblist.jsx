@@ -45,18 +45,18 @@ const JobList = ({ maxJobs, filterCategory, initialSearch = '', showSearch = tru
       {/* Search Input if enabled */}
       {showSearch && (
         <div className="relative mb-6 max-w-xl mx-auto">
-          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search roles, skills, or companies..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-800 rounded-2xl text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/40 transition text-sm shadow-inner"
+            className="w-full pl-11 pr-4 py-3 bg-white/90 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition text-sm shadow-sm backdrop-blur-md"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-600 hover:text-slate-900 px-2 py-1 rounded bg-slate-100 border border-slate-200"
             >
               Clear
             </button>
@@ -70,22 +70,22 @@ const JobList = ({ maxJobs, filterCategory, initialSearch = '', showSearch = tru
           {[1, 2, 3, 4, 5, 6].slice(0, maxJobs || 6).map((n) => (
             <div
               key={n}
-              className="glass-panel p-6 rounded-2xl border border-slate-800/80 animate-pulse space-y-4"
+              className="glass-surface-2 p-6 rounded-3xl border border-slate-200/90 animate-pulse space-y-4 shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-slate-800 rounded-xl" />
+                <div className="w-12 h-12 bg-slate-200 rounded-2xl" />
                 <div className="space-y-2 flex-1">
-                  <div className="h-4 bg-slate-800 rounded w-1/3" />
-                  <div className="h-5 bg-slate-800 rounded w-2/3" />
+                  <div className="h-4 bg-slate-200 rounded w-1/3" />
+                  <div className="h-5 bg-slate-200 rounded w-2/3" />
                 </div>
               </div>
               <div className="flex gap-2">
-                <div className="h-6 bg-slate-800 rounded-full w-20" />
-                <div className="h-6 bg-slate-800 rounded-full w-24" />
+                <div className="h-6 bg-slate-200 rounded-full w-20" />
+                <div className="h-6 bg-slate-200 rounded-full w-24" />
               </div>
-              <div className="pt-4 border-t border-slate-800 flex justify-between items-center">
-                <div className="h-5 bg-slate-800 rounded w-28" />
-                <div className="h-8 bg-slate-800 rounded-xl w-20" />
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
+                <div className="h-5 bg-slate-200 rounded w-28" />
+                <div className="h-8 bg-slate-200 rounded-xl w-20" />
               </div>
             </div>
           ))}
@@ -97,12 +97,12 @@ const JobList = ({ maxJobs, filterCategory, initialSearch = '', showSearch = tru
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 px-4 glass-panel rounded-3xl border border-slate-800 max-w-md mx-auto">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-4">
+        <div className="text-center py-16 px-4 glass-surface-2 rounded-3xl border border-slate-200 shadow-sm max-w-md mx-auto">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-xs">
             <FaBriefcase size={22} />
           </div>
-          <h4 className="text-lg font-bold text-white mb-1">No Openings Found</h4>
-          <p className="text-sm text-slate-400 mb-5">
+          <h4 className="text-lg font-bold text-slate-900 mb-1">No Openings Found</h4>
+          <p className="text-sm text-slate-600 mb-5">
             {searchTerm
               ? `No jobs match your search for "${searchTerm}". Try resetting your filters.`
               : 'There are currently no published positions matching this criteria.'}
