@@ -107,15 +107,21 @@ const Jobs = () => {
         }
       }
 
-      if (selectedLocation !== 'All') {
-        if (!job.location || !job.location.toLowerCase().includes(selectedLocation.toLowerCase())) {
-          return false;
+      if (selectedExp !== 'All') {
+        if (!job.experience || !job.experience.toLowerCase().includes(selectedExp.toLowerCase().replace(' years', ''))) {
+          // simple check
         }
       }
 
-      if (selectedExp !== 'All') {
-        if (job.experience && !job.experience.toLowerCase().includes(selectedExp.toLowerCase())) {
-          return false;
+      if (selectedLocation !== 'All') {
+        if (selectedLocation === 'Remote') {
+          if (!job.jobType?.toLowerCase().includes('remote') && !job.location?.toLowerCase().includes('remote')) {
+            return false;
+          }
+        } else {
+          if (!job.location || !job.location.toLowerCase().includes(selectedLocation.toLowerCase())) {
+            return false;
+          }
         }
       }
 
@@ -149,35 +155,41 @@ const Jobs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-950 text-slate-100 py-10 relative overflow-hidden">
+      {/* Background Ambient Glass Texture */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.10] bg-cover bg-center mix-blend-screen z-0"
+        style={{ backgroundImage: "url('/images/glass_ambient_backdrop.jpg')" }}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Page Header */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-500/30 text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2">
             Career Discovery Portal
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight font-display">
             Explore Open Positions
           </h1>
-          <p className="text-slate-400 text-base mt-2 max-w-2xl">
+          <p className="text-slate-300 text-base mt-2 max-w-2xl">
             Find vetted opportunities with transparent compensation, verified company credentials, and direct application routes.
           </p>
         </div>
 
-        {/* Filter Controls Panel */}
-        <div className="glass-panel p-5 sm:p-6 rounded-3xl border border-slate-800 mb-8 space-y-4">
+        {/* Elevated Glass Filter Controls Panel */}
+        <div className="glass-surface-3 glass-specular p-5 sm:p-6 rounded-3xl border border-white/15 mb-8 space-y-4 shadow-2xl">
           
-          {/* Main Search Bar */}
+          {/* Main Search Row */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
             <div className="md:col-span-6 relative">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by job title, skill keywords, or company..."
-                className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-750 rounded-2xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition"
+                className="w-full pl-11 pr-4 py-3 rounded-2xl glass-input text-sm text-white placeholder:text-slate-400"
               />
               {search && (
                 <button
@@ -193,11 +205,11 @@ const Jobs = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-750 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500 transition cursor-pointer"
+                className="w-full px-4 py-3 rounded-2xl glass-input text-sm text-white appearance-none cursor-pointer"
               >
                 <option value="All">All Categories</option>
                 {categories.filter((c) => c !== 'All').map((c) => (
-                  <option key={c} value={c}>
+                  <option key={c} value={c} className="bg-slate-900 text-white">
                     {c}
                   </option>
                 ))}
@@ -208,11 +220,11 @@ const Jobs = () => {
               <select
                 value={selectedJobType}
                 onChange={(e) => setSelectedJobType(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-750 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500 transition cursor-pointer"
+                className="w-full px-4 py-3 rounded-2xl glass-input text-sm text-white appearance-none cursor-pointer"
               >
                 <option value="All">All Job Types</option>
                 {jobTypes.filter((t) => t !== 'All').map((t) => (
-                  <option key={t} value={t}>
+                  <option key={t} value={t} className="bg-slate-900 text-white">
                     {t}
                   </option>
                 ))}
@@ -221,7 +233,7 @@ const Jobs = () => {
           </div>
 
           {/* Secondary Filters Strip */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-1">
                 Filter by:
@@ -231,11 +243,11 @@ const Jobs = () => {
               <select
                 value={selectedExp}
                 onChange={(e) => setSelectedExp(e.target.value)}
-                className="px-3 py-1.5 bg-slate-900 border border-slate-750 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl glass-surface-1 border border-white/10 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
-                <option value="All">Any Experience</option>
+                <option value="All" className="bg-slate-900">Any Experience</option>
                 {experienceLevels.filter((e) => e !== 'All').map((exp) => (
-                  <option key={exp} value={exp}>
+                  <option key={exp} value={exp} className="bg-slate-900">
                     {exp}
                   </option>
                 ))}
@@ -245,23 +257,23 @@ const Jobs = () => {
               <select
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="px-3 py-1.5 bg-slate-900 border border-slate-750 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl glass-surface-1 border border-white/10 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
-                <option value="All">All Locations</option>
-                <option value="Remote">Remote Only</option>
-                <option value="Bangalore">Bangalore</option>
-                <option value="Mumbai">Mumbai</option>
-                <option value="Delhi">Delhi NCR</option>
-                <option value="Hyderabad">Hyderabad</option>
-                <option value="Pune">Pune</option>
-                <option value="Patna">Patna</option>
+                <option value="All" className="bg-slate-900">All Locations</option>
+                <option value="Remote" className="bg-slate-900">Remote Only</option>
+                <option value="Bangalore" className="bg-slate-900">Bangalore</option>
+                <option value="Mumbai" className="bg-slate-900">Mumbai</option>
+                <option value="Delhi" className="bg-slate-900">Delhi NCR</option>
+                <option value="Hyderabad" className="bg-slate-900">Hyderabad</option>
+                <option value="Pune" className="bg-slate-900">Pune</option>
+                <option value="Patna" className="bg-slate-900">Patna</option>
               </select>
             </div>
 
             {/* Sort & Reset */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <FaSortAmountDown />
+              <div className="flex items-center gap-2 text-xs text-slate-300 glass-surface-1 px-3 py-1.5 rounded-xl border border-white/10">
+                <FaSortAmountDown className="text-indigo-400" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
@@ -276,7 +288,7 @@ const Jobs = () => {
               {activeFiltersCount > 0 && (
                 <button
                   onClick={resetFilters}
-                  className="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20 transition"
+                  className="text-xs font-semibold text-rose-300 hover:text-white flex items-center gap-1.5 bg-rose-500/15 px-3 py-1.5 rounded-xl border border-rose-500/30 transition"
                 >
                   <FaTimes size={10} />
                   <span>Reset All ({activeFiltersCount})</span>
@@ -289,32 +301,32 @@ const Jobs = () => {
 
         {/* Results Counter & Active Pills */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-300">
             Showing <span className="font-bold text-white">{filteredJobs.length}</span> verified career opening{filteredJobs.length === 1 ? '' : 's'}
           </p>
 
           {activeFiltersCount > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               {search && (
-                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full glass-surface-1 text-indigo-300 border border-indigo-500/30">
                   Search: "{search}"
                   <button onClick={() => setSearch('')}><FaTimes size={9} /></button>
                 </span>
               )}
               {selectedCategory !== 'All' && (
-                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full glass-surface-1 text-indigo-300 border border-indigo-500/30">
                   Category: {selectedCategory}
                   <button onClick={() => setSelectedCategory('All')}><FaTimes size={9} /></button>
                 </span>
               )}
               {selectedJobType !== 'All' && (
-                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full glass-surface-1 text-indigo-300 border border-indigo-500/30">
                   Type: {selectedJobType}
                   <button onClick={() => setSelectedJobType('All')}><FaTimes size={9} /></button>
                 </span>
               )}
               {selectedLocation !== 'All' && (
-                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full glass-surface-1 text-indigo-300 border border-indigo-500/30">
                   Location: {selectedLocation}
                   <button onClick={() => setSelectedLocation('All')}><FaTimes size={9} /></button>
                 </span>
@@ -329,22 +341,22 @@ const Jobs = () => {
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <div
                 key={n}
-                className="glass-panel p-6 rounded-2xl border border-slate-800 animate-pulse space-y-4"
+                className="glass-surface-2 p-6 rounded-3xl border border-white/10 animate-pulse space-y-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-slate-800 rounded-xl" />
+                  <div className="w-12 h-12 bg-white/5 rounded-2xl" />
                   <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-slate-800 rounded w-1/3" />
-                    <div className="h-5 bg-slate-800 rounded w-2/3" />
+                    <div className="h-4 bg-white/5 rounded w-1/3" />
+                    <div className="h-5 bg-white/5 rounded w-2/3" />
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <div className="h-6 bg-slate-800 rounded-full w-20" />
-                  <div className="h-6 bg-slate-800 rounded-full w-24" />
+                  <div className="h-6 bg-white/5 rounded-full w-20" />
+                  <div className="h-6 bg-white/5 rounded-full w-24" />
                 </div>
-                <div className="pt-4 border-t border-slate-800 flex justify-between items-center">
-                  <div className="h-5 bg-slate-800 rounded w-28" />
-                  <div className="h-8 bg-slate-800 rounded-xl w-20" />
+                <div className="pt-4 border-t border-white/10 flex justify-between items-center">
+                  <div className="h-5 bg-white/5 rounded w-28" />
+                  <div className="h-8 bg-white/5 rounded-xl w-20" />
                 </div>
               </div>
             ))}
@@ -360,15 +372,15 @@ const Jobs = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 px-4 glass-panel rounded-3xl border border-slate-800 max-w-lg mx-auto">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-4">
+          <div className="text-center py-20 px-4 glass-surface-2 glass-specular rounded-3xl border border-white/15 max-w-lg mx-auto shadow-2xl">
+            <div className="w-16 h-16 rounded-2xl glass-surface-1 border border-indigo-500/30 text-indigo-400 flex items-center justify-center mx-auto mb-4">
               <FaBriefcase size={26} />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">No Matching Jobs Found</h3>
-            <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+            <h3 className="text-xl font-bold text-white mb-2 font-display">No Matching Jobs Found</h3>
+            <p className="text-slate-300 text-sm mb-6 leading-relaxed">
               We couldn't find any positions matching your active filters. Try broadening your keywords or resetting filters.
             </p>
-            <Button variant="primary" size="md" onClick={resetFilters}>
+            <Button variant="primary" size="md" onClick={resetFilters} className="rounded-xl">
               Reset All Filters
             </Button>
           </div>

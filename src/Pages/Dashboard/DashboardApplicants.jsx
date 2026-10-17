@@ -79,7 +79,7 @@ const DashboardApplicants = () => {
               placeholder="Search by candidate name, email, or role..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500 shadow-md"
             />
           </div>
 
@@ -88,10 +88,10 @@ const DashboardApplicants = () => {
               <button
                 key={status}
                 onClick={() => setSelectedStatus(status)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
                   selectedStatus === status
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                    ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                    : 'glass-surface-1 text-slate-300 hover:text-white border border-white/10'
                 }`}
               >
                 {status}
@@ -101,10 +101,10 @@ const DashboardApplicants = () => {
         </div>
 
         {/* Applicants Table */}
-        <div className="glass-panel rounded-3xl border border-slate-800 overflow-hidden">
+        <div className="glass-surface-2 glass-specular rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="text-xs text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800">
+            <table className="w-full text-left text-sm text-slate-200">
+              <thead className="text-xs text-slate-300 uppercase glass-surface-1 border-b border-white/10">
                 <tr>
                   <th className="py-3.5 px-5">Candidate</th>
                   <th className="py-3.5 px-4">Applied Role</th>
@@ -113,19 +113,19 @@ const DashboardApplicants = () => {
                   <th className="py-3.5 px-5">Hiring Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-850">
+              <tbody className="divide-y divide-white/5">
                 {filtered.map((app) => (
-                  <tr key={app.id} className="hover:bg-slate-900/40 transition">
+                  <tr key={app.id} className="hover:glass-surface-1 transition">
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center font-bold text-white text-xs flex-shrink-0">
+                        <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center font-bold text-white text-xs flex-shrink-0 shadow-glow-sm">
                           {app.applicantName ? app.applicantName.charAt(0) : <FaUser size={11} />}
                         </div>
                         <div>
-                          <div className="font-bold text-white">{app.applicantName || 'Applicant'}</div>
+                          <div className="font-bold text-white font-display">{app.applicantName || 'Applicant'}</div>
                           <a
                             href={`mailto:${app.applicantEmail}`}
-                            className="text-xs text-slate-400 hover:text-indigo-400 flex items-center gap-1 mt-0.5"
+                            className="text-xs text-slate-400 hover:text-indigo-300 flex items-center gap-1 mt-0.5"
                           >
                             <FaEnvelope size={10} />
                             <span>{app.applicantEmail}</span>
@@ -136,7 +136,7 @@ const DashboardApplicants = () => {
 
                     <td className="py-4 px-4">
                       <div className="font-semibold text-white">{app.jobPosition || 'General Role'}</div>
-                      <div className="text-xs text-slate-500">{app.companyName}</div>
+                      <div className="text-xs text-slate-400">{app.companyName}</div>
                     </td>
 
                     <td className="py-4 px-4 text-xs text-slate-400">
@@ -155,14 +155,14 @@ const DashboardApplicants = () => {
                           href={app.resume}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/20 text-xs font-semibold transition"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-surface-1 text-indigo-300 border border-indigo-500/30 hover:border-indigo-500/60 text-xs font-semibold transition"
                         >
                           <FaFileAlt size={12} />
                           <span>View Resume</span>
                           <FaExternalLinkAlt size={9} />
                         </a>
                       ) : (
-                        <span className="text-xs text-slate-600">No file</span>
+                        <span className="text-xs text-slate-500">No file</span>
                       )}
                     </td>
 
@@ -194,7 +194,7 @@ const DashboardApplicants = () => {
                 ))}
                 {filtered.length === 0 && !loading && (
                   <tr>
-                    <td colSpan="5" className="py-12 text-center text-slate-500 text-sm">
+                    <td colSpan="5" className="py-12 text-center text-slate-400 text-sm">
                       No applications found matching this status or search.
                     </td>
                   </tr>

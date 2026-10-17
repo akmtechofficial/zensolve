@@ -49,41 +49,41 @@ const Navbar = () => {
   const savedCount = userData?.savedJobs?.length || 0;
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+    <header className="sticky top-0 z-50 w-full px-4 sm:px-6 lg:px-8 pt-3 pb-2 transition-all pointer-events-none">
+      <div className="max-w-7xl mx-auto pointer-events-auto">
+        <div className="glass-nav glass-specular rounded-2xl sm:rounded-full px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between border border-white/10 shadow-2xl shadow-indigo-950/30">
           
           {/* Logo & Brand Identity */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 p-[1px] shadow-glow-sm group-hover:shadow-glow-md transition-all">
-              <div className="w-full h-full bg-slate-950 rounded-[11px] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-indigo-600 to-violet-500 p-[1px] shadow-glow-sm group-hover:shadow-glow-md transition-all">
+              <div className="w-full h-full bg-slate-950/90 rounded-[11px] flex items-center justify-center">
                 <span className="font-display font-black text-xl text-gradient-accent">Z</span>
               </div>
             </div>
             <div className="flex flex-col">
               <span className="font-display font-bold text-lg text-white tracking-tight flex items-center gap-1.5">
                 ZenSolve
-                <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
-                  HR Portal
+                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                  Glass HR
                 </span>
               </span>
               <span className="text-[11px] text-slate-400 font-medium tracking-wide">
-                Careers & Recruitment
+                Careers & Talent Platform
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-900/60 p-1.5 rounded-2xl border border-slate-800/80">
+          <nav className="hidden md:flex items-center gap-1.5 glass-surface-1 px-3 py-1.5 rounded-full border border-white/10 shadow-inner">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+                  "px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200",
                   isActive(link.path)
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                    ? "bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
                 )}
               >
                 {link.name}
@@ -94,23 +94,23 @@ const Navbar = () => {
             <Link
               to="/dashboard"
               className={cn(
-                "px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5",
+                "px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 flex items-center gap-1.5",
                 isActive('/dashboard')
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                  ? "bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                  : "text-slate-300 hover:text-white hover:bg-white/5"
               )}
             >
               <FaBriefcase className="text-xs text-indigo-400" />
-              <span>HR Dashboard</span>
+              <span>HR SaaS</span>
             </Link>
           </nav>
 
           {/* Desktop Actions & Auth */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2.5">
             {/* Saved Jobs Link with live badge */}
             <Link
               to="/saved-jobs"
-              className="relative p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent hover:border-slate-800 transition"
+              className="relative p-2.5 rounded-full glass-surface-1 text-slate-300 hover:text-white border border-white/10 hover:border-indigo-500/40 transition"
               title="Saved Jobs"
             >
               <FaBookmark size={15} />
@@ -226,9 +226,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Glass Sheet */}
       {isOpen && (
-        <div className="md:hidden border-t border-slate-800/80 bg-slate-950/95 backdrop-blur-2xl px-6 py-6 space-y-4">
+        <div className="md:hidden mt-2 glass-surface-3 glass-specular rounded-2xl border border-white/10 px-5 py-5 space-y-4 shadow-2xl">
           <div className="space-y-1">
             {navLinks.map((link) => (
               <Link

@@ -100,25 +100,25 @@ const DashboardJobs = () => {
         {/* Search Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative max-w-md w-full">
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" />
             <input
               type="text"
               placeholder="Search published roles..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500 shadow-md"
             />
           </div>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-300 glass-surface-1 px-3 py-1.5 rounded-full border border-white/10">
             Total Openings: <strong className="text-white">{filteredJobs.length}</strong>
           </span>
         </div>
 
         {/* Data Table */}
-        <div className="glass-panel rounded-3xl border border-slate-800 overflow-hidden">
+        <div className="glass-surface-2 glass-specular rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="text-xs text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800">
+            <table className="w-full text-left text-sm text-slate-200">
+              <thead className="text-xs text-slate-300 uppercase glass-surface-1 border-b border-white/10">
                 <tr>
                   <th className="py-3.5 px-5">Position & Company</th>
                   <th className="py-3.5 px-4">Category</th>
@@ -128,11 +128,11 @@ const DashboardJobs = () => {
                   <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-850">
+              <tbody className="divide-y divide-white/5">
                 {filteredJobs.map((job) => (
-                  <tr key={job.id} className="hover:bg-slate-900/40 transition">
+                  <tr key={job.id} className="hover:glass-surface-1 transition">
                     <td className="py-4 px-5">
-                      <div className="font-bold text-white text-base tracking-tight">{job.position}</div>
+                      <div className="font-bold text-white text-base tracking-tight font-display">{job.position}</div>
                       <div className="text-xs text-slate-400 mt-0.5">{job.companyName}</div>
                     </td>
                     <td className="py-4 px-4">
@@ -142,8 +142,8 @@ const DashboardJobs = () => {
                     </td>
                     <td className="py-4 px-4 text-xs text-slate-300">
                       <div>{job.jobType || 'Full-time'}</div>
-                      <div className="text-slate-500 flex items-center gap-1 mt-0.5">
-                        <FaMapMarkerAlt size={10} />
+                      <div className="text-slate-400 flex items-center gap-1 mt-0.5">
+                        <FaMapMarkerAlt size={10} className="text-indigo-400" />
                         <span>{job.location || 'India'}</span>
                       </div>
                     </td>
@@ -167,14 +167,14 @@ const DashboardJobs = () => {
                     <td className="py-4 px-5 text-right space-x-2">
                       <button
                         onClick={() => setEditingJob(job)}
-                        className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                        className="p-2 rounded-xl glass-surface-1 border border-white/10 text-slate-300 hover:text-white hover:border-indigo-500/40 transition"
                         title="Edit Job"
                       >
                         <FaEdit size={13} />
                       </button>
                       <button
                         onClick={() => handleDelete(job.id)}
-                        className="p-2 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition"
+                        className="p-2 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:text-rose-200 transition"
                         title="Delete Job"
                       >
                         <FaTrash size={13} />
@@ -184,7 +184,7 @@ const DashboardJobs = () => {
                 ))}
                 {filteredJobs.length === 0 && !loading && (
                   <tr>
-                    <td colSpan="6" className="py-12 text-center text-slate-500 text-sm">
+                    <td colSpan="6" className="py-12 text-center text-slate-400 text-sm">
                       No jobs match your search.
                     </td>
                   </tr>

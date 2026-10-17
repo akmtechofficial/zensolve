@@ -18,6 +18,8 @@ import {
   FaHandshake,
   FaFileAlt,
   FaRocket,
+  FaShieldAlt,
+  FaStar,
 } from 'react-icons/fa';
 
 const Home = () => {
@@ -52,184 +54,257 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden">
       
-      {/* 1. Hero Section */}
-      <HeroSection />
+      {/* Asset B: Ambient Glass Environment Texture */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.12] bg-cover bg-center mix-blend-screen z-0"
+        style={{ backgroundImage: "url('/images/glass_ambient_backdrop.jpg')" }}
+      />
 
-      {/* 2. Top Companies Hiring Strip */}
-      <TopCompanies />
+      <div className="relative z-10">
+        {/* 1. Signature Hero Section with Asset A */}
+        <HeroSection />
 
-      {/* 3. Popular Job Categories (Bento Grid) */}
-      <PopularCategories />
+        {/* 2. Top Companies Hiring Strip */}
+        <TopCompanies />
 
-      {/* 4. Featured Jobs Section */}
-      <section className="py-20 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-3">
-                Live Openings
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Featured Career Opportunities
-              </h2>
-              <p className="text-slate-400 text-base mt-2 max-w-xl">
-                Explore recently posted roles with competitive compensation, verified company credentials, and fast response times.
-              </p>
-            </div>
+        {/* 3. Popular Job Categories (Bento Grid) */}
+        <PopularCategories />
 
-            <Button
-              variant="outline"
-              size="md"
-              icon={<FaArrowRight className="text-xs" />}
-              iconPosition="right"
-              onClick={() => navigate('/jobs')}
-              className="mt-4 md:mt-0"
-            >
-              View All Openings
-            </Button>
-          </div>
-
-          {/* Job List Component */}
-          <JobList
-            maxJobs={6}
-            showSearch={false}
-            onQuickApply={(job) => setSelectedJobForModal(job)}
-          />
-        </div>
-      </section>
-
-      {/* 5. How ZenSolve Works (Workflow Section) */}
-      <section className="py-20 border-y border-slate-850 bg-slate-900/40 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20">
-              Streamlined Process
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mt-4">
-              How ZenSolve Accelerates Your Career
-            </h2>
-            <p className="text-slate-400 text-base mt-3">
-              We eliminate friction from the hiring process with transparent requirements and direct employer connectivity.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {workflowSteps.map((ws) => (
-              <div
-                key={ws.step}
-                className="glass-panel p-6 sm:p-7 rounded-2xl border border-slate-800 relative group hover:border-indigo-500/40 hover:bg-slate-900/90 transition duration-300"
-              >
-                <div className="text-3xl font-black text-slate-800 group-hover:text-indigo-500/20 transition-colors font-display mb-4">
-                  {ws.step}
+        {/* 4. Featured Jobs Section */}
+        <section className="py-20 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-surface-1 border border-emerald-500/30 text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-3">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Openings
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition">
-                  {ws.icon}
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition">
-                  {ws.title}
-                </h3>
-                <p className="text-sm text-slate-400 leading-relaxed">
-                  {ws.desc}
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-display">
+                  Featured Career Opportunities
+                </h2>
+                <p className="text-slate-300 text-base mt-2 max-w-xl">
+                  Explore recently posted roles with competitive compensation, verified company credentials, and fast response times.
                 </p>
               </div>
-            ))}
+
+              <Button
+                variant="outline"
+                size="md"
+                icon={<FaArrowRight className="text-xs" />}
+                iconPosition="right"
+                onClick={() => navigate('/jobs')}
+                className="mt-4 md:mt-0 glass-surface-1 rounded-2xl border-white/10 hover:border-indigo-500/40"
+              >
+                View All Openings
+              </Button>
+            </div>
+
+            {/* Job List Component */}
+            <JobList
+              maxJobs={6}
+              showSearch={false}
+              onQuickApply={(job) => setSelectedJobForModal(job)}
+            />
           </div>
+        </section>
 
-        </div>
-      </section>
-
-      {/* 6. Employer Recruitment CTA Section */}
-      <section className="py-20 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl overflow-hidden glass-panel border border-indigo-500/30 p-8 sm:p-14 bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 shadow-2xl">
-            {/* Ambient Lighting */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/15 blur-3xl pointer-events-none rounded-full" />
+        {/* 5. How ZenSolve Works (Workflow Section) */}
+        <section className="py-24 border-y border-white/10 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <div className="relative z-10 max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold mb-4 border border-indigo-500/30">
-                <FaBuilding className="text-xs" />
-                For Recruiters & Enterprise Hiring
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-500/30">
+                Streamlined Glass Process
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4 font-display">
-                Looking to Hire Top Verified Talent Fast?
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mt-4 font-display">
+                How ZenSolve Accelerates Your Career
               </h2>
-              <p className="text-slate-300 text-base leading-relaxed mb-8">
-                Join hundreds of registered companies using ZenSolve's multi-company HR recruitment dashboard. Post openings, filter applicants, and schedule candidate reviews in one centralized SaaS portal.
+              <p className="text-slate-300 text-base mt-3">
+                We eliminate friction from the hiring process with transparent requirements and direct employer connectivity.
               </p>
-              <div className="flex flex-wrap items-center gap-4">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  icon={<FaArrowRight className="text-xs" />}
-                  iconPosition="right"
-                  onClick={() => navigate('/dashboard/post-job')}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {workflowSteps.map((ws) => (
+                <div
+                  key={ws.step}
+                  className="glass-surface-2 glass-specular glass-card-interactive p-6 sm:p-7 rounded-3xl border border-white/10 relative group"
                 >
-                  Post a Job Opening
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => navigate('/register?role=employer')}
-                >
-                  Register Company Profile
-                </Button>
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="text-2xl font-black text-indigo-400/50 group-hover:text-indigo-400 transition-colors font-display">
+                      {ws.step}
+                    </span>
+                    <div className="w-12 h-12 rounded-2xl glass-surface-1 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-indigo-500/40 transition">
+                      {ws.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-200 transition">
+                    {ws.title}
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed">
+                    {ws.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </section>
+
+        {/* 6. Employer Recruitment Showcase with Asset C (Editorial Team Photography) */}
+        <section className="py-24 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative rounded-3xl overflow-hidden glass-surface-3 glass-specular border border-white/15 p-8 sm:p-12 shadow-2xl">
+              
+              {/* Ambient backlight */}
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/15 blur-3xl pointer-events-none rounded-full" />
+              
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+                
+                {/* Left Column: Employer Proposition */}
+                <div className="lg:col-span-7">
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-500/30 text-indigo-300 text-xs font-semibold mb-4">
+                    <FaBuilding className="text-xs" />
+                    For Recruiters & Enterprise Hiring Teams
+                  </span>
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-5 font-display leading-[1.15]">
+                    Scale Your High-Performance Teams with Verified Talent
+                  </h2>
+                  <p className="text-slate-300 text-base leading-relaxed mb-6">
+                    Join hundreds of registered enterprises using ZenSolve's multi-company HR recruitment dashboard. Post openings, filter pre-screened applicants, and conduct candidate reviews in one centralized glass SaaS portal.
+                  </p>
+
+                  <div className="space-y-3 mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
+                        <FaCheckCircle />
+                      </div>
+                      <span className="text-sm text-slate-200">100% Verified applicant credentials and portfolio links</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
+                        <FaCheckCircle />
+                      </div>
+                      <span className="text-sm text-slate-200">Integrated multi-stage applicant tracking system (ATS)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
+                        <FaCheckCircle />
+                      </div>
+                      <span className="text-sm text-slate-200">Custom company profile page showcasing your engineering culture</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      icon={<FaArrowRight className="text-xs" />}
+                      iconPosition="right"
+                      onClick={() => navigate('/dashboard/post-job')}
+                      className="rounded-2xl shadow-glow-sm"
+                    >
+                      Post a Job Opening
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => navigate('/register?role=employer')}
+                      className="rounded-2xl glass-surface-1 border-white/10 hover:border-indigo-500/40 text-slate-200"
+                    >
+                      Register Company Profile
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Right Column: Asset C (workplace_editorial_team.jpg) in Glass Frame */}
+                <div className="lg:col-span-5 relative">
+                  <div className="glass-surface-2 glass-specular p-3 rounded-3xl border border-white/20 shadow-2xl relative group">
+                    <div className="relative rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[3/2]">
+                      <img
+                        src="/images/workplace_editorial_team.jpg"
+                        alt="ZenSolve Modern Workplace Team"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                      
+                      {/* Floating Metric Badge */}
+                      <div className="absolute bottom-3 left-3 right-3 glass-surface-3 glass-specular p-3 rounded-xl border border-white/15 backdrop-blur-xl">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center text-xs">
+                              <FaStar />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-white">98% Recruiter Satisfaction</p>
+                              <p className="text-[10px] text-slate-300">Across 200+ Enterprise Partners</p>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                            Verified
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* 7. Testimonials & Candidate Feedback */}
-      <section className="py-20 border-t border-slate-850 bg-slate-950/60 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-400 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
-              Proven Placement Impact
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mt-4">
-              What Candidates & Recruiters Say
-            </h2>
-            <p className="text-slate-400 text-base mt-3">
-              Genuine feedback from professionals who accelerated their careers through ZenSolve.
-            </p>
+        {/* 7. Testimonials & Candidate Feedback */}
+        <section className="py-24 border-t border-white/10 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <span className="text-xs font-semibold uppercase tracking-wider text-amber-300 px-3.5 py-1 rounded-full glass-surface-1 border border-amber-500/30">
+                Proven Placement Impact
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mt-4 font-display">
+                What Candidates & Recruiters Say
+              </h2>
+              <p className="text-slate-300 text-base mt-3">
+                Genuine feedback from professionals who accelerated their careers through ZenSolve.
+              </p>
+            </div>
+
+            <TestimonialsList />
+
+            <div className="mt-12">
+              <TestimonialsForm />
+            </div>
           </div>
+        </section>
 
-          <TestimonialsList />
+        {/* Quick Apply Modal */}
+        {selectedJobForModal && (
+          <Modal
+            isOpen={Boolean(selectedJobForModal)}
+            onClose={() => setSelectedJobForModal(null)}
+            title={`Apply for ${selectedJobForModal.position}`}
+            subtitle={`At ${selectedJobForModal.companyName} • ${selectedJobForModal.location || 'India'}`}
+            maxWidth="max-w-2xl"
+          >
+            <ApplyJob
+              job={selectedJobForModal}
+              onSuccess={() => {
+                setSelectedJobForModal(null);
+                navigate('/thank-you', {
+                  state: {
+                    jobPosition: selectedJobForModal.position,
+                    companyName: selectedJobForModal.companyName,
+                  },
+                });
+              }}
+            />
+          </Modal>
+        )}
 
-          <div className="mt-12">
-            <TestimonialsForm />
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Apply Modal */}
-      {selectedJobForModal && (
-        <Modal
-          isOpen={Boolean(selectedJobForModal)}
-          onClose={() => setSelectedJobForModal(null)}
-          title={`Apply for ${selectedJobForModal.position}`}
-          subtitle={`At ${selectedJobForModal.companyName} • ${selectedJobForModal.location || 'India'}`}
-          maxWidth="max-w-2xl"
-        >
-          <ApplyJob
-            job={selectedJobForModal}
-            onSuccess={() => {
-              setSelectedJobForModal(null);
-              navigate('/thank-you', {
-                state: {
-                  jobPosition: selectedJobForModal.position,
-                  companyName: selectedJobForModal.companyName,
-                },
-              });
-            }}
-          />
-        </Modal>
-      )}
-
+      </div>
     </div>
   );
 };

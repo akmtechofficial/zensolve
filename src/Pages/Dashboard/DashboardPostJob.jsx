@@ -80,18 +80,18 @@ const DashboardPostJob = () => {
         
         {/* Form Column (Span 7) */}
         <div className="lg:col-span-7 space-y-6">
-          <form onSubmit={handleSubmit} className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
+          <form onSubmit={handleSubmit} className="glass-surface-2 glass-specular p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6 shadow-2xl">
             
             {/* Section 1: Role Basics */}
             <div>
-              <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 text-xs flex items-center justify-center font-bold">1</span>
+              <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2 font-display">
+                <span className="w-6 h-6 rounded-full glass-surface-1 border border-indigo-500/30 text-indigo-400 text-xs flex items-center justify-center font-bold">1</span>
                 <span>Role Fundamentals</span>
               </h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                  <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                     Job Position / Title <span className="text-rose-400">*</span>
                   </label>
                   <input
@@ -101,13 +101,13 @@ const DashboardPostJob = () => {
                     onChange={handleChange}
                     placeholder="e.g. Senior Frontend Architect"
                     required
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                       Company Name <span className="text-rose-400">*</span>
                     </label>
                     <input
@@ -117,12 +117,12 @@ const DashboardPostJob = () => {
                       onChange={handleChange}
                       placeholder="e.g. ZenSolve Infotech"
                       required
-                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                       Company Logo URL
                     </label>
                     <input
@@ -131,48 +131,48 @@ const DashboardPostJob = () => {
                       value={formData.companyLogo}
                       onChange={handleChange}
                       placeholder="https://example.com/logo.png"
-                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                       Category
                     </label>
                     <select
                       name="category"
                       value={formData.category}
                       onChange={handleChange}
-                      className="w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                      className="w-full px-3 py-2.5 rounded-2xl glass-input text-sm text-white cursor-pointer"
                     >
                       {categories.map((c) => (
-                        <option key={c} value={c}>{c}</option>
+                        <option key={c} value={c} className="bg-slate-900">{c}</option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                       Job Type
                     </label>
                     <select
                       name="jobType"
                       value={formData.jobType}
                       onChange={handleChange}
-                      className="w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                      className="w-full px-3 py-2.5 rounded-2xl glass-input text-sm text-white cursor-pointer"
                     >
-                      <option value="Full-time">Full-time</option>
-                      <option value="Part-time">Part-time</option>
-                      <option value="Remote">Remote</option>
-                      <option value="Contract">Contract</option>
-                      <option value="Internship">Internship</option>
+                      <option value="Full-time" className="bg-slate-900">Full-time</option>
+                      <option value="Part-time" className="bg-slate-900">Part-time</option>
+                      <option value="Remote" className="bg-slate-900">Remote</option>
+                      <option value="Contract" className="bg-slate-900">Contract</option>
+                      <option value="Internship" className="bg-slate-900">Internship</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                       Vacancies
                     </label>
                     <input
@@ -181,7 +181,7 @@ const DashboardPostJob = () => {
                       min="1"
                       value={formData.vacancies}
                       onChange={handleChange}
-                      className="w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2.5 rounded-2xl glass-input text-sm text-white"
                     />
                   </div>
                 </div>
@@ -189,16 +189,16 @@ const DashboardPostJob = () => {
             </div>
 
             {/* Section 2: Compensation & Location */}
-            <div className="pt-4 border-t border-slate-800">
-              <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 text-xs flex items-center justify-center font-bold">2</span>
+            <div className="pt-4 border-t border-white/10">
+              <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2 font-display">
+                <span className="w-6 h-6 rounded-full glass-surface-1 border border-indigo-500/30 text-indigo-400 text-xs flex items-center justify-center font-bold">2</span>
                 <span>Compensation & Location</span>
               </h3>
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                       Location / Region <span className="text-rose-400">*</span>
                     </label>
                     <input
@@ -208,31 +208,31 @@ const DashboardPostJob = () => {
                       onChange={handleChange}
                       placeholder="e.g. Bangalore, Remote, Mumbai"
                       required
-                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                       Experience Required
                     </label>
                     <select
                       name="experience"
                       value={formData.experience}
                       onChange={handleChange}
-                      className="w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2.5 rounded-2xl glass-input text-sm text-white cursor-pointer"
                     >
-                      <option value="0-1 Years">0-1 Years (Entry Level)</option>
-                      <option value="1-3 Years">1-3 Years (Mid-Junior)</option>
-                      <option value="3-5 Years">3-5 Years (Mid-Senior)</option>
-                      <option value="5+ Years">5+ Years (Lead / Director)</option>
+                      <option value="0-1 Years" className="bg-slate-900">0-1 Years (Entry Level)</option>
+                      <option value="1-3 Years" className="bg-slate-900">1-3 Years (Mid-Junior)</option>
+                      <option value="3-5 Years" className="bg-slate-900">3-5 Years (Mid-Senior)</option>
+                      <option value="5+ Years" className="bg-slate-900">5+ Years (Lead / Director)</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                       Minimum Salary (₹ Annual)
                     </label>
                     <input
@@ -241,12 +241,12 @@ const DashboardPostJob = () => {
                       value={formData.salaryFrom}
                       onChange={handleChange}
                       placeholder="e.g. 600000"
-                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    <label className="text-xs font-semibold text-slate-200 block mb-1.5">
                       Maximum Salary (₹ Annual)
                     </label>
                     <input
@@ -255,7 +255,7 @@ const DashboardPostJob = () => {
                       value={formData.salaryTo}
                       onChange={handleChange}
                       placeholder="e.g. 1200000"
-                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-2.5 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500"
                     />
                   </div>
                 </div>
@@ -263,9 +263,9 @@ const DashboardPostJob = () => {
             </div>
 
             {/* Section 3: Job Description */}
-            <div className="pt-4 border-t border-slate-800">
-              <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 text-xs flex items-center justify-center font-bold">3</span>
+            <div className="pt-4 border-t border-white/10">
+              <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2 font-display">
+                <span className="w-6 h-6 rounded-full glass-surface-1 border border-indigo-500/30 text-indigo-400 text-xs flex items-center justify-center font-bold">3</span>
                 <span>Role Responsibilities & Description</span>
               </h3>
 
@@ -276,7 +276,7 @@ const DashboardPostJob = () => {
                   onChange={handleChange}
                   rows="5"
                   placeholder="Describe key responsibilities, daily work, required technical stack, and perks..."
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed"
+                  className="w-full px-4 py-3 rounded-2xl glass-input text-sm text-white placeholder:text-slate-500 leading-relaxed"
                 />
               </div>
             </div>

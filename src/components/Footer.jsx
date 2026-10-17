@@ -35,18 +35,18 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="border-t border-slate-800/80 bg-slate-950 text-slate-400 pt-16 pb-12 relative overflow-hidden">
+    <footer className="border-t border-white/10 glass-surface-1 text-slate-400 pt-16 pb-12 relative overflow-hidden">
       {/* Background glow accent */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[200px] bg-indigo-600/5 blur-3xl pointer-events-none rounded-full" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[200px] bg-indigo-600/10 blur-3xl pointer-events-none rounded-full" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
           
           {/* Brand & Mission Column (Span 2) */}
           <div className="lg:col-span-2 space-y-4">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 p-[1px]">
-                <div className="w-full h-full bg-slate-950 rounded-[11px] flex items-center justify-center font-display font-black text-lg text-indigo-400">
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 p-[1px] shadow-glow-sm group-hover:shadow-glow-md transition-all">
+                <div className="w-full h-full bg-slate-950/90 rounded-[15px] flex items-center justify-center font-display font-black text-lg text-indigo-400">
                   Z
                 </div>
               </div>
@@ -55,7 +55,7 @@ const Footer = () => {
               </span>
             </Link>
 
-            <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
+            <p className="text-sm text-slate-300 leading-relaxed max-w-sm">
               ZenSolve Infotech Solution Private Limited empowers career pathways across India. We bridge verified employers with top-tier candidates through intelligent recruitment, training, and strategic corporate consultancy.
             </p>
 
@@ -65,7 +65,7 @@ const Footer = () => {
                   href={contactData.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500 hover:text-white flex items-center justify-center transition"
+                  className="w-9 h-9 rounded-xl glass-surface-1 border border-white/10 hover:border-indigo-500 hover:text-white flex items-center justify-center transition"
                   aria-label="LinkedIn"
                 >
                   <FaLinkedin size={15} />
@@ -76,7 +76,7 @@ const Footer = () => {
                   href={contactData.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500 hover:text-white flex items-center justify-center transition"
+                  className="w-9 h-9 rounded-xl glass-surface-1 border border-white/10 hover:border-indigo-500 hover:text-white flex items-center justify-center transition"
                   aria-label="Facebook"
                 >
                   <FaFacebook size={15} />
@@ -87,7 +87,7 @@ const Footer = () => {
                   href={contactData.twitter}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500 hover:text-white flex items-center justify-center transition"
+                  className="w-9 h-9 rounded-xl glass-surface-1 border border-white/10 hover:border-indigo-500 hover:text-white flex items-center justify-center transition"
                   aria-label="Twitter"
                 >
                   <FaTwitter size={15} />
