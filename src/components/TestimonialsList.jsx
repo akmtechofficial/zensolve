@@ -1,0 +1,127 @@
+import React, { useEffect, useState } from 'react';
+import { db } from '../firebaseConfig';
+import { collection, getDocs } from 'firebase/firestore';
+import { FaStar, FaQuoteLeft, FaCheckCircle, FaUser } from 'react-icons/fa';
+
+const TestimonialsList = () => {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchReviews = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'testimonials'));
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (isMounted) {
+          setTestimonials(list);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error fetching testimonials:', err);
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchReviews();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="glass-panel p-6 rounded-2xl animate-pulse space-y-3">
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="w-4 h-4 bg-slate-800 rounded-full" />
+              ))}
+            </div>
+            <div className="h-4 bg-slate-800 rounded w-full" />
+            <div className="h-4 bg-slate-800 rounded w-2/3" />
+            <div className="h-10 bg-slate-800 rounded-xl mt-4" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // If no testimonials in Firestore, show default verified candidate experiences
+  const displayList =
+    testimonials.length > 0
+      ? testimonials
+      : [
+          {
+            id: 'sample-1',
+            name: 'Priya Sharma',
+            role: 'Senior React Developer',
+            company: 'TechCorp Solutions',
+            review:
+              'ZenSolve transformed my job search. Within 5 days of updating my profile, I had 3 interviews with verified companies and accepted a fantastic offer.',
+            rating: 5,
+          },
+          {
+            id: 'sample-2',
+            name: 'Rahul Varma',
+            role: 'Cloud Architect',
+            company: 'Innovate Systems',
+            review:
+              'The transparent salary insights and direct employer connection are unmatched. No spam, no ghosting—just real recruitment results.',
+            rating: 5,
+          },
+          {
+            id: 'sample-3',
+            name: 'Ananya Deshmukh',
+            role: 'HR Specialist',
+            company: 'Global Logistics Corp',
+            review:
+              'As an HR recruiter, ZenSolve cut our hiring turnaround time in half. Candidate quality and resume verification are world-class.',
+            rating: 5,
+          },
+        ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {displayList.slice(0, 6).map((item) => (
+        <div
+          key={item.id}
+          className="glass-panel p-6 sm:p-7 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-indigo-500/30 transition duration-300 relative group"
+        >
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex text-amber-400 gap-1 text-sm">
+                {[...Array(item.rating || 5)].map((_, i) => (
+                  <FaStar key={i} />
+                ))}
+              </div>
+              <FaQuoteLeft className="text-slate-700 text-lg group-hover:text-indigo-400/40 transition" />
+            </div>
+
+            <p className="text-slate-300 text-sm leading-relaxed mb-6 italic">
+              "{item.review}"
+            </p>
+          </div>
+
+          <div className="pt-4 border-t border-slate-850 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+              {item.name ? item.name.charAt(0) : <FaUser size={12} />}
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold text-white">{item.name}</span>
+                <FaCheckCircle className="text-blue-400 text-xs" />
+              </div>
+              <span className="text-xs text-slate-400">
+                {item.role || 'Verified Candidate'}
+                {item.company ? ` • ${item.company}` : ''}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default TestimonialsList;
