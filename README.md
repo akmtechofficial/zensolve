@@ -1,70 +1,57 @@
-# Getting Started with Create React App
+# ZenSolve — Next-Generation Multi-Company HR Recruitment Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, high-performance recruitment portal and multi-company HR SaaS platform designed with elite UI/UX aesthetics inspired by [Aceternity UI](https://ui.aceternity.com/), Linear, and modern enterprise hiring software.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## ✨ Features & Capabilities
 
-### `npm start`
+### 🌐 Public Job Seekers Experience
+- **"Make Career With Us" Hero**: Aceternity Spotlight effect, ambient background tech beams, and an integrated multi-facet search bar (role, skills, category, and location).
+- **Public Job Discovery (`/jobs`)**: Filter by domain, employment type (Full-time, Part-time, Remote, Contract), location, experience level, and salary sorting.
+- **Brand Company Profiles (`/company/:companyName`)**: Dedicated brand pages showcasing verified credentials, company overview, team metrics, and active openings.
+- **Company Directory (`/companies`)**: Explore all verified hiring partner organizations across India.
+- **1-Click Quick Apply & Details**: Interactive drawer/modal with drag-and-drop resume upload, progress indicator, and validation.
+- **Candidate Bookmarks (`/saved-jobs`)**: Save positions directly to your candidate profile in Firestore.
+- **Specialized Industry Categories (`/categories/*`)**: Bento Grid navigation for IT & Software, Finance, Healthcare, Business, Construction, Logistics, Education, and Teaching.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 💼 HR SaaS Recruiter Console (`/dashboard`)
+- **Console Overview (`/dashboard`)**: Real-time hiring metrics (Active Openings, Total Applicants, Shortlisted, Pending Review), recent submissions table, and quick actions.
+- **Job Listings Management (`/dashboard/jobs`)**: Searchable data table with live status toggling (Active/Closed), modal editor, and delete actions.
+- **Job Posting Studio (`/dashboard/post-job`)**: Form with live candidate card preview that dynamically reflects your changes in real-time.
+- **Candidate Application Pipeline (`/dashboard/applicants`)**: Filter candidates by status (`Pending`, `Reviewed`, `Shortlisted`, `Rejected`, `Hired`), view/download resumes, and update stages directly in Firestore.
+- **Company Profile Editor (`/dashboard/company-profile`)**: Manage your company's public identity, branding, logo, and headquarters.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🛠️ Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Frontend**: React 18, React Router v6, Framer Motion
+- **Styling**: Tailwind CSS, Aceternity UI Design System, Custom Glassmorphism
+- **Backend & Cloud**: Firebase Authentication, Cloud Firestore, Firebase Storage
+- **Build & Dev Tooling**: Vite with lightning-fast HMR
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🚀 Getting Started
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 1. Installation
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2. Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### `npm run eject`
+### 3. Production Build
+```bash
+npm run build
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 📄 License
+All rights reserved © ZenSolve Infotech Solution Private Limited.
