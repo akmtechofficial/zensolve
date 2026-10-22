@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   FaBars,
   FaTimes,
+  FaUser,
   FaUserCircle,
   FaSignOutAlt,
   FaBookmark,
@@ -19,15 +20,32 @@ import { cn } from '../utils/cn';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const { user, userData, isEmployer, isCompany, isCandidate, isAdmin, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Close mobile menu on route change
+  // Close mobile menu and dropdown on route change
   useEffect(() => {
     setIsOpen(false);
     setDropdownOpen(false);
   }, [location.pathname]);
+
+  // Reliable click-outside listener for profile dropdown
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -49,9 +67,9 @@ const Navbar = () => {
   const savedCount = userData?.savedJobs?.length || 0;
 
   return (
-    <header className="sticky top-0 z-50 w-full px-4 sm:px-6 lg:px-8 pt-3 pb-2 transition-all pointer-events-none">
-      <div className="max-w-7xl mx-auto pointer-events-auto">
-        <div className="glass-nav glass-specular rounded-2xl sm:rounded-full px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between border border-white/80 shadow-lg shadow-slate-900/5">
+    <header className="sticky top-0 z-50 w-full px-4 sm:px-6 lg:px-8 pt-3 pb-2 transition-all">
+      <div className="max-w-7xl mx-auto">
+        <div className="glass-nav rounded-2xl sm:rounded-full px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between border border-white/80 shadow-lg shadow-slate-900/5 relative overflow-visible">
           
           {/* Logo & Brand Identity featuring zen.jpeg */}
           <Link to="/" className="flex items-center gap-3 group">
@@ -163,10 +181,12 @@ const Navbar = () => {
             </Link>
 
             {user ? (
-              <div className="relative">
+              <div ref={dropdownRef} className="relative">
                 <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 shadow-sm transition"
+                  type="button"
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 shadow-sm transition cursor-pointer select-none"
+                  aria-expanded={dropdownOpen}
                 >
                   <div className="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center justify-center font-bold text-xs uppercase">
                     {user.email ? user.email.charAt(0) : 'U'}
@@ -174,12 +194,17 @@ const Navbar = () => {
                   <span className="text-xs text-slate-800 max-w-[120px] truncate font-semibold">
                     {user.email}
                   </span>
-                  <FaChevronDown size={10} className="text-slate-500" />
+                  <FaChevronDown
+                    size={10}
+                    className={`text-slate-500 transition-transform duration-200 ${
+                      dropdownOpen ? 'rotate-180' : ''
+                    }`}
+                  />
                 </button>
 
                 {/* Dropdown Menu */}
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-60 glass-surface-3 border border-slate-200/90 rounded-2xl shadow-xl p-2 z-50">
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                     <div className="px-3 py-2 border-b border-slate-200/80 mb-1">
                       <p className="text-xs text-slate-500">Signed in as</p>
                       <p className="text-sm font-semibold text-slate-900 truncate">{user.email}</p>
@@ -258,8 +283,9 @@ const Navbar = () => {
 
                     <div className="border-t border-slate-200/80 mt-1 pt-1">
                       <button
+                        type="button"
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition text-left"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition text-left cursor-pointer"
                       >
                         <FaSignOutAlt />
                         <span>Sign Out</span>

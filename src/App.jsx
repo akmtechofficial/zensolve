@@ -26,6 +26,7 @@ import CandidateSignup from './Pages/Auth/CandidateSignup';
 import CompanySignup from './Pages/Auth/CompanySignup';
 import ForgotPassword from './Pages/Auth/ForgotPassword';
 import VerifyEmail from './Pages/Auth/VerifyEmail';
+import AuthCallback from './Pages/Auth/AuthCallback';
 
 // Candidate Panel
 import CandidateHome from './Pages/Candidate/CandidateHome';
@@ -74,11 +75,18 @@ const Layout = ({ children }) => {
     location.pathname.startsWith('/hr') ||
     location.pathname.startsWith('/admin');
 
+  const isAuthPage =
+    location.pathname === '/login' ||
+    location.pathname === '/signup' ||
+    location.pathname === '/register' ||
+    location.pathname.startsWith('/auth') ||
+    location.pathname === '/auth/callback';
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-indigo-600 selection:text-white">
-      {!isPanel && <Navbar />}
+      {!isPanel && !isAuthPage && <Navbar />}
       <div className="flex-1">{children}</div>
-      {!isPanel && <Footer />}
+      {!isPanel && !isAuthPage && <Footer />}
     </div>
   );
 };
@@ -118,6 +126,8 @@ const App = () => {
             <Route path="/signup/candidate" element={<CandidateSignup />} />
             <Route path="/signup/company" element={<CompanySignup />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
 
