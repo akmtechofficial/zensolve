@@ -36,7 +36,7 @@ const STATUS_OPTIONS = [
 
 const HRApplicantDetail = () => {
   const { applicationId } = useParams();
-  const { user, userData } = useAuth();
+  const { user, userData, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [application, setApplication] = useState(null);
@@ -71,12 +71,12 @@ const HRApplicantDetail = () => {
         if (!data) {
           setError('Application record not found.');
         } else {
-          // Verify company ownership: check companyId or companyName
+          // Verify company ownership: check companyId or companyName or trusted isAdmin
           const companyName = userData?.companyName || '';
           const isOwner =
             data.companyId === user?.uid ||
             (companyName && data.companyName?.toLowerCase() === companyName.toLowerCase()) ||
-            user?.email?.includes('admin'); // Super-admin bypass
+            isAdmin;
 
           if (!isOwner) {
             setError('Unauthorized: This candidate application belongs to another organization.');

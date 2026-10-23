@@ -46,28 +46,26 @@ const CandidateResume = () => {
     if (!file || !user?.uid) return;
 
     setUploading(true);
-    setProgress(30);
+    setProgress(20);
     setFeedback(null);
 
     try {
-      let downloadURL = '';
-      try {
-        const timestamp = Date.now();
-        const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const storageRef = ref(storage, `resumes/${user.uid}/${timestamp}_${cleanName}`);
-        await uploadBytes(storageRef, file);
-        setProgress(70);
-        downloadURL = await getDownloadURL(storageRef);
-      } catch (storageErr) {
-        console.warn('Storage bucket fallback:', storageErr);
-        downloadURL = `https://storage.googleapis.com/zensolve-resumes/${file.name}`;
-      }
+      const timestamp = Date.now();
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const storageRef = ref(storage, `resumes/${user.uid}/${timestamp}_${cleanName}`);
+      
+      setProgress(40);
+      await uploadBytes(storageRef, file);
+      
+      setProgress(75);
+      const downloadURL = await getDownloadURL(storageRef);
 
       setProgress(90);
       const userDocRef = doc(db, 'users', user.uid);
       await updateDoc(userDocRef, {
         resumeURL: downloadURL,
         resumeName: file.name,
+        resumeStoragePath: storageRef.fullPath,
         resumeUploadedAt: serverTimestamp(),
       });
 
@@ -77,7 +75,32 @@ const CandidateResume = () => {
       await refreshUser();
     } catch (err) {
       console.error('Resume upload error:', err);
-      setFeedback({ type: 'error', text: err.message || 'Failed to upload resume. Please try again.' });
+      setFeedback({ type: 'error', text: err.message || 'Failed to upload resume. Please check your connection and try again.' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteResume = async () => {
+    if (!user?.uid || !currentResumeUrl) return;
+    if (!window.confirm('Are you sure you want to remove your resume? Employers will not be able to review it until you upload a replacement.')) return;
+
+    try {
+      setUploading(true);
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, {
+        resumeURL: null,
+        resume: null,
+        resumeName: null,
+        resumeStoragePath: null,
+        resumeUploadedAt: null,
+      });
+
+      setFeedback({ type: 'success', text: 'Resume removed from your profile.' });
+      await refreshUser();
+    } catch (err) {
+      console.error('Error removing resume:', err);
+      setFeedback({ type: 'error', text: 'Failed to remove resume: ' + err.message });
     } finally {
       setUploading(false);
     }
@@ -137,6 +160,15 @@ const CandidateResume = () => {
                   <FaExternalLinkAlt size={11} />
                   <span>View / Download</span>
                 </a>
+                <button
+                  type="button"
+                  onClick={handleDeleteResume}
+                  disabled={uploading}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 rounded-xl transition border border-rose-200"
+                >
+                  <FaTrash size={11} />
+                  <span>Remove</span>
+                </button>
               </div>
             </div>
           </div>

@@ -13,9 +13,12 @@ import {
   FaTimesCircle,
 } from 'react-icons/fa';
 
-const statusOptions = ['All', 'Pending', 'Reviewed', 'Shortlisted', 'Rejected', 'Hired'];
+import { useAuth } from '../../components/useAuth';
+
+const statusOptions = ['All', 'Applied', 'Under Review', 'Shortlisted', 'Interview Scheduled', 'Selected', 'Rejected', 'Withdrawn'];
 
 const DashboardApplicants = () => {
+  const { user, isAdmin } = useAuth();
   const [applications, setApplications] = useState([]);
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
@@ -23,15 +26,17 @@ const DashboardApplicants = () => {
   const [updatingId, setUpdatingId] = useState(null);
 
   const fetchApps = async () => {
+    if (!user) return;
     setLoading(true);
-    const data = await getJobApplications();
+    // HR users only see applications for their company; superadmins see all
+    const data = await getJobApplications(isAdmin ? {} : { companyId: user.uid });
     setApplications(data);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchApps();
-  }, []);
+  }, [user, isAdmin]);
 
   const handleStatusChange = async (appId, newStatus) => {
     setUpdatingId(appId);

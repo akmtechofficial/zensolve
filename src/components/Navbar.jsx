@@ -81,11 +81,8 @@ const Navbar = () => {
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-display font-bold text-lg text-slate-900 tracking-tight flex items-center gap-1.5">
+              <span className="font-display font-bold text-lg text-slate-900 tracking-tight">
                 ZenSolve
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80">
-                  HR Portal
-                </span>
               </span>
               <span className="text-[11px] text-slate-500 font-medium tracking-wide">
                 Careers & Talent Platform

@@ -39,7 +39,10 @@ const INDUSTRIES = [
   'Consulting & Professional Services',
 ];
 
+import { useAuth } from '../../components/useAuth';
+
 const CompanySignup = () => {
+  const { refreshUser } = useAuth();
   const [formData, setFormData] = useState({
     companyName: '',
     hrName: '',
@@ -87,6 +90,9 @@ const CompanySignup = () => {
     setLoading(true);
 
     try {
+      // Store intent so onAuthStateChanged does not default to candidate before setDoc completes
+      window.localStorage.setItem('pendingAuthRole', 'company');
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         formData.email,
@@ -120,6 +126,10 @@ const CompanySignup = () => {
         status: 'pending', // pending | approved | rejected | suspended
         createdAt: serverTimestamp(),
       });
+
+      // Ensure AuthContext is freshly populated with the newly created company profile
+      await refreshUser();
+      window.localStorage.removeItem('pendingAuthRole');
 
       // Navigate to HR Dashboard (which will display the Pending Approval banner)
       navigate('/hr', { replace: true });

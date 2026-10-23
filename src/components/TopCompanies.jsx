@@ -64,11 +64,20 @@ const TopCompanies = () => {
         </div>
       </div>
 
-      {/* Marquee Banner */}
-      <div className="relative w-full overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
-        <div className="flex gap-6 animate-marquee whitespace-nowrap py-3">
-          {companies.length > 0 ? (
-            companies.concat(companies).map((comp, idx) => (
+      {/* Companies Content */}
+      {loading ? (
+        <div className="flex gap-4 overflow-hidden px-6 py-2">
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <div
+              key={n}
+              className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl glass-surface-2 border border-slate-200 animate-pulse w-56 h-16 flex-shrink-0"
+            />
+          ))}
+        </div>
+      ) : companies.length > 0 ? (
+        <div className="relative w-full overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+          <div className="flex gap-6 animate-marquee whitespace-nowrap py-3">
+            {companies.concat(companies).map((comp, idx) => (
               <Link
                 key={idx}
                 to={`/company/${encodeURIComponent(comp.name)}`}
@@ -102,26 +111,23 @@ const TopCompanies = () => {
                   </span>
                 </div>
               </Link>
-            ))
-          ) : (
-            // Fallback partner cards while loading or if empty
-            ['Tech Mahindra', 'Infosys', 'HCL Technologies', 'TCS', 'Wipro', 'Accenture', 'Cognizant'].concat(
-              ['Tech Mahindra', 'Infosys', 'HCL Technologies', 'TCS', 'Wipro', 'Accenture', 'Cognizant']
-            ).map((partner, idx) => (
-              <div
-                key={idx}
-                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl glass-surface-2 border border-slate-200 flex-shrink-0 shadow-xs"
-              >
-                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 font-bold flex items-center justify-center text-sm border border-indigo-100">
-                  {partner.charAt(0)}
-                </div>
-                <span className="text-sm font-semibold text-slate-700">{partner}</span>
-                <VerifiedBadge text="Verified" size="sm" />
-              </div>
-            ))
-          )}
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="max-w-xl mx-auto text-center px-4 py-4">
+          <p className="text-xs sm:text-sm text-slate-500 mb-3">
+            Verified employer partners and enterprise recruiting teams will appear here once registered.
+          </p>
+          <Link
+            to="/register?role=employer"
+            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition"
+          >
+            <span>Register Your Organization</span>
+            <FaArrowRight className="text-[10px]" />
+          </Link>
+        </div>
+      )}
     </section>
   );
 };

@@ -16,6 +16,8 @@ import {
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useAuth } from '../../components/useAuth';
+
 const AuthCallback = () => {
   const [status, setStatus] = useState('verifying'); // 'verifying' | 'needEmail' | 'success' | 'error'
   const [emailInput, setEmailInput] = useState('');
@@ -23,6 +25,7 @@ const AuthCallback = () => {
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState(null);
 
+  const { refreshUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const processingRef = useRef(false);
@@ -46,6 +49,8 @@ const AuthCallback = () => {
 
       if (res.success) {
         setStatus('success');
+        // Ensure application auth state is immediately synchronized
+        await refreshUser();
         const targetUrl = getPostAuthRedirectUrl(res.userData, res.user, returnUrl);
         setDestination(targetUrl);
         // Brief pleasant pause for visual confirmation before transition

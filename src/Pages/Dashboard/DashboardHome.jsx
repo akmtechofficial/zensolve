@@ -19,7 +19,7 @@ import {
 
 const DashboardHome = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,10 +27,12 @@ const DashboardHome = () => {
   useEffect(() => {
     let isMounted = true;
     const fetchDashboardData = async () => {
+      if (!user) return;
       setLoading(true);
+      const filter = isAdmin ? {} : { companyId: user.uid };
       const [jobsData, appsData] = await Promise.all([
-        getJobs(),
-        getJobApplications(),
+        getJobs(filter),
+        getJobApplications(filter),
       ]);
       if (isMounted) {
         setJobs(jobsData);
@@ -42,12 +44,12 @@ const DashboardHome = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [user, isAdmin]);
 
   const totalJobs = jobs.length;
   const totalApps = applications.length;
   const shortlistedCount = applications.filter((a) => a.status === 'Shortlisted').length;
-  const pendingCount = applications.filter((a) => !a.status || a.status === 'Pending').length;
+  const pendingCount = applications.filter((a) => !a.status || a.status === 'Applied' || a.status === 'Under Review' || a.status === 'Pending').length;
 
   return (
     <DashboardLayout

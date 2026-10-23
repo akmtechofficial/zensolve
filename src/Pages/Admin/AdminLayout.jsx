@@ -15,6 +15,7 @@ import {
   FaChartLine,
   FaExternalLinkAlt,
   FaCheckCircle,
+  FaBalanceScale,
 } from 'react-icons/fa';
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { path: '/admin/users', label: 'User Directory', icon: FaUsers },
   { path: '/admin/jobs', label: 'Job Moderation', icon: FaBriefcase },
   { path: '/admin/applications', label: 'All Applications', icon: FaFileAlt },
+  { path: '/admin/legal', label: 'Legal & Trust', icon: FaBalanceScale },
   { path: '/admin/reports', label: 'Flagged & Reports', icon: FaExclamationTriangle },
   { path: '/admin/settings', label: 'Platform Settings', icon: FaCog },
 ];

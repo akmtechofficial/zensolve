@@ -1,0 +1,151 @@
+[
+  {
+    "id": "7boAeAi0aikJcnT1ZvcI",
+    "data": {
+      "salaryMax": 4.5,
+      "description": "Visit Tower and Install devices and Updated software ",
+      "company": "VI",
+      "workMode": "Work from office",
+      "postedAt": {
+        "seconds": 1762441545,
+        "nanoseconds": 18000000
+      },
+      "type": "Full-time",
+      "tags": [
+        "VI",
+        "Tower",
+        "Telicom"
+      ],
+      "industry": "IT Services & Consulting",
+      "experienceMin": 1,
+      "companyType": "Foreign MNC",
+      "location": "Jharkhand Bihar and UP",
+      "roleCategory": "Software Development",
+      "title": "Software Engineer ",
+      "department": "Marketing & Communication",
+      "education": "Any Postgraduate",
+      "experienceMax": 5,
+      "salaryMin": 3
+    }
+  },
+  {
+    "id": "JvxFy3SXdI79eWXmvX9d",
+    "data": {
+      "category": "Finance",
+      "companyName": "Asirvad Microfinance",
+      "vacancies": "100",
+      "companyLogo": "https://firebasestorage.googleapis.com/v0/b/zensolve-info.appspot.com/o/companyLogos%2F16.jpg?alt=media&token=2311dd66-8efa-45fc-8922-33ad89460b66",
+      "salaryFrom": "18000",
+      "salaryTo": "22500",
+      "position": "Filed Executive ",
+      "location": "Jharkhand and Bihar"
+    }
+  },
+  {
+    "id": "Z9wpV4Um6SwK2TuDylUb",
+    "data": {
+      "companyName": "Dominos",
+      "category": "Business",
+      "companyLogo": "https://firebasestorage.googleapis.com/v0/b/zensolve-info.appspot.com/o/companyLogos%2F222.png?alt=media&token=daf867c8-0f4f-4653-bae7-3855b5904c9c",
+      "salaryTo": "22500",
+      "vacancies": "200",
+      "location": "Jharkhand ",
+      "position": "Deliver Boy",
+      "salaryFrom": "17000"
+    }
+  },
+  {
+    "id": "ZABUzd0KQGKh3LLJdcUH",
+    "data": {
+      "companyLogo": "https://firebasestorage.googleapis.com/v0/b/zensolve-info.appspot.com/o/companyLogos%2F13.jpg?alt=media&token=5fdc5035-9ca4-4c31-b11f-84f255909fe4",
+      "category": "Finance",
+      "salaryFrom": "13500",
+      "companyName": " Bharat Microfinance ",
+      "position": "Field Executive ",
+      "location": "Bihar and Jharkhand ",
+      "salaryTo": "16500",
+      "vacancies": "100"
+    }
+  },
+  {
+    "id": "bKVTzRm5HVhZSKWUItHL",
+    "data": {
+      "salaryMin": 0.15,
+      "department": "Engineering - Software & QA",
+      "experienceMax": 3,
+      "education": "Any Graduate",
+      "title": "Senior Frontend Developer",
+      "description": "We are hiring a website designer and developer for our work",
+      "postedAt": {
+        "seconds": 1752756330,
+        "nanoseconds": 513000000
+      },
+      "workMode": "Hybrid",
+      "roleCategory": "Software Development",
+      "location": "PAN India",
+      "company": "Akm Tech Multi-Division Research & Solutions",
+      "industry": "IT Services & Consulting",
+      "salaryMax": 0.3,
+      "companyType": "Startup",
+      "experienceMin": 0,
+      "type": "Part-time",
+      "tags": [
+        "React",
+        "Tailwind",
+        "Next.Js Firebase"
+      ]
+    }
+  },
+  {
+    "id": "eHlrbkO6zUoRZz4btLwp",
+    "data": {
+      "companyName": "Muthoot Finance",
+      "category": "Finance",
+      "companyLogo": "https://firebasestorage.googleapis.com/v0/b/zensolve-info.appspot.com/o/companyLogos%2FMuthoot_Finance_Logo.svg.png?alt=media&token=2eac3c8f-394f-45ed-bcaa-1ce8a28639b6",
+      "salaryTo": "21500",
+      "vacancies": "100",
+      "salaryFrom": "15500",
+      "location": "Pan India",
+      "position": "Filed Executive "
+    }
+  },
+  {
+    "id": "hiYb0ZWgRA8hEQbOp6KX",
+    "data": {
+      "position": "Office Executive ",
+      "location": "Pan India",
+      "salaryTo": "15000",
+      "salaryFrom": "12000",
+      "companyLogo": "https://firebasestorage.googleapis.com/v0/b/zensolve-info.appspot.com/o/companyLogos%2Fsafe.jpg?alt=media&token=979acf62-c9c0-49e6-a23c-2e4a158b4f4d",
+      "category": "Logistics",
+      "vacancies": "300",
+      "companyName": "Safe Express "
+    }
+  },
+  {
+    "id": "pBYJMTAQwFoYEGgx6308",
+    "data": {
+      "position": "Team Leader",
+      "location": "Bihar and Jharkhand ",
+      "salaryFrom": "18000",
+      "salaryTo": "20000",
+      "vacancies": "2",
+      "companyName": "Zensolve Infotech Solution",
+      "category": "Business",
+      "companyLogo": "https://firebasestorage.googleapis.com/v0/b/zensolve-info.appspot.com/o/companyLogos%2FLogo%20Zensolve.jpg?alt=media&token=94e6e568-6707-45c5-ad2b-354d2a2bade5"
+    }
+  },
+  {
+    "id": "tG4Q7Jf9HOYlo2N4Cdf9",
+    "data": {
+      "vacancies": "100",
+      "category": "Business",
+      "salaryFrom": "25000",
+      "location": "Pan India",
+      "position": "BDM",
+      "companyName": "WhatsApp Meta ",
+      "salaryTo": "35000",
+      "companyLogo": "https://firebasestorage.googleapis.com/v0/b/zensolve-info.appspot.com/o/companyLogos%2Fimages.jpg?alt=media&token=f506fd3d-f1a0-47e2-a931-a7853605a532"
+    }
+  }
+]

@@ -53,11 +53,16 @@ export const sendPasswordlessEmailLink = async (rawEmail, role = 'candidate', re
   }
   const email = validation.email;
 
+  // Sanitize role intent: strictly allow 'company' or 'candidate', never client-asserted 'admin'
+  const sanitizedRole = role === 'company' || role === 'employer' ? 'company' : 'candidate';
+
   // Build the approval action code settings
-  // The redirect URL points to /auth/callback with any returnUrl preserved safely
+  // The redirect URL points to /auth/callback with role intent and returnUrl preserved safely
   const origin = window.location.origin;
   const callbackUrl = new URL(`${origin}/auth/callback`);
-  if (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('/login') && !returnUrl.startsWith('/signup')) {
+  callbackUrl.searchParams.set('role', sanitizedRole);
+
+  if (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('/login') && !returnUrl.startsWith('/signup') && !returnUrl.startsWith('/register')) {
     callbackUrl.searchParams.set('returnUrl', returnUrl);
   }
 
@@ -71,7 +76,7 @@ export const sendPasswordlessEmailLink = async (rawEmail, role = 'candidate', re
 
     // Save transient state in localStorage for callback resolution
     window.localStorage.setItem('emailForSignIn', email);
-    window.localStorage.setItem('pendingAuthRole', role || 'candidate');
+    window.localStorage.setItem('pendingAuthRole', sanitizedRole);
     window.localStorage.setItem('magicLinkSentTimestamp', Date.now().toString());
 
     return { success: true, email };
@@ -94,9 +99,12 @@ export const sendPasswordlessEmailLink = async (rawEmail, role = 'candidate', re
 };
 
 /**
- * Resolves or initializes user profile in Firestore
+ * Resolves or initializes user profile in Firestore.
+ * - Idempotent: Never overwrites an existing user's role or organization profile.
+ * - Validates role intent: Only sets 'company' or 'candidate' (or admin for verified admin emails).
+ * - Flags errors explicitly instead of silently assigning an arbitrary fallback.
  */
-export const resolveUserProfile = async (user, defaultRole = 'candidate') => {
+export const resolveUserProfile = async (user, requestedRole = null) => {
   if (!user?.uid) return null;
 
   try {
@@ -109,25 +117,30 @@ export const resolveUserProfile = async (user, defaultRole = 'candidate') => {
       if (isSuperAdminEmail(user.email)) {
         return { ...existingData, role: 'admin' };
       }
+      // Return existing profile with its established role intact (no overwrite)
       return existingData;
     }
 
-    // New User Profile Setup
+    // New User Profile Setup: Determine role from authorized intent
     const isAdmin = isSuperAdminEmail(user.email);
-    const role = isAdmin ? 'admin' : (defaultRole === 'company' ? 'company' : 'candidate');
+    const validRole = isAdmin
+      ? 'admin'
+      : requestedRole === 'company' || requestedRole === 'employer'
+      ? 'company'
+      : 'candidate';
 
     const newProfile = {
       uid: user.uid,
       email: user.email,
       displayName: user.displayName || user.email.split('@')[0],
       photoURL: user.photoURL || '',
-      role,
+      role: validRole,
       savedJobs: [],
       createdAt: serverTimestamp(),
       lastLoginAt: serverTimestamp(),
     };
 
-    if (role === 'company') {
+    if (validRole === 'company') {
       newProfile.companyName = user.displayName || 'My Organization';
       newProfile.approved = false; // Requires admin verification
       newProfile.status = 'pending';
@@ -138,10 +151,13 @@ export const resolveUserProfile = async (user, defaultRole = 'candidate') => {
   } catch (err) {
     console.error('Error in resolveUserProfile:', err);
     const isAdmin = isSuperAdminEmail(user.email);
+    // Explicit error flag: do NOT assume a role silently on failure
     return {
       uid: user.uid,
       email: user.email,
-      role: isAdmin ? 'admin' : defaultRole,
+      role: isAdmin ? 'admin' : (requestedRole === 'company' ? 'company' : null),
+      profileError: true,
+      errorMessage: err.message,
     };
   }
 };
@@ -171,13 +187,18 @@ export const completeEmailLinkSignIn = async (providedEmail = null) => {
     const result = await signInWithEmailLink(auth, email, currentUrl);
     const user = result.user;
 
+    // Check URL search parameters first for persisted role intent (survives cross-browser/cross-device)
+    const urlObj = new URL(currentUrl);
+    const urlRole = urlObj.searchParams.get('role');
+    const localRole = window.localStorage.getItem('pendingAuthRole');
+    const resolvedRole = urlRole === 'company' || localRole === 'company' ? 'company' : 'candidate';
+
     // Clean up temporary storage
     window.localStorage.removeItem('emailForSignIn');
-    const storedRole = window.localStorage.getItem('pendingAuthRole') || 'candidate';
     window.localStorage.removeItem('pendingAuthRole');
 
-    // Fetch or create profile
-    const userData = await resolveUserProfile(user, storedRole);
+    // Fetch or create profile using verified intent
+    const userData = await resolveUserProfile(user, resolvedRole);
 
     return {
       success: true,
@@ -208,11 +229,12 @@ export const completeEmailLinkSignIn = async (providedEmail = null) => {
 export const signInWithGoogleProvider = async (selectedRole = 'candidate') => {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+  const sanitizedRole = selectedRole === 'company' || selectedRole === 'employer' ? 'company' : 'candidate';
 
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-    const userData = await resolveUserProfile(user, selectedRole);
+    const userData = await resolveUserProfile(user, sanitizedRole);
 
     return {
       success: true,
@@ -225,7 +247,7 @@ export const signInWithGoogleProvider = async (selectedRole = 'candidate') => {
 
     // If popup was blocked by browser, gracefully trigger redirect
     if (error.code === 'auth/popup-blocked') {
-      window.localStorage.setItem('pendingAuthRole', selectedRole || 'candidate');
+      window.localStorage.setItem('pendingAuthRole', sanitizedRole);
       await signInWithRedirect(auth, provider);
       return { redirecting: true };
     }

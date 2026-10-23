@@ -55,6 +55,26 @@ import AdminJobs from './Pages/Admin/AdminJobs';
 import AdminApplications from './Pages/Admin/AdminApplications';
 import AdminReports from './Pages/Admin/AdminReports';
 import AdminSettings from './Pages/Admin/AdminSettings';
+import AdminLegalCenter from './Pages/Admin/AdminLegalCenter';
+
+// Legal & Compliance Pages
+import LegalHub from './Pages/Legal/LegalHub';
+import Terms from './Pages/Legal/Terms';
+import Privacy from './Pages/Legal/Privacy';
+import Cookies from './Pages/Legal/Cookies';
+import Security from './Pages/Legal/Security';
+import AcceptableUse from './Pages/Legal/AcceptableUse';
+import CandidateTerms from './Pages/Legal/CandidateTerms';
+import EmployerTerms from './Pages/Legal/EmployerTerms';
+import DataRetention from './Pages/Legal/DataRetention';
+import DataDeletion from './Pages/Legal/DataDeletion';
+import ConsentPreferences from './Pages/Legal/ConsentPreferences';
+import ReportFraud from './Pages/Legal/ReportFraud';
+import Disclaimer from './Pages/Legal/Disclaimer';
+import GrievanceRedressal from './Pages/Legal/GrievanceRedressal';
+import Accessibility from './Pages/Legal/Accessibility';
+import IntellectualProperty from './Pages/Legal/IntellectualProperty';
+import CookieConsentBanner from './components/CookieConsentBanner';
 
 // Category Discovery Pages
 import ITSoftware from './Pages/categories/ITSoftware';
@@ -87,6 +107,7 @@ const Layout = ({ children }) => {
       {!isPanel && !isAuthPage && <Navbar />}
       <div className="flex-1">{children}</div>
       {!isPanel && !isAuthPage && <Footer />}
+      <CookieConsentBanner />
     </div>
   );
 };
@@ -213,7 +234,7 @@ const App = () => {
             <Route
               path="/hr/jobs/new"
               element={
-                <ProtectedRoute requiredRole="company">
+                <ProtectedRoute requiredRole="company" requireApproved={true}>
                   <DashboardPostJob />
                 </ProtectedRoute>
               }
@@ -376,9 +397,37 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/admin/legal"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLegalCenter />
+                </ProtectedRoute>
+              }
+            />
 
             {/* =========================================================================
-               6. CATEGORY DISCOVERY ROUTES
+               6. LEGAL, PRIVACY & COMPLIANCE ROUTES
+               ========================================================================= */}
+            <Route path="/legal" element={<LegalHub />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/cookies" element={<Cookies />} />
+            <Route path="/security" element={<Security />} />
+            <Route path="/acceptable-use" element={<AcceptableUse />} />
+            <Route path="/candidate-terms" element={<CandidateTerms />} />
+            <Route path="/employer-terms" element={<EmployerTerms />} />
+            <Route path="/data-retention" element={<DataRetention />} />
+            <Route path="/data-deletion" element={<DataDeletion />} />
+            <Route path="/consent-preferences" element={<ConsentPreferences />} />
+            <Route path="/report-fraud" element={<ReportFraud />} />
+            <Route path="/disclaimer" element={<Disclaimer />} />
+            <Route path="/grievance-redressal" element={<GrievanceRedressal />} />
+            <Route path="/accessibility" element={<Accessibility />} />
+            <Route path="/intellectual-property" element={<IntellectualProperty />} />
+
+            {/* =========================================================================
+               7. CATEGORY DISCOVERY ROUTES
                ========================================================================= */}
             <Route path="/categories/it-software" element={<ITSoftware />} />
             <Route path="/categories/construction" element={<Construction />} />

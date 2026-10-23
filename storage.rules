@@ -18,10 +18,19 @@ service firebase.storage {
     }
 
     // Candidate Resumes: Strictly Private
-    // Accessible only to the candidate, authorized recruiters, or super-admin. Never exposed publicly.
+    // Accessible only to the candidate owner and trusted super-admins.
+    // Arbitrary authenticated users CANNOT read another candidate's CV.
     match /resumes/{userId}/{fileName} {
-      allow read: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin() || request.auth.token.firebase.sign_in_provider != null);
-      allow write: if isAuthenticated() && request.auth.uid == userId && request.resource.size < 10 * 1024 * 1024;
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
+      allow write: if isAuthenticated() &&
+        request.auth.uid == userId &&
+        request.resource.size < 10 * 1024 * 1024 &&
+        request.resource.contentType in [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/octet-stream'
+        ];
       allow delete: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
     }
 
@@ -29,12 +38,14 @@ service firebase.storage {
     match /company_logos/{companyId}/{fileName} {
       allow read: if true;
       allow write: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin()) && request.resource.size < 5 * 1024 * 1024;
+      allow delete: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin());
     }
 
     // General user profile avatars
     match /avatars/{userId}/{fileName} {
       allow read: if true;
       allow write: if isAuthenticated() && request.auth.uid == userId && request.resource.size < 3 * 1024 * 1024;
+      allow delete: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
     }
   }
 }

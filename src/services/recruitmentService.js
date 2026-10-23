@@ -209,16 +209,30 @@ export const saveCandidateProfile = async (userId, profileData) => {
  */
 export const checkExistingApplication = async (jobId, userId, applicantEmail) => {
   try {
+    if (!jobId) return null;
     const appsRef = collection(db, "jobApplications");
-    const snap = await getDocs(appsRef);
-    const existing = snap.docs.find((d) => {
-      const data = d.data();
-      const matchJob = data.jobId === jobId;
-      const matchUser = userId && data.userId === userId;
-      const matchEmail = applicantEmail && data.applicantEmail?.toLowerCase() === applicantEmail.toLowerCase();
-      return matchJob && (matchUser || matchEmail);
-    });
-    return existing ? { id: existing.id, ...existing.data() } : null;
+    
+    // Priority 1: Check by userId if provided
+    if (userId) {
+      const qUser = query(appsRef, where("jobId", "==", jobId), where("userId", "==", userId));
+      const snapUser = await getDocs(qUser);
+      if (!snapUser.empty) {
+        const d = snapUser.docs[0];
+        return { id: d.id, ...d.data() };
+      }
+    }
+
+    // Priority 2: Check by applicantEmail if provided
+    if (applicantEmail) {
+      const qEmail = query(appsRef, where("jobId", "==", jobId), where("applicantEmail", "==", applicantEmail));
+      const snapEmail = await getDocs(qEmail);
+      if (!snapEmail.empty) {
+        const d = snapEmail.docs[0];
+        return { id: d.id, ...d.data() };
+      }
+    }
+
+    return null;
   } catch (error) {
     console.error("Error checking existing application:", error);
     return null;
@@ -281,10 +295,17 @@ export const submitJobApplication = async (applicationData) => {
 export const getCandidateApplications = async (userId, applicantEmail) => {
   try {
     const appsRef = collection(db, "jobApplications");
-    const snapshot = await getDocs(appsRef);
-    let apps = snapshot.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((a) => (userId && a.userId === userId) || (applicantEmail && a.applicantEmail?.toLowerCase() === applicantEmail.toLowerCase()));
+    let apps = [];
+
+    if (userId) {
+      const q = query(appsRef, where("userId", "==", userId));
+      const snapshot = await getDocs(q);
+      apps = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } else if (applicantEmail) {
+      const q = query(appsRef, where("applicantEmail", "==", applicantEmail));
+      const snapshot = await getDocs(q);
+      apps = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    }
 
     // Sort descending
     apps.sort((a, b) => {
@@ -331,6 +352,10 @@ export const withdrawApplication = async (applicationId, userId, reason = "Withd
       throw new Error("Unauthorized to withdraw this application");
     }
 
+    if (appData.status === "Selected" || appData.status === "Rejected" || appData.status === "Withdrawn") {
+      throw new Error(`Cannot withdraw an application that is already ${appData.status}`);
+    }
+
     const currentTimeline = appData.statusTimeline || [];
     currentTimeline.push({
       status: "Withdrawn",
@@ -357,23 +382,32 @@ export const withdrawApplication = async (applicationId, userId, reason = "Withd
    ========================================================================= */
 
 /**
- * Get applications for HR Company
+ * Get applications for HR Company (scoped strictly by companyId or jobId)
  */
 export const getJobApplications = async ({ jobId, companyName, companyId } = {}) => {
   try {
     const appsRef = collection(db, "jobApplications");
-    const snapshot = await getDocs(appsRef);
+    let appsQuery;
+
+    if (companyId) {
+      appsQuery = query(appsRef, where("companyId", "==", companyId));
+    } else if (jobId) {
+      appsQuery = query(appsRef, where("jobId", "==", jobId));
+    } else {
+      // Admin fallback or unfiltered if permissible
+      appsQuery = appsRef;
+    }
+
+    const snapshot = await getDocs(appsQuery);
     let apps = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
 
-    if (jobId) {
+    if (jobId && companyId) {
       apps = apps.filter((a) => a.jobId === jobId);
     }
-    if (companyId) {
-      apps = apps.filter((a) => a.companyId === companyId);
-    } else if (companyName) {
+    if (companyName && !companyId) {
       apps = apps.filter(
         (a) =>
           a.companyName &&

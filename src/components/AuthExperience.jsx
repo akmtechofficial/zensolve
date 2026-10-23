@@ -51,7 +51,7 @@ export const AuthExperience = ({ initialMode = 'login' }) => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, userData, loading: authLoading } = useAuth();
+  const { user, userData, loading: authLoading, refreshUser } = useAuth();
 
   // Handle returnUrl parameter
   const queryParams = new URLSearchParams(location.search);
@@ -71,6 +71,7 @@ export const AuthExperience = ({ initialMode = 'login' }) => {
       try {
         const res = await checkGoogleRedirectResult();
         if (res && res.success) {
+          await refreshUser();
           const dest = getPostAuthRedirectUrl(res.userData, res.user, returnUrl);
           navigate(dest, { replace: true });
         }
@@ -79,7 +80,7 @@ export const AuthExperience = ({ initialMode = 'login' }) => {
       }
     };
     handleRedirect();
-  }, [navigate, returnUrl]);
+  }, [navigate, returnUrl, refreshUser]);
 
   // Handle Resend Cooldown Countdown Timer
   useEffect(() => {
@@ -172,6 +173,7 @@ export const AuthExperience = ({ initialMode = 'login' }) => {
         return;
       }
       if (res.success) {
+        await refreshUser();
         const dest = getPostAuthRedirectUrl(res.userData, res.user, returnUrl);
         navigate(dest, { replace: true });
       } else {
@@ -297,19 +299,19 @@ export const AuthExperience = ({ initialMode = 'login' }) => {
               </div>
             </div>
 
-            {/* Recruitment Metrics Bar */}
+            {/* Platform Feature Indicators */}
             <div className="grid grid-cols-3 gap-4 pt-2 border-t border-white/5">
               <div>
-                <span className="font-display font-bold text-xl text-white block">14,800+</span>
-                <span className="text-[11px] text-slate-400 block">Active Candidates</span>
+                <span className="font-display font-bold text-sm text-white block">Direct Apply</span>
+                <span className="text-[11px] text-slate-400 block">Candidate Console</span>
               </div>
               <div>
-                <span className="font-display font-bold text-xl text-indigo-400 block">98.4%</span>
-                <span className="text-[11px] text-slate-400 block">Match Reliability</span>
+                <span className="font-display font-bold text-sm text-indigo-400 block">Verified</span>
+                <span className="text-[11px] text-slate-400 block">Employer Network</span>
               </div>
               <div>
-                <span className="font-display font-bold text-xl text-emerald-400 block">450+</span>
-                <span className="text-[11px] text-slate-400 block">Verified Companies</span>
+                <span className="font-display font-bold text-sm text-emerald-400 block">Direct</span>
+                <span className="text-[11px] text-slate-400 block">HR Review</span>
               </div>
             </div>
 

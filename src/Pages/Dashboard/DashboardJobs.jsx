@@ -15,8 +15,11 @@ import {
   FaMapMarkerAlt,
 } from 'react-icons/fa';
 
+import { useAuth } from '../../components/useAuth';
+
 const DashboardJobs = () => {
   const navigate = useNavigate();
+  const { user, userData, isAdmin } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -24,15 +27,17 @@ const DashboardJobs = () => {
   const [savingEdit, setSavingEdit] = useState(false);
 
   const fetchJobsList = async () => {
+    if (!user) return;
     setLoading(true);
-    const data = await getJobs();
+    // HR users only see jobs belonging to their company; superadmins see all
+    const data = await getJobs(isAdmin ? {} : { companyId: user.uid });
     setJobs(data);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchJobsList();
-  }, []);
+  }, [user, isAdmin]);
 
   const handleDelete = async (jobId) => {
     if (window.confirm('Are you sure you want to delete this job opening? This cannot be undone.')) {

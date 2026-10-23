@@ -15,6 +15,9 @@ import {
   FaSignOutAlt,
 } from 'react-icons/fa';
 
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+
 const HRSettings = () => {
   const { user, userData, isApprovedCompany, logout } = useAuth();
   const navigate = useNavigate();
@@ -22,12 +25,29 @@ const HRSettings = () => {
   const [passwordSent, setPasswordSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [savedNote, setSavedNote] = useState(false);
 
   const [settings, setSettings] = useState({
-    instantApplicantAlerts: true,
-    weeklyDigest: true,
-    autoAcknowledge: true,
+    instantApplicantAlerts: userData?.preferences?.instantApplicantAlerts ?? true,
+    weeklyDigest: userData?.preferences?.weeklyDigest ?? true,
+    autoAcknowledge: userData?.preferences?.autoAcknowledge ?? true,
   });
+
+  const handleToggle = async (key, val) => {
+    const next = { ...settings, [key]: val };
+    setSettings(next);
+    if (!user) return;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        preferences: next,
+      });
+      setSavedNote(true);
+      setTimeout(() => setSavedNote(false), 3000);
+    } catch (err) {
+      console.error('Error updating HR settings:', err);
+    }
+  };
 
   const handlePasswordReset = async () => {
     if (!user?.email) return;
@@ -132,6 +152,13 @@ const HRSettings = () => {
             <span>Recruitment Alerts & Notifications</span>
           </h3>
 
+          {savedNote && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-xl flex items-center gap-2">
+              <FaCheckCircle />
+              <span>Settings successfully updated</span>
+            </div>
+          )}
+
           <div className="space-y-3">
             <label className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 cursor-pointer">
               <div>
@@ -141,9 +168,7 @@ const HRSettings = () => {
               <input
                 type="checkbox"
                 checked={settings.instantApplicantAlerts}
-                onChange={(e) =>
-                  setSettings((p) => ({ ...p, instantApplicantAlerts: e.target.checked }))
-                }
+                onChange={(e) => handleToggle('instantApplicantAlerts', e.target.checked)}
                 className="w-4 h-4 text-indigo-600 rounded"
               />
             </label>
@@ -156,9 +181,7 @@ const HRSettings = () => {
               <input
                 type="checkbox"
                 checked={settings.autoAcknowledge}
-                onChange={(e) =>
-                  setSettings((p) => ({ ...p, autoAcknowledge: e.target.checked }))
-                }
+                onChange={(e) => handleToggle('autoAcknowledge', e.target.checked)}
                 className="w-4 h-4 text-indigo-600 rounded"
               />
             </label>

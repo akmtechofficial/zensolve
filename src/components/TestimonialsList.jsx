@@ -47,39 +47,21 @@ const TestimonialsList = () => {
     );
   }
 
-  // If no testimonials in Firestore, show default verified candidate experiences
-  const displayList =
-    testimonials.length > 0
-      ? testimonials
-      : [
-          {
-            id: 'sample-1',
-            name: 'Priya Sharma',
-            role: 'Senior React Developer',
-            company: 'TechCorp Solutions',
-            review:
-              'ZenSolve transformed my job search. Within 5 days of updating my profile, I had 3 interviews with verified companies and accepted a fantastic offer.',
-            rating: 5,
-          },
-          {
-            id: 'sample-2',
-            name: 'Rahul Varma',
-            role: 'Cloud Architect',
-            company: 'Innovate Systems',
-            review:
-              'The transparent salary insights and direct employer connection are unmatched. No spam, no ghosting—just real recruitment results.',
-            rating: 5,
-          },
-          {
-            id: 'sample-3',
-            name: 'Ananya Deshmukh',
-            role: 'HR Specialist',
-            company: 'Global Logistics Corp',
-            review:
-              'As an HR recruiter, ZenSolve cut our hiring turnaround time in half. Candidate quality and resume verification are world-class.',
-            rating: 5,
-          },
-        ];
+  if (testimonials.length === 0) {
+    return (
+      <div className="glass-panel bg-white/80 p-8 rounded-3xl border border-slate-200/90 text-center max-w-xl mx-auto shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-3 shadow-xs">
+          <FaQuoteLeft className="text-lg" />
+        </div>
+        <h4 className="text-base font-bold text-slate-900 font-display">No reviews published yet</h4>
+        <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+          Share your placement journey or recruiter feedback below to help other candidates navigate their careers.
+        </p>
+      </div>
+    );
+  }
+
+  const displayList = testimonials;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

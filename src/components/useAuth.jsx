@@ -3,7 +3,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 
-const ADMIN_EMAILS = [
+export const ADMIN_EMAILS = [
   'admin@zensolve.com',
   'admin@zensolve.in',
   'superadmin@zensolve.com',
@@ -20,6 +20,7 @@ const AuthContext = createContext({
   isEmployer: false,
   isAdmin: false,
   isApprovedCompany: true,
+  isSuspended: false,
   refreshUser: async () => {},
   logout: async () => {},
 });
@@ -30,27 +31,41 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = useCallback(async (uid, email) => {
+    if (!uid) return null;
+    const isSuperAdminEmail = Boolean(email && ADMIN_EMAILS.includes(email.trim().toLowerCase()));
+
     try {
       const userDoc = await getDoc(doc(db, 'users', uid));
       if (userDoc.exists()) {
         const data = userDoc.data();
-        // Check if user is a hardcoded/designated admin
-        if (ADMIN_EMAILS.includes(email?.toLowerCase())) {
+        if (isSuperAdminEmail) {
           return { ...data, role: 'admin' };
         }
         return data;
       } else {
-        const isSuperAdmin = ADMIN_EMAILS.includes(email?.toLowerCase());
+        // Document does not exist yet (e.g. freshly created auth before profile doc written)
+        // Check if there is an in-flight role registration intent stored
+        const pendingRole = window.localStorage.getItem('pendingAuthRole');
+        const defaultRole = pendingRole === 'company' || pendingRole === 'employer' ? 'company' : null;
+
         return {
-          role: isSuperAdmin ? 'admin' : 'candidate',
+          uid,
           email,
+          role: isSuperAdminEmail ? 'admin' : defaultRole,
+          isPendingProfile: true,
           createdAt: new Date(),
         };
       }
     } catch (err) {
       console.error("Error fetching user profile:", err);
-      const isSuperAdmin = ADMIN_EMAILS.includes(email?.toLowerCase());
-      return { role: isSuperAdmin ? 'admin' : 'candidate' };
+      // Safe fallback: never default an unverified error to candidate/admin
+      return {
+        uid,
+        email,
+        role: isSuperAdminEmail ? 'admin' : null,
+        profileError: true,
+        errorMessage: err.message,
+      };
     }
   }, []);
 
@@ -86,22 +101,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const isAdmin =
-    userData?.role === 'admin' ||
-    (user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()));
+  const isSuperAdminEmail = Boolean(user?.email && ADMIN_EMAILS.includes(user.email.trim().toLowerCase()));
+  const isAdmin = userData?.role === 'admin' || isSuperAdminEmail;
 
   const isCompany =
     !isAdmin && (userData?.role === 'company' || userData?.role === 'employer');
 
   const isEmployer = isCompany; // Alias for backward compatibility
+  const isCandidate = !isAdmin && !isCompany && (userData?.role === 'candidate' || !userData?.role);
+  const role = isAdmin ? 'admin' : isCompany ? 'company' : isCandidate ? 'candidate' : (userData?.role || 'candidate');
 
-  const isCandidate = !isAdmin && !isCompany;
+  const isSuspended = Boolean(
+    userData?.suspended === true || userData?.status === 'suspended'
+  );
 
-  const role = isAdmin ? 'admin' : isCompany ? 'company' : 'candidate';
+  const profileError = Boolean(userData?.profileError);
+  const isPendingProfile = Boolean(userData?.isPendingProfile);
 
-  // For companies: approved unless explicitly set to false or 'pending'
+  // For companies: approved only if explicitly approved or status === 'approved'
   const isApprovedCompany = isCompany
-    ? userData?.approved === true || userData?.status === 'approved'
+    ? (userData?.approved === true || userData?.status === 'approved') && !isSuspended
     : true;
 
   return (
@@ -116,6 +135,9 @@ export const AuthProvider = ({ children }) => {
         isEmployer,
         isAdmin,
         isApprovedCompany,
+        isSuspended,
+        profileError,
+        isPendingProfile,
         refreshUser,
         logout,
       }}

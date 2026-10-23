@@ -120,8 +120,13 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/contactus" className="text-slate-600 hover:text-indigo-600 transition">
-                  Help & Support
+                <Link to="/legal" className="text-slate-600 hover:text-indigo-600 transition">
+                  Legal & Trust Center
+                </Link>
+              </li>
+              <li>
+                <Link to="/report-fraud" className="text-rose-600 hover:text-rose-700 font-semibold transition">
+                  Report Job Fraud
                 </Link>
               </li>
             </ul>
@@ -149,6 +154,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/employer-terms" className="text-slate-600 hover:text-indigo-600 transition">
+                  Employer Terms
+                </Link>
+              </li>
+              <li>
                 <Link to="/register?role=employer" className="text-slate-600 hover:text-indigo-600 transition">
                   Register Company
                 </Link>
@@ -165,16 +175,16 @@ const Footer = () => {
               <div className="flex items-start gap-2.5">
                 <FaMapMarkerAlt className="text-indigo-600 text-xs mt-1 flex-shrink-0" />
                 <span className="leading-snug text-slate-600">
-                  {contactData?.address || 'Patna, Bihar, India'}
+                  {contactData?.address || 'Hsda - Mahagama 4 lane Zero mile Godda, Jharkhand, India'}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <FaEnvelope className="text-indigo-600 text-xs flex-shrink-0" />
                 <a
-                  href={`mailto:${contactData?.email || 'support@zensolve.com'}`}
+                  href={`mailto:${contactData?.email || 'carezensolve@gmail.com'}`}
                   className="text-slate-600 hover:text-indigo-600 transition truncate"
                 >
-                  {contactData?.email || 'support@zensolve.com'}
+                  {contactData?.email || 'carezensolve@gmail.com'}
                 </a>
               </div>
               <div className="flex items-center gap-2.5">
@@ -186,25 +196,46 @@ const Footer = () => {
                   {contactData?.phone || '+91 (Support Desk)'}
                 </a>
               </div>
+              <div className="pt-1">
+                <Link
+                  to="/grievance-redressal"
+                  className="text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1"
+                >
+                  <span>Grievance Redressal Mechanism →</span>
+                </Link>
+              </div>
             </div>
           </div>
 
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        {/* Bottom Bar with Real Legal Routes & Cookie Settings */}
+        <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p>
-            © {new Date().getFullYear()} ZenSolve Infotech Solution Private Limited. All Rights Reserved.
+            © {new Date().getFullYear()} Zensolve infotech solution Pvt. Ltd. All Rights Reserved. (Provisional Entity Details)
           </p>
-          <div className="flex items-center gap-6">
-            <Link to="/contactus" className="hover:text-slate-700 transition">
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center">
+            <Link to="/privacy" className="hover:text-slate-700 transition">
               Privacy Policy
             </Link>
-            <Link to="/contactus" className="hover:text-slate-700 transition">
+            <Link to="/terms" className="hover:text-slate-700 transition">
               Terms of Service
             </Link>
-            <Link to="/contactus" className="hover:text-slate-700 transition">
-              Security & Verification
+            <Link to="/security" className="hover:text-slate-700 transition">
+              Security
+            </Link>
+            <Link to="/cookies" className="hover:text-slate-700 transition">
+              Cookies
+            </Link>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('zensolve_open_cookie_modal'))}
+              className="hover:text-indigo-600 transition underline cursor-pointer"
+            >
+              Cookie Settings
+            </button>
+            <Link to="/data-deletion" className="hover:text-slate-700 transition">
+              Data Erasure
             </Link>
           </div>
         </div>

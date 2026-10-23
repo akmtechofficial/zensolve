@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getJobs } from '../services/recruitmentService';
+import { getJobs, getCompanies } from '../services/recruitmentService';
 import JobCard from '../components/JobCard';
 import { VerifiedBadge, Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -32,31 +32,45 @@ const CompanyProfile = () => {
     let isMounted = true;
     const fetchCompanyInfo = async () => {
       setLoading(true);
-      const allJobs = await getJobs();
-      const matched = allJobs.filter(
-        (j) =>
-          j.companyName &&
-          j.companyName.toLowerCase().trim() === decodedName.toLowerCase().trim()
-      );
+      try {
+        const [allJobs, allCompanies] = await Promise.all([
+          getJobs(),
+          getCompanies(),
+        ]);
+        const matched = allJobs.filter(
+          (j) =>
+            j.companyName &&
+            j.companyName.toLowerCase().trim() === decodedName.toLowerCase().trim()
+        );
+        const registered = allCompanies.find(
+          (c) =>
+            c.name &&
+            c.name.toLowerCase().trim() === decodedName.toLowerCase().trim()
+        );
 
-      if (isMounted) {
-        setCompanyJobs(matched);
+        if (isMounted) {
+          setCompanyJobs(matched);
 
-        const firstJob = matched[0] || {};
-        setCompanyData({
-          name: decodedName,
-          logo: firstJob.companyLogo || null,
-          location: firstJob.location || 'India',
-          industry: firstJob.category || 'Technology & Services',
-          verified: firstJob.verified !== false,
-          teamSize: '50 - 500 Employees',
-          founded: '2019',
-          website: 'https://zensolve.com',
-          about:
-            firstJob.description ||
-            `${decodedName} is a verified hiring partner on ZenSolve, committed to engineering excellence, transparent career growth, and workforce development.`,
-        });
-        setLoading(false);
+          const firstJob = matched[0] || {};
+          setCompanyData({
+            name: registered?.name || decodedName,
+            logo: registered?.logo || firstJob.companyLogo || null,
+            location: registered?.location || firstJob.location || 'India',
+            industry: registered?.industry || firstJob.category || 'Technology & Services',
+            verified: registered ? registered.verified : firstJob.verified !== false,
+            teamSize: registered?.teamSize || registered?.companyType || null,
+            founded: registered?.founded || null,
+            website: registered?.website || null,
+            about:
+              registered?.about ||
+              firstJob.description ||
+              `${decodedName} is an employer partner recruiting through ZenSolve.`,
+          });
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error fetching company details:', err);
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -133,25 +147,29 @@ const CompanyProfile = () => {
                     <FaMapMarkerAlt className="text-indigo-600" />
                     <span>{companyData?.location}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <FaUsers className="text-indigo-600" />
-                    <span>{companyData?.teamSize}</span>
-                  </div>
+                  {companyData?.teamSize && (
+                    <div className="flex items-center gap-1.5">
+                      <FaUsers className="text-indigo-600" />
+                      <span>{companyData.teamSize}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="md"
-                icon={<FaGlobe className="text-xs" />}
-                onClick={() => window.open(companyData?.website, '_blank')}
-                className="bg-white rounded-2xl border-slate-200 hover:border-indigo-400 text-slate-700 shadow-sm"
-              >
-                Website
-              </Button>
+              {companyData?.website && (
+                <Button
+                  variant="outline"
+                  size="md"
+                  icon={<FaGlobe className="text-xs" />}
+                  onClick={() => window.open(companyData.website, '_blank')}
+                  className="bg-white rounded-2xl border-slate-200 hover:border-indigo-400 text-slate-700 shadow-sm"
+                >
+                  Website
+                </Button>
+              )}
               <Button
                 variant="primary"
                 size="md"
@@ -184,10 +202,12 @@ const CompanyProfile = () => {
 
           <div className="glass-surface-2 glass-specular p-6 rounded-3xl border border-slate-200/90 space-y-3.5 text-xs text-slate-600 shadow-sm bg-white/90">
             <h4 className="text-sm font-bold text-slate-900 mb-2 font-display">Company Overview</h4>
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-500">Founded</span>
-              <span className="font-semibold text-slate-900">{companyData?.founded}</span>
-            </div>
+            {companyData?.founded && (
+              <div className="flex justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500">Founded</span>
+                <span className="font-semibold text-slate-900">{companyData.founded}</span>
+              </div>
+            )}
             <div className="flex justify-between py-1.5 border-b border-slate-100">
               <span className="text-slate-500">Headquarters</span>
               <span className="font-semibold text-slate-900">{companyData?.location}</span>

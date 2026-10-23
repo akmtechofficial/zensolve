@@ -1,5 +1,5 @@
 import { db } from './firebaseConfig'; // Import Firebase config
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 /**
  * Check if a job is saved by the current user
@@ -34,8 +34,28 @@ export const saveJobToUser = async (userId, jobId) => {
     await updateDoc(userRef, {
       savedJobs: arrayUnion(jobId), // Add job ID to saved jobs array
     });
+    return { success: true };
   } catch (error) {
     console.error('Error saving job to user: ', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Remove a saved job from the current user's saved jobs array
+ * @param {string} userId - The current user ID
+ * @param {string} jobId - The job ID to remove
+ */
+export const removeSavedJobFromUser = async (userId, jobId) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      savedJobs: arrayRemove(jobId), // Remove job ID from saved jobs array
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error removing saved job from user: ', error);
+    return { success: false, error: error.message };
   }
 };
 

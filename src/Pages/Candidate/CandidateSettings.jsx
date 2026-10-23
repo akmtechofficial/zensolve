@@ -15,6 +15,9 @@ import {
   FaEnvelope,
 } from 'react-icons/fa';
 
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+
 const CandidateSettings = () => {
   const { user, userData, logout } = useAuth();
   const navigate = useNavigate();
@@ -22,12 +25,29 @@ const CandidateSettings = () => {
   const [passwordSent, setPasswordSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [prefSaved, setPrefSaved] = useState(false);
 
   const [notifications, setNotifications] = useState({
-    emailAlerts: true,
-    interviewReminders: true,
-    weeklyMatches: false,
+    emailAlerts: userData?.preferences?.emailAlerts ?? true,
+    interviewReminders: userData?.preferences?.interviewReminders ?? true,
+    weeklyMatches: userData?.preferences?.weeklyMatches ?? false,
   });
+
+  const handleTogglePref = async (key, value) => {
+    const updated = { ...notifications, [key]: value };
+    setNotifications(updated);
+    if (!user) return;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        preferences: updated,
+      });
+      setPrefSaved(true);
+      setTimeout(() => setPrefSaved(false), 3000);
+    } catch (err) {
+      console.error('Failed to save preference:', err);
+    }
+  };
 
   const handlePasswordReset = async () => {
     if (!user?.email) return;
@@ -124,6 +144,13 @@ const CandidateSettings = () => {
             <span>Recruitment Notifications</span>
           </h3>
 
+          {prefSaved && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-xl flex items-center gap-2">
+              <FaCheckCircle />
+              <span>Preferences saved to your profile</span>
+            </div>
+          )}
+
           <div className="space-y-3">
             <label className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 cursor-pointer">
               <div>
@@ -133,9 +160,7 @@ const CandidateSettings = () => {
               <input
                 type="checkbox"
                 checked={notifications.emailAlerts}
-                onChange={(e) =>
-                  setNotifications((p) => ({ ...p, emailAlerts: e.target.checked }))
-                }
+                onChange={(e) => handleTogglePref('emailAlerts', e.target.checked)}
                 className="w-4 h-4 text-indigo-600 rounded"
               />
             </label>
@@ -148,9 +173,7 @@ const CandidateSettings = () => {
               <input
                 type="checkbox"
                 checked={notifications.interviewReminders}
-                onChange={(e) =>
-                  setNotifications((p) => ({ ...p, interviewReminders: e.target.checked }))
-                }
+                onChange={(e) => handleTogglePref('interviewReminders', e.target.checked)}
                 className="w-4 h-4 text-indigo-600 rounded"
               />
             </label>

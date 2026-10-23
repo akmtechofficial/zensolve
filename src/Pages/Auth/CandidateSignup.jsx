@@ -15,7 +15,10 @@ import {
 } from 'react-icons/fa';
 import { Button } from '../../components/ui/Button';
 
+import { useAuth } from '../../components/useAuth';
+
 const CandidateSignup = () => {
+  const { refreshUser } = useAuth();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -56,6 +59,8 @@ const CandidateSignup = () => {
     setLoading(true);
 
     try {
+      window.localStorage.setItem('pendingAuthRole', 'candidate');
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         formData.email,
@@ -82,6 +87,9 @@ const CandidateSignup = () => {
         experience: [],
         createdAt: serverTimestamp(),
       });
+
+      await refreshUser();
+      window.localStorage.removeItem('pendingAuthRole');
 
       // Redirect immediately to candidate dashboard
       navigate('/candidate', { replace: true });
