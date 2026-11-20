@@ -6,8 +6,14 @@ import {
   applyConsentGating,
 } from '../services/cookieConsentService';
 import { useAuth } from './useAuth';
-import { Button } from './ui/Button';
-import { FaCookieBite, FaShieldAlt, FaCheck, FaTimes, FaSlidersH } from 'react-icons/fa';
+import {
+  FaCookieBite,
+  FaShieldAlt,
+  FaCheck,
+  FaTimes,
+  FaSlidersH,
+  FaExternalLinkAlt,
+} from 'react-icons/fa';
 
 const CookieConsentBanner = () => {
   const { user } = useAuth();
@@ -28,8 +34,8 @@ const CookieConsentBanner = () => {
     applyConsentGating(current);
 
     if (!current.hasResponded) {
-      // Delay slightly for smooth page load
-      const timer = setTimeout(() => setShowBanner(true), 600);
+      // Delay slightly for smooth page load experience
+      const timer = setTimeout(() => setShowBanner(true), 700);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -89,113 +95,144 @@ const CookieConsentBanner = () => {
 
   return (
     <>
-      {/* 1. Bottom Persistent Banner (Only if unresponded) */}
+      {/* 1. Sleek Floating Consent Card (Bottom-Right) */}
       {showBanner && (
-        <div
+        <aside
           role="region"
-          aria-label="Privacy and Cookie Consent"
-          className="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-800 shadow-2xl transition-all animate-in fade-in slide-in-from-bottom duration-300"
+          aria-label="Privacy and Cookie Choices"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 max-w-md w-[calc(100%-2rem)] transition-all animate-in fade-in slide-in-from-bottom-5 duration-300 font-sans"
         >
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="relative rounded-2xl sm:rounded-3xl bg-slate-900/95 backdrop-blur-xl border border-white/10 p-5 sm:p-6 shadow-2xl shadow-black/60 text-white">
             
-            <div className="flex items-start gap-3.5 max-w-3xl">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 flex items-center justify-center flex-shrink-0 mt-0.5">
+            {/* Close / Dismiss button (Rejects optional by default) */}
+            <button
+              type="button"
+              onClick={handleRejectOptional}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg transition"
+              aria-label="Dismiss banner"
+              title="Reject optional & dismiss"
+            >
+              <FaTimes size={14} />
+            </button>
+
+            {/* Header with Icon */}
+            <div className="flex items-start gap-3.5 pr-6">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center flex-shrink-0 shadow-inner">
                 <FaCookieBite size={18} />
               </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-white font-display">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 font-mono">
+                  Privacy Choices
+                </span>
+                <h3 className="text-sm font-bold text-white font-display tracking-tight">
                   Your Privacy & Cookie Choices
                 </h3>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  We use strictly necessary cookies to keep ZenSolve secure and authenticated. We also request your consent for optional analytical and preference cookies to improve recruitment workflows. No optional scripts run without your explicit consent. Read our{' '}
-                  <Link to="/cookies" className="text-indigo-400 hover:text-indigo-300 underline font-medium">
-                    Cookie Policy
-                  </Link>{' '}
-                  and{' '}
-                  <Link to="/privacy" className="text-indigo-400 hover:text-indigo-300 underline font-medium">
-                    Privacy Notice
-                  </Link>.
-                </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
-              <Button
-                variant="outline"
-                size="sm"
+            {/* Content Body */}
+            <p className="text-xs text-slate-300 leading-relaxed mt-3">
+              We use strictly necessary cookies to keep ZenSolve secure and authenticated. We also request your consent for optional analytical and preference cookies to improve recruitment workflows. Read our{' '}
+              <Link
+                to="/cookies"
+                className="text-indigo-400 hover:text-indigo-300 underline font-medium inline-flex items-center gap-0.5"
+              >
+                <span>Cookie Policy</span>
+              </Link>{' '}
+              and{' '}
+              <Link
+                to="/privacy"
+                className="text-indigo-400 hover:text-indigo-300 underline font-medium inline-flex items-center gap-0.5"
+              >
+                <span>Privacy Notice</span>
+              </Link>.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
                 onClick={openCustomizeModal}
-                className="text-xs text-slate-300 border-slate-700 hover:border-slate-600 hover:bg-slate-800 rounded-xl px-3.5 py-2"
+                className="text-xs text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition py-1.5 px-2 rounded-lg hover:bg-white/5"
               >
-                Customize
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRejectOptional}
-                className="text-xs text-slate-300 border-slate-700 hover:border-slate-600 hover:bg-slate-800 rounded-xl px-3.5 py-2"
-              >
-                Reject Optional
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleAcceptAll}
-                className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl px-4 py-2 shadow-sm"
-              >
-                Accept All
-              </Button>
+                <FaSlidersH size={11} className="text-indigo-400" />
+                <span>Customize</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleRejectOptional}
+                  className="py-2 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 hover:text-white transition"
+                >
+                  Reject Optional
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAcceptAll}
+                  className="py-2 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-xs font-bold text-white shadow-md shadow-indigo-600/30 transition active:scale-[0.98]"
+                >
+                  Accept All
+                </button>
+              </div>
             </div>
 
           </div>
-        </div>
+        </aside>
       )}
 
-      {/* 2. Detailed Customization Modal */}
+      {/* 2. Detailed Customization Modal (Dark Themed to Match Platform) */}
       {showModal && (
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="cookie-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md font-sans"
         >
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-slate-900 border border-white/10 text-slate-100 rounded-3xl shadow-2xl max-w-xl w-full p-6 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-sm font-bold">
                   <FaSlidersH />
                 </div>
-                <h2 id="cookie-modal-title" className="text-lg font-bold text-slate-900 font-display">
-                  Cookie & Privacy Preferences
-                </h2>
+                <div>
+                  <h2 id="cookie-modal-title" className="text-base sm:text-lg font-bold text-white font-display">
+                    Cookie & Privacy Preferences
+                  </h2>
+                  <p className="text-[11px] text-slate-400">
+                    Control which data and cookies you allow ZenSolve to use.
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg"
+                className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/5 transition"
                 aria-label="Close modal"
               >
                 <FaTimes size={16} />
               </button>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Customize which categories of tracking and storage technologies you permit. Strictly necessary cookies cannot be disabled as they are required for security, authentication, and core job portal navigation.
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Strictly necessary cookies cannot be disabled as they are required for security, authentication, and core job portal navigation. Optional cookies run only with your consent.
             </p>
 
             {/* Categories List */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               
               {/* Category 1: Strictly Necessary */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-slate-800/60 border border-white/5 flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">1. Strictly Necessary Cookies</span>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                    <span className="text-xs font-bold text-white">1. Strictly Necessary Cookies</span>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                       Always Active
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-600 mt-1 leading-normal">
+                  <p className="text-[11px] text-slate-400 mt-1 leading-normal">
                     Essential for Firebase session authentication, role-based route protection, resume download security, and CSRF defense.
                   </p>
                 </div>
@@ -203,16 +240,16 @@ const CookieConsentBanner = () => {
                   type="checkbox"
                   checked
                   disabled
-                  className="w-4 h-4 accent-indigo-600 rounded cursor-not-allowed mt-1"
+                  className="w-4 h-4 accent-indigo-600 rounded cursor-not-allowed mt-1 opacity-70"
                   aria-label="Strictly necessary cookies always enabled"
                 />
               </div>
 
               {/* Category 2: Functional / Preferences */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200 flex items-start justify-between gap-4 hover:border-slate-300 transition">
+              <div className="p-4 rounded-2xl bg-slate-800/40 border border-white/5 flex items-start justify-between gap-4 hover:border-white/10 transition">
                 <div>
-                  <span className="text-xs font-bold text-slate-900 block">2. Functional & Preference Cookies</span>
-                  <p className="text-[11px] text-slate-600 mt-1 leading-normal">
+                  <span className="text-xs font-bold text-white block">2. Functional & Preference Cookies</span>
+                  <p className="text-[11px] text-slate-400 mt-1 leading-normal">
                     Remembers your applied job search filters, preferred candidate category, and language preferences across sessions.
                   </p>
                 </div>
@@ -226,10 +263,10 @@ const CookieConsentBanner = () => {
               </div>
 
               {/* Category 3: Analytics */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200 flex items-start justify-between gap-4 hover:border-slate-300 transition">
+              <div className="p-4 rounded-2xl bg-slate-800/40 border border-white/5 flex items-start justify-between gap-4 hover:border-white/10 transition">
                 <div>
-                  <span className="text-xs font-bold text-slate-900 block">3. Performance & Analytics Cookies</span>
-                  <p className="text-[11px] text-slate-600 mt-1 leading-normal">
+                  <span className="text-xs font-bold text-white block">3. Performance & Analytics Cookies</span>
+                  <p className="text-[11px] text-slate-400 mt-1 leading-normal">
                     Allows anonymous statistical measurement of page views, Core Web Vitals, and job seeker journey metrics to help us fix errors.
                   </p>
                 </div>
@@ -243,10 +280,10 @@ const CookieConsentBanner = () => {
               </div>
 
               {/* Category 4: Marketing / Advertising */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200 flex items-start justify-between gap-4 hover:border-slate-300 transition">
+              <div className="p-4 rounded-2xl bg-slate-800/40 border border-white/5 flex items-start justify-between gap-4 hover:border-white/10 transition">
                 <div>
-                  <span className="text-xs font-bold text-slate-900 block">4. Marketing & Targeted Advertisements</span>
-                  <p className="text-[11px] text-slate-600 mt-1 leading-normal">
+                  <span className="text-xs font-bold text-white block">4. Marketing & Targeted Advertisements</span>
+                  <p className="text-[11px] text-slate-400 mt-1 leading-normal">
                     Used to display relevant career advice or sponsored vacancies. Currently, ZenSolve runs zero third-party advertisement networks.
                   </p>
                 </div>
@@ -262,33 +299,30 @@ const CookieConsentBanner = () => {
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-              <Button
-                variant="outline"
-                size="sm"
+            <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
                 onClick={handleRejectOptional}
-                className="text-xs border-slate-300 text-slate-700"
+                className="py-2 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 hover:text-white transition"
               >
                 Reject All Optional
-              </Button>
+              </button>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={handleSaveCustom}
-                  className="text-xs border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
+                  className="py-2 px-3.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-xs font-semibold text-indigo-300 hover:text-white transition"
                 >
                   Save My Choices
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
+                </button>
+                <button
+                  type="button"
                   onClick={handleAcceptAll}
-                  className="text-xs font-bold"
+                  className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-md shadow-indigo-600/30 transition"
                 >
                   Accept All
-                </Button>
+                </button>
               </div>
             </div>
 

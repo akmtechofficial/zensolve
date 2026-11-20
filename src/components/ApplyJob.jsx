@@ -16,6 +16,7 @@ import {
   FaArrowLeft,
 } from 'react-icons/fa';
 import { Button } from './ui/Button';
+import { useAuth } from './useAuth';
 
 const ALLOWED_FILE_TYPES = [
   'application/pdf',
@@ -25,6 +26,7 @@ const ALLOWED_FILE_TYPES = [
 const MAX_FILE_SIZE_MB = 10;
 
 const ApplyJob = ({ job: propJob, onSuccess }) => {
+  const { userData } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const job = propJob || location.state?.job;
@@ -122,6 +124,7 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
         appliedAt: serverTimestamp(),
         userId: auth.currentUser?.uid || 'guest',
         status: 'Pending',
+        languages: userData?.languages || [],
       });
 
       setProgress(100);
