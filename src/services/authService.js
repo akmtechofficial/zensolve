@@ -11,11 +11,9 @@ import {
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig.js';
 
+export const SUPER_ADMIN_EMAIL = 'admin@zensolve.in';
 export const ADMIN_EMAILS = [
-  'admin@zensolve.com',
-  'admin@zensolve.in',
-  'superadmin@zensolve.com',
-  'akmtechofficial@gmail.com',
+  SUPER_ADMIN_EMAIL,
 ];
 
 /**
@@ -36,11 +34,11 @@ export const validateEmail = (email) => {
 };
 
 /**
- * Checks whether an email belongs to a designated super-admin
+ * Checks whether an email belongs to the single designated super-admin
  */
 export const isSuperAdminEmail = (email) => {
   if (!email) return false;
-  return ADMIN_EMAILS.includes(email.trim().toLowerCase());
+  return email.trim().toLowerCase() === SUPER_ADMIN_EMAIL;
 };
 
 /**
@@ -113,9 +111,13 @@ export const resolveUserProfile = async (user, requestedRole = null) => {
 
     if (userSnap.exists()) {
       const existingData = userSnap.data();
-      // Ensure super-admin status is maintained
+      // Ensure super-admin status is maintained only for designated super admin
       if (isSuperAdminEmail(user.email)) {
         return { ...existingData, role: 'admin' };
+      }
+      // If an unauthorized account has role 'admin' in Firestore, override to candidate
+      if (existingData.role === 'admin') {
+        return { ...existingData, role: 'candidate' };
       }
       // Return existing profile with its established role intact (no overwrite)
       return existingData;
@@ -335,7 +337,7 @@ export const getPostAuthRedirectUrl = (userData, user, explicitReturnUrl = null)
     return explicitReturnUrl;
   }
 
-  if (isSuperAdminEmail(user?.email) || userData?.role === 'admin') {
+  if (isSuperAdminEmail(user?.email)) {
     return '/admin';
   }
 

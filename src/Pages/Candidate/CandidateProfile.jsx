@@ -15,6 +15,7 @@ import {
   FaExclamationTriangle,
   FaPlus,
   FaTrash,
+  FaLanguage,
 } from 'react-icons/fa';
 
 const CandidateProfile = () => {
@@ -28,11 +29,16 @@ const CandidateProfile = () => {
     headline: '',
     bio: '',
     skills: [],
+    languages: [],
     education: [],
     experience: [],
   });
 
   const [skillInput, setSkillInput] = useState('');
+  const [languageInput, setLanguageInput] = useState({
+    name: '',
+    proficiency: 'Fluent / Professional',
+  });
   const [eduInput, setEduInput] = useState({ degree: '', school: '', year: '' });
   const [expInput, setExpInput] = useState({ role: '', company: '', duration: '', description: '' });
 
@@ -54,6 +60,7 @@ const CandidateProfile = () => {
             headline: profile.headline || '',
             bio: profile.bio || '',
             skills: profile.skills || [],
+            languages: Array.isArray(profile.languages) ? profile.languages : [],
             education: profile.education || [],
             experience: profile.experience || [],
           });
@@ -94,6 +101,49 @@ const CandidateProfile = () => {
     setFormData((prev) => ({
       ...prev,
       skills: prev.skills.filter((s) => s !== skillToRemove),
+    }));
+  };
+
+  // Add / Remove Language
+  const handleAddLanguage = (e) => {
+    if (e) e.preventDefault();
+    if (!languageInput.name.trim()) return;
+    const cleanName = languageInput.name.trim();
+    const alreadyExists = (formData.languages || []).some(
+      (l) => (typeof l === 'string' ? l : l.name).toLowerCase() === cleanName.toLowerCase()
+    );
+    if (!alreadyExists) {
+      setFormData((prev) => ({
+        ...prev,
+        languages: [
+          ...(prev.languages || []),
+          { name: cleanName, proficiency: languageInput.proficiency || 'Fluent / Professional' },
+        ],
+      }));
+    }
+    setLanguageInput({ name: '', proficiency: 'Fluent / Professional' });
+  };
+
+  const handleQuickAddLanguage = (langName) => {
+    const cleanName = langName.trim();
+    const alreadyExists = (formData.languages || []).some(
+      (l) => (typeof l === 'string' ? l : l.name).toLowerCase() === cleanName.toLowerCase()
+    );
+    if (!alreadyExists) {
+      setFormData((prev) => ({
+        ...prev,
+        languages: [
+          ...(prev.languages || []),
+          { name: cleanName, proficiency: 'Fluent / Professional' },
+        ],
+      }));
+    }
+  };
+
+  const handleRemoveLanguage = (indexToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      languages: (prev.languages || []).filter((_, i) => i !== indexToRemove),
     }));
   };
 
@@ -303,7 +353,124 @@ const CandidateProfile = () => {
           </div>
         </div>
 
-        {/* 3. Work Experience */}
+        {/* 3. Languages Known */}
+        <div className="glass-surface-2 p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-sm bg-white/95 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+              <FaLanguage className="text-indigo-600 text-sm" />
+              <span>Languages Known (भाषायें)</span>
+            </h3>
+            <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+              {formData.languages?.length || 0} Added
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Specify languages you can speak, read, or write along with your fluency level so recruiters know your communication capabilities.
+          </p>
+
+          {/* Quick-add popular language badges */}
+          <div>
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+              Quick Add Popular Languages:
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {['English', 'Hindi', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati', 'Punjabi', 'Kannada', 'Malayalam', 'Urdu', 'French', 'German', 'Spanish'].map((lang) => {
+                const isSelected = (formData.languages || []).some(
+                  (l) => (typeof l === 'string' ? l : l.name).toLowerCase() === lang.toLowerCase()
+                );
+                return (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => !isSelected && handleQuickAddLanguage(lang)}
+                    disabled={isSelected}
+                    className={`text-xs px-2.5 py-1 rounded-lg border transition flex items-center gap-1 font-medium ${
+                      isSelected
+                        ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-default opacity-60'
+                        : 'bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border-slate-200 hover:border-indigo-300 active:scale-95'
+                    }`}
+                  >
+                    <span>{lang}</span>
+                    <span className="text-[10px]">{isSelected ? '✓' : '+'}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Input & Proficiency Selection */}
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-1">
+            <div className="sm:col-span-6">
+              <input
+                type="text"
+                placeholder="Type another language (e.g. Japanese, Arabic, Russian)..."
+                value={languageInput.name}
+                onChange={(e) => setLanguageInput((p) => ({ ...p, name: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddLanguage(e)}
+                className="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-slate-900 font-medium"
+              />
+            </div>
+
+            <div className="sm:col-span-4">
+              <select
+                value={languageInput.proficiency}
+                onChange={(e) => setLanguageInput((p) => ({ ...p, proficiency: e.target.value }))}
+                className="w-full px-3.5 py-2.5 rounded-xl glass-input text-xs sm:text-sm text-slate-900 font-medium bg-white"
+              >
+                <option value="Native / Mother Tongue">Native / Mother Tongue (मातृभाषा)</option>
+                <option value="Fluent / Professional">Fluent / Professional (प्रवीण)</option>
+                <option value="Intermediate">Intermediate (मध्यम स्तर)</option>
+                <option value="Basic / Conversational">Basic / Conversational (बुनियादी)</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={handleAddLanguage}
+                className="w-full h-full justify-center text-xs font-semibold"
+              >
+                Add Language
+              </Button>
+            </div>
+          </div>
+
+          {/* Current Languages List */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            {formData.languages && formData.languages.map((langItem, idx) => {
+              const name = typeof langItem === 'string' ? langItem : langItem.name;
+              const prof = typeof langItem === 'string' ? 'Fluent' : langItem.proficiency || 'Fluent';
+              return (
+                <div
+                  key={idx}
+                  className="inline-flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 shadow-2xs group hover:border-indigo-300 transition"
+                >
+                  <span className="text-xs font-bold text-slate-900">{name}</span>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
+                    {prof}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveLanguage(idx)}
+                    className="text-slate-400 hover:text-rose-600 p-0.5 rounded-md transition text-sm leading-none"
+                    title="Remove language"
+                  >
+                    &times;
+                  </button>
+                </div>
+              );
+            })}
+            {(!formData.languages || formData.languages.length === 0) && (
+              <span className="text-xs text-slate-400 italic">
+                No languages added yet. Use the quick buttons above or type to add.
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* 4. Work Experience */}
         <div className="glass-surface-2 p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-sm bg-white/95 space-y-4">
           <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
             <FaBriefcase className="text-indigo-600 text-xs" />

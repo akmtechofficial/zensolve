@@ -71,11 +71,12 @@ const CandidateHome = () => {
   ).length;
 
   // Profile strength calculation
-  let profileScore = 20; // base account
-  if (userData?.phone) profileScore += 20;
+  let profileScore = 15; // base account
+  if (userData?.phone) profileScore += 15;
   if (userData?.headline) profileScore += 20;
   if (userData?.resume || userData?.resumeURL) profileScore += 20;
-  if (userData?.skills && userData.skills.length > 0) profileScore += 20;
+  if (userData?.skills && userData.skills.length > 0) profileScore += 15;
+  if (userData?.languages && userData.languages.length > 0) profileScore += 15;
 
   const getStatusBadge = (status) => {
     switch (status) {

@@ -47,6 +47,7 @@ import HRApplicantDetail from './Pages/HR/HRApplicantDetail';
 import HRSettings from './Pages/HR/HRSettings';
 
 // Super-Admin Panel
+import AdminLogin from './Pages/Admin/AdminLogin';
 import AdminHome from './Pages/Admin/AdminHome';
 import AdminCompanies from './Pages/Admin/AdminCompanies';
 import AdminCompanyDetail from './Pages/Admin/AdminCompanyDetail';
@@ -329,6 +330,9 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+
+            {/* Super Admin Login (Unprotected Gateway) */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
             {/* =========================================================================
                5. SUPER-ADMIN PROTECTED PANEL

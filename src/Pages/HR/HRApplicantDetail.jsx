@@ -294,6 +294,32 @@ const HRApplicantDetail = () => {
                 </div>
               </div>
 
+              {/* Languages Known */}
+              {application.languages && application.languages.length > 0 && (
+                <div className="pt-2">
+                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+                    Languages Known (भाषायें)
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {application.languages.map((l, idx) => {
+                      const name = typeof l === 'string' ? l : l.name;
+                      const prof = typeof l === 'string' ? '' : l.proficiency;
+                      return (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-semibold"
+                        >
+                          <span>{name}</span>
+                          {prof && (
+                            <span className="text-[10px] text-indigo-600 font-normal">({prof})</span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Secure Resume Download Button */}
               <div className="pt-2">
                 {application.resume ? (

@@ -612,7 +612,7 @@ export const getAdminCompanies = async () => {
 /**
  * Admin: Update Company Approval Status (approved, rejected, suspended)
  */
-export const updateCompanyApproval = async (companyId, status, decisionNote = "", adminEmail = "admin@zensolve.com") => {
+export const updateCompanyApproval = async (companyId, status, decisionNote = "", adminEmail = "admin@zensolve.in") => {
   try {
     const compRef = doc(db, "users", companyId);
     const isApproved = status === "approved";
@@ -763,7 +763,7 @@ export const getAllUsers = async () => {
 /**
  * Toggle suspend user account
  */
-export const toggleUserSuspension = async (userId, isSuspended, adminEmail = "admin@zensolve.com") => {
+export const toggleUserSuspension = async (userId, isSuspended, adminEmail = "admin@zensolve.in") => {
   try {
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, {
@@ -845,7 +845,7 @@ export const getCompanyDetails = async (companyId) => {
 /**
  * Super Admin: Moderate Job (Approve / Reject / Remove)
  */
-export const moderateJob = async (jobId, action, reason = "", adminEmail = "admin@zensolve.com") => {
+export const moderateJob = async (jobId, action, reason = "", adminEmail = "admin@zensolve.in") => {
   try {
     const jobRef = doc(db, "jobs", jobId);
     if (action === "delete") {
@@ -915,7 +915,7 @@ export const getPlatformSettings = async () => {
   }
 };
 
-export const updatePlatformSettings = async (settings, adminEmail = "admin@zensolve.com") => {
+export const updatePlatformSettings = async (settings, adminEmail = "admin@zensolve.in") => {
   try {
     const ref = doc(db, "platformSettings", "global");
     await setDoc(ref, { ...settings, updatedAt: serverTimestamp(), updatedBy: adminEmail }, { merge: true });
