@@ -7,14 +7,7 @@ service firebase.storage {
     }
 
     function isSuperAdmin() {
-      return isAuthenticated() && (
-        request.auth.token.email in [
-          'admin@zensolve.com',
-          'admin@zensolve.in',
-          'superadmin@zensolve.com',
-          'akmtechofficial@gmail.com'
-        ]
-      );
+      return isAuthenticated() && request.auth.token.email == 'admin@zensolve.in';
     }
 
     // Candidate Resumes: Strictly Private
