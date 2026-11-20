@@ -125,13 +125,27 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/jobs/:jobId" element={<JobDetails />} />
-            <Route path="/jobs/:jobId/apply" element={<JobApplyPage />} />
+            <Route
+              path="/jobs/:jobId/apply"
+              element={
+                <ProtectedRoute>
+                  <JobApplyPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/application-success" element={<ApplicationSuccess />} />
             
             {/* Backward compatibility aliases */}
             <Route path="/job-details" element={<JobDetails />} />
             <Route path="/job-details/:id" element={<JobDetails />} />
-            <Route path="/apply-job" element={<ApplyJob />} />
+            <Route
+              path="/apply-job"
+              element={
+                <ProtectedRoute>
+                  <ApplyJob />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/saved-jobs" element={<SaveJob />} />
             <Route path="/contactus" element={<ContactUs />} />
@@ -243,7 +257,7 @@ const App = () => {
             <Route
               path="/hr/jobs/:jobId/edit"
               element={
-                <ProtectedRoute requiredRole="company">
+                <ProtectedRoute requiredRole="company" requireApproved={true}>
                   <DashboardPostJob />
                 </ProtectedRoute>
               }
@@ -309,7 +323,7 @@ const App = () => {
             <Route
               path="/dashboard/post-job"
               element={
-                <ProtectedRoute requiredRole="company">
+                <ProtectedRoute requiredRole="company" requireApproved={true}>
                   <DashboardPostJob />
                 </ProtectedRoute>
               }

@@ -8,125 +8,101 @@ import {
   FaGraduationCap,
   FaHardHat,
   FaTruck,
-  FaCogs,
-  FaArrowRight,
+  FaHeadset,
 } from 'react-icons/fa';
-import { BentoGrid, BentoGridItem } from './ui/BentoGrid';
 
 const categories = [
   {
     id: 'it-software',
     name: 'IT & Software',
-    categoryParam: 'IT & Software',
-    description: 'Cloud engineering, full-stack development, AI/ML, DevOps, and cybersecurity.',
-    icon: <FaLaptopCode size={22} />,
-    badge: 'High Demand',
-    colSpan: 'md:col-span-2',
+    param: 'IT & Software',
+    icon: <FaLaptopCode size={18} className="text-indigo-600" />,
   },
   {
     id: 'finance',
     name: 'Finance & Banking',
-    categoryParam: 'Finance',
-    description: 'Corporate finance, auditing, risk analysis, fintech, and accounting.',
-    icon: <FaChartLine size={22} />,
-    badge: 'Popular',
-    colSpan: 'md:col-span-1',
+    param: 'Finance',
+    icon: <FaChartLine size={18} className="text-emerald-600" />,
   },
   {
-    id: 'business',
-    name: 'Business & Management',
-    categoryParam: 'Business',
-    description: 'Product management, executive leadership, sales strategy, and consultancy.',
-    icon: <FaBriefcase size={22} />,
-    badge: 'Executive',
-    colSpan: 'md:col-span-1',
+    id: 'sales-marketing',
+    name: 'Sales & Business',
+    param: 'Business',
+    icon: <FaBriefcase size={18} className="text-blue-600" />,
   },
   {
     id: 'healthcare',
-    name: 'Healthcare & Medical',
-    categoryParam: 'Healthcare',
-    description: 'Clinical roles, biomedical research, healthcare administration, and nursing.',
-    icon: <FaStethoscope size={22} />,
-    badge: 'Verified',
-    colSpan: 'md:col-span-1',
+    name: 'Healthcare & Pharma',
+    param: 'Healthcare',
+    icon: <FaStethoscope size={18} className="text-rose-600" />,
   },
   {
     id: 'education',
-    name: 'Education & Training',
-    categoryParam: 'Education',
-    description: 'Academic faculties, curriculum design, corporate training, and EdTech.',
-    icon: <FaGraduationCap size={22} />,
-    badge: 'Growth',
-    colSpan: 'md:col-span-1',
-  },
-  {
-    id: 'construction',
-    name: 'Construction & Civil',
-    categoryParam: 'Construction',
-    description: 'Civil engineering, structural design, project superintendents, and surveying.',
-    icon: <FaHardHat size={22} />,
-    badge: 'Infrastructure',
-    colSpan: 'md:col-span-1',
+    name: 'Education & Teaching',
+    param: 'Education',
+    icon: <FaGraduationCap size={18} className="text-amber-600" />,
   },
   {
     id: 'logistics',
     name: 'Logistics & Supply Chain',
-    categoryParam: 'Logistics',
-    description: 'Warehouse operations, procurement, fleet dispatch, and global shipping.',
-    icon: <FaTruck size={22} />,
-    badge: 'Operations',
-    colSpan: 'md:col-span-2',
+    param: 'Logistics',
+    icon: <FaTruck size={18} className="text-cyan-600" />,
+  },
+  {
+    id: 'construction',
+    name: 'Construction & Civil',
+    param: 'Construction',
+    icon: <FaHardHat size={18} className="text-orange-600" />,
+  },
+  {
+    id: 'bpo',
+    name: 'BPO & Support',
+    param: 'Business',
+    icon: <FaHeadset size={18} className="text-purple-600" />,
   },
 ];
 
 const PopularCategories = () => {
   const navigate = useNavigate();
 
-  const handleCategoryClick = (categoryParam) => {
-    navigate(`/jobs?category=${encodeURIComponent(categoryParam)}`);
-  };
-
   return (
-    <section className="py-16 relative">
+    <section className="py-10 bg-slate-50 border-t border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-surface-1 border border-indigo-200 text-indigo-700 text-xs font-semibold uppercase tracking-wider mb-3 shadow-sm">
-              Specialized Industry Tracks
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
-              Explore Popular Categories
-            </h2>
-            <p className="text-slate-600 text-base mt-2 max-w-xl">
-              Discover curated career opportunities tailored to your specialized domain and industry skill set.
-            </p>
-          </div>
-
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-display">
+            Popular Job Categories
+          </h2>
           <button
+            type="button"
             onClick={() => navigate('/jobs')}
-            className="mt-4 md:mt-0 text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group transition"
+            className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
           >
-            <span>View All Categories</span>
-            <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+            All Categories →
           </button>
         </div>
 
-        {/* Bento Grid layout */}
-        <BentoGrid className="max-w-7xl">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {categories.map((cat) => (
-            <BentoGridItem
+            <button
               key={cat.id}
-              title={cat.name}
-              description={cat.description}
-              icon={cat.icon}
-              badge={cat.badge}
-              className={cat.colSpan}
-              onClick={() => handleCategoryClick(cat.categoryParam)}
-            />
+              type="button"
+              onClick={() => navigate(`/jobs?category=${encodeURIComponent(cat.param)}`)}
+              className="flex items-center gap-3 p-3.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-xs transition text-left cursor-pointer group"
+            >
+              <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition">
+                {cat.icon}
+              </div>
+              <div className="min-w-0">
+                <span className="block text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition truncate">
+                  {cat.name}
+                </span>
+                <span className="text-[11px] text-slate-400">Browse roles</span>
+              </div>
+            </button>
           ))}
-        </BentoGrid>
+        </div>
+
       </div>
     </section>
   );

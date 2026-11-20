@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { useNavigate, Link } from 'react-router-dom';
+import { uploadCompanyLogo, validateLogoFile, MAX_LOGO_SIZE_KB } from '../../services/storageService';
 import {
   FaBuilding,
   FaUserTie,
@@ -14,8 +15,10 @@ import {
   FaShieldAlt,
   FaMapMarkerAlt,
   FaImage,
+  FaUpload,
 } from 'react-icons/fa';
 import { Button } from '../../components/ui/Button';
+import { notifyAdminNewCompany } from '../../services/notificationService';
 
 const COMPANY_TYPES = [
   'Private Limited',
@@ -60,11 +63,28 @@ const CompanySignup = () => {
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleLogoFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const validation = validateLogoFile(file);
+    if (!validation.valid) {
+      setError(validation.error);
+      return;
+    }
+
+    setError(null);
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
   };
 
   const handleRegister = async (e) => {
@@ -104,6 +124,16 @@ const CompanySignup = () => {
         displayName: formData.hrName,
       });
 
+      let finalLogoUrl = formData.logo || '/zen.jpeg';
+      if (logoFile) {
+        try {
+          const uploadRes = await uploadCompanyLogo(user.uid, logoFile);
+          finalLogoUrl = uploadRes.downloadURL;
+        } catch (uploadErr) {
+          console.warn('Logo upload during signup notice:', uploadErr);
+        }
+      }
+
       // Save Company account in Firestore with PENDING APPROVAL state
       // Note: role is strictly set to 'company' — users cannot self-assign privileged roles.
       await setDoc(doc(db, 'users', user.uid), {
@@ -118,7 +148,8 @@ const CompanySignup = () => {
         industry: formData.industry,
         location: formData.location || 'India',
         website: formData.website || '',
-        logo: formData.logo || '/zen.jpeg',
+        logo: finalLogoUrl,
+        companyLogo: finalLogoUrl,
         description: formData.description || '',
         about: formData.description || '',
         role: 'company',
@@ -126,6 +157,20 @@ const CompanySignup = () => {
         status: 'pending', // pending | approved | rejected | suspended
         createdAt: serverTimestamp(),
       });
+
+      // Dispatch instant email notification to admin (carezensolve@gmail.com) for review & approval
+      notifyAdminNewCompany({
+        uid: user.uid,
+        companyName: formData.companyName,
+        hrName: formData.hrName,
+        email: formData.email,
+        phone: formData.phone || '',
+        companyType: formData.companyType,
+        industry: formData.industry,
+        location: formData.location || 'India',
+        website: formData.website || '',
+        description: formData.description || '',
+      }).catch((notifyErr) => console.warn('Admin notification warning:', notifyErr));
 
       // Ensure AuthContext is freshly populated with the newly created company profile
       await refreshUser();
@@ -345,22 +390,62 @@ const CompanySignup = () => {
               </div>
             </div>
 
-            {/* Logo Image URL */}
+            {/* Company Logo Upload & URL */}
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                Company Logo URL (Optional)
-              </label>
-              <div className="relative">
-                <FaImage className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
-                <input
-                  type="url"
-                  name="logo"
-                  placeholder="https://example.com/logo.png (defaults to ZenSolve partner avatar)"
-                  value={formData.logo}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm text-slate-900 placeholder:text-slate-400 font-medium"
-                />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-slate-700 block">
+                  Company Brand Logo (Optional)
+                </label>
+                <span className="text-[10px] text-slate-400">Max {MAX_LOGO_SIZE_KB} KB</span>
               </div>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="flex items-center gap-2.5">
+                  {logoPreview ? (
+                    <img
+                      src={logoPreview}
+                      alt="Logo preview"
+                      className="w-12 h-12 rounded-xl object-cover border border-indigo-200 shadow-xs"
+                    />
+                  ) : formData.logo ? (
+                    <img
+                      src={formData.logo}
+                      alt="Logo preview"
+                      className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
+                      <FaBuilding className="text-sm" />
+                    </div>
+                  )}
+
+                  <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold transition flex items-center gap-1.5 border border-indigo-100">
+                    <FaUpload className="text-xs" />
+                    <span>{logoFile ? 'Change Logo' : 'Upload File (Max 500KB)'}</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      onChange={handleLogoFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                <div className="flex-1 w-full relative">
+                  <FaImage className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
+                  <input
+                    type="url"
+                    name="logo"
+                    placeholder="Or paste image URL (https://example.com/logo.png)"
+                    value={formData.logo}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-xs text-slate-900 placeholder:text-slate-400 font-medium"
+                  />
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Accepted image formats: PNG, JPG, JPEG, WebP, SVG. File size must not exceed 500 KB.
+              </p>
             </div>
 
             {/* Company Description */}

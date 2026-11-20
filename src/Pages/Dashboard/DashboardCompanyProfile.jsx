@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from './DashboardLayout';
 import { useAuth } from '../../components/useAuth';
 import { Button } from '../../components/ui/Button';
-import { db, storage } from '../../firebaseConfig';
+import { db } from '../../firebaseConfig';
 import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { uploadCompanyLogo, validateLogoFile, MAX_LOGO_SIZE_KB } from '../../services/storageService';
 import {
   FaBuilding,
   FaGlobe,
@@ -66,41 +66,29 @@ const DashboardCompanyProfile = () => {
     loadProfile();
   }, [user]);
 
-  const handleLogoUpload = (e) => {
+  const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file || !user?.uid) return;
 
-    if (!file.type.startsWith('image/')) {
-      setErrorMsg('Please upload a valid image file (PNG, JPG, SVG, WebP).');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMsg('Logo file size must be less than 5 MB.');
+    const validation = validateLogoFile(file);
+    if (!validation.valid) {
+      setErrorMsg(validation.error);
       return;
     }
 
     setErrorMsg('');
-    const storageRef = ref(storage, `companies/${user.uid}/logo_${Date.now()}_${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+    try {
+      setUploadProgress(10);
+      const res = await uploadCompanyLogo(user.uid, file, (progress) => {
         setUploadProgress(progress);
-      },
-      (error) => {
-        console.error('Logo upload error:', error);
-        setErrorMsg('Failed to upload logo: ' + error.message);
-        setUploadProgress(0);
-      },
-      async () => {
-        const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-        setCompanyInfo((prev) => ({ ...prev, logoUrl: downloadUrl }));
-        setUploadProgress(0);
-      }
-    );
+      });
+      setCompanyInfo((prev) => ({ ...prev, logoUrl: res.downloadURL }));
+      setUploadProgress(0);
+    } catch (error) {
+      console.error('Logo upload error:', error);
+      setErrorMsg('Failed to upload logo: ' + error.message);
+      setUploadProgress(0);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -186,8 +174,9 @@ const DashboardCompanyProfile = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  Company Logo
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5 flex items-center justify-between">
+                  <span>Company Logo</span>
+                  <span className="text-[10px] text-slate-400 font-normal">Max {MAX_LOGO_SIZE_KB} KB</span>
                 </label>
                 <div className="flex items-center gap-3">
                   {companyInfo.logoUrl ? (
@@ -201,18 +190,21 @@ const DashboardCompanyProfile = () => {
                       <FaBuilding />
                     </div>
                   )}
-                  <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 transition flex items-center gap-1.5">
-                    <FaUpload className="text-xs" />
+                  <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 transition flex items-center gap-1.5 border border-slate-200">
+                    <FaUpload className="text-xs text-indigo-600" />
                     <span>{uploadProgress > 0 ? `Uploading (${uploadProgress}%)` : 'Upload New'}</span>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
                       onChange={handleLogoUpload}
                       disabled={uploadProgress > 0}
                       className="hidden"
                     />
                   </label>
                 </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Supported formats: PNG, JPG, WebP, SVG (under 500 KB)
+                </p>
               </div>
 
               <div>

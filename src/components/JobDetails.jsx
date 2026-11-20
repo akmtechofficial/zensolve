@@ -91,6 +91,12 @@ const JobDetails = () => {
 
   const handleApply = () => {
     if (job?.status === 'Closed') return;
+    if (!user) {
+      navigate(`/login?returnUrl=/jobs/${job.id}/apply`, {
+        state: { from: location, returnUrl: `/jobs/${job.id}/apply` },
+      });
+      return;
+    }
     navigate(`/jobs/${job.id}/apply`, { state: { job } });
   };
 
@@ -144,12 +150,26 @@ const JobDetails = () => {
 
   const isClosed = job.status === 'Closed' || job.status === 'Draft';
 
-  const formattedSalary =
-    job?.salaryFrom && job?.salaryTo
-      ? `₹${Number(job.salaryFrom).toLocaleString('en-IN')} - ₹${Number(job.salaryTo).toLocaleString('en-IN')}`
-      : job?.salaryFrom
-      ? `₹${Number(job.salaryFrom).toLocaleString('en-IN')}`
-      : 'Competitive';
+  const formattedSalary = (() => {
+    if (job?.salaryMin !== undefined && job?.salaryMax !== undefined) {
+      const min = Number(job.salaryMin);
+      const max = Number(job.salaryMax);
+      if (max <= 100) return `₹${min} - ₹${max} LPA`;
+      return `₹${min.toLocaleString('en-IN')} - ₹${max.toLocaleString('en-IN')}`;
+    }
+    if (job?.salaryFrom && job?.salaryTo) {
+      const from = Number(job.salaryFrom);
+      const to = Number(job.salaryTo);
+      if (to <= 100) return `₹${from} - ₹${to} LPA`;
+      return `₹${from.toLocaleString('en-IN')} - ₹${to.toLocaleString('en-IN')} / mo`;
+    }
+    if (job?.salaryFrom) {
+      const from = Number(job.salaryFrom);
+      return from <= 100 ? `₹${from} LPA` : `₹${from.toLocaleString('en-IN')} / mo`;
+    }
+    if (job?.salary) return job.salary;
+    return 'Disclosed on application';
+  })();
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-8 sm:py-12">

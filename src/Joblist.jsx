@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import JobCard from './components/JobCard';
 import { getJobs } from './services/recruitmentService';
-import { FaSearch, FaBriefcase, FaSpinner } from 'react-icons/fa';
-import { Button } from './components/ui/Button';
+import { FaSearch } from 'react-icons/fa';
 
-const JobList = ({ maxJobs, filterCategory, initialSearch = '', showSearch = true, onQuickApply }) => {
+const JobList = ({ maxJobs, filterCategory, initialSearch = '', showSearch = false, onQuickApply }) => {
   const [jobs, setJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [loading, setLoading] = useState(true);
@@ -44,19 +43,19 @@ const JobList = ({ maxJobs, filterCategory, initialSearch = '', showSearch = tru
     <div className="w-full">
       {/* Search Input if enabled */}
       {showSearch && (
-        <div className="relative mb-6 max-w-xl mx-auto">
-          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+        <div className="relative mb-5 max-w-md">
+          <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
           <input
             type="text"
-            placeholder="Search roles, skills, or companies..."
+            placeholder="Filter roles or companies..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-white/90 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition text-sm shadow-sm backdrop-blur-md"
+            className="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 text-xs"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-600 hover:text-slate-900 px-2 py-1 rounded bg-slate-100 border border-slate-200"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 hover:text-slate-700"
             >
               Clear
             </button>
@@ -66,52 +65,40 @@ const JobList = ({ maxJobs, filterCategory, initialSearch = '', showSearch = tru
 
       {/* Loading Skeletons */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].slice(0, maxJobs || 6).map((n) => (
             <div
               key={n}
-              className="glass-surface-2 p-6 rounded-3xl border border-slate-200/90 animate-pulse space-y-4 shadow-sm"
+              className="bg-white p-4 rounded-xl border border-slate-200 animate-pulse space-y-3"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-slate-200 rounded-2xl" />
-                <div className="space-y-2 flex-1">
-                  <div className="h-4 bg-slate-200 rounded w-1/3" />
-                  <div className="h-5 bg-slate-200 rounded w-2/3" />
+                <div className="w-10 h-10 bg-slate-200 rounded-lg" />
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-3.5 bg-slate-200 rounded w-1/3" />
+                  <div className="h-4 bg-slate-200 rounded w-2/3" />
                 </div>
               </div>
               <div className="flex gap-2">
-                <div className="h-6 bg-slate-200 rounded-full w-20" />
-                <div className="h-6 bg-slate-200 rounded-full w-24" />
+                <div className="h-5 bg-slate-200 rounded w-20" />
+                <div className="h-5 bg-slate-200 rounded w-24" />
               </div>
-              <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
-                <div className="h-5 bg-slate-200 rounded w-28" />
-                <div className="h-8 bg-slate-200 rounded-xl w-20" />
+              <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
+                <div className="h-4 bg-slate-200 rounded w-24" />
+                <div className="h-7 bg-slate-200 rounded w-16" />
               </div>
             </div>
           ))}
         </div>
       ) : filteredJobs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredJobs.map((job) => (
             <JobCard key={job.id} job={job} onQuickApply={onQuickApply} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 px-4 glass-surface-2 rounded-3xl border border-slate-200 shadow-sm max-w-md mx-auto">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-xs">
-            <FaBriefcase size={22} />
-          </div>
-          <h4 className="text-lg font-bold text-slate-900 mb-1">No Openings Found</h4>
-          <p className="text-sm text-slate-600 mb-5">
-            {searchTerm
-              ? `No jobs match your search for "${searchTerm}". Try resetting your filters.`
-              : 'There are currently no published positions matching this criteria.'}
-          </p>
-          {searchTerm && (
-            <Button variant="secondary" size="sm" onClick={() => setSearchTerm('')}>
-              Reset Search
-            </Button>
-          )}
+        <div className="text-center py-12 px-4 bg-white rounded-xl border border-slate-200">
+          <p className="text-sm font-semibold text-slate-800">No jobs found</p>
+          <p className="text-xs text-slate-500 mt-1">Try clearing your search query or selecting a different category.</p>
         </div>
       )}
     </div>

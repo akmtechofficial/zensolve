@@ -7,8 +7,7 @@ import {
   submitJobApplication,
   checkExistingApplication,
 } from '../../services/recruitmentService';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../../firebaseConfig';
+import { uploadCandidateResume, validateResumeFile, MAX_RESUME_SIZE_MB } from '../../services/storageService';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import {
@@ -26,6 +25,7 @@ import {
   FaArrowLeft,
   FaShieldAlt,
   FaClock,
+  FaLock,
 } from 'react-icons/fa';
 
 const MAX_FILE_SIZE_MB = 10;
@@ -111,8 +111,9 @@ const JobApplyPage = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
-        setError(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit.`);
+      const validation = validateResumeFile(file);
+      if (!validation.valid) {
+        setError(validation.error);
         return;
       }
       setNewResumeFile(file);
@@ -123,6 +124,14 @@ const JobApplyPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      setError('You must be signed in to submit a job application.');
+      navigate(`/login?returnUrl=/jobs/${jobId}/apply`, {
+        state: { from: location, returnUrl: `/jobs/${jobId}/apply` },
+      });
+      return;
+    }
+
     if (!applicantName || !applicantEmail) {
       setError('Please provide your name and email address.');
       return;
@@ -145,17 +154,18 @@ const JobApplyPage = () => {
       let finalResumeURL = userData?.resumeURL || userData?.resume || '';
 
       // If user uploaded a new resume specifically for this job
-      if (newResumeFile) {
+      if (newResumeFile && user?.uid) {
         try {
-          const timestamp = Date.now();
-          const cleanName = newResumeFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-          const storageRef = ref(storage, `resumes/${user.uid}/${timestamp}_${cleanName}`);
-          await uploadBytes(storageRef, newResumeFile);
-          setProgress(60);
-          finalResumeURL = await getDownloadURL(storageRef);
+          setProgress(40);
+          const uploadRes = await uploadCandidateResume(user.uid, newResumeFile, (pct) => {
+            setProgress(30 + Math.round(pct * 0.4)); // scale from 30 to 70%
+          });
+          finalResumeURL = uploadRes.downloadURL;
         } catch (uploadErr) {
-          console.warn('Storage fallback:', uploadErr);
-          finalResumeURL = `Uploaded: ${newResumeFile.name}`;
+          console.error('Resume upload error:', uploadErr);
+          setError('Failed to upload resume: ' + uploadErr.message);
+          setSubmitting(false);
+          return;
         }
       }
 
@@ -232,6 +242,42 @@ const JobApplyPage = () => {
           <Button variant="primary" size="md" onClick={() => navigate('/jobs')}>
             Browse Active Jobs
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center py-20 px-4">
+        <div className="glass-surface-2 p-8 rounded-3xl border border-slate-200 text-center max-w-md bg-white shadow-xl">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4 text-2xl">
+            <FaLock />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Sign in Required to Apply</h2>
+          <p className="text-xs text-slate-600 mb-6 leading-relaxed">
+            You must be signed in with a candidate account to apply for <span className="font-semibold text-slate-900">{job.position}</span> at {job.companyName}.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() =>
+                navigate(`/login?returnUrl=/jobs/${jobId}/apply`, {
+                  state: { from: location, returnUrl: `/jobs/${jobId}/apply` },
+                })
+              }
+            >
+              Sign In to Apply
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => navigate('/signup')}
+            >
+              Create Account
+            </Button>
+          </div>
         </div>
       </div>
     );

@@ -25,10 +25,15 @@ export const getJobs = async (filters = {}) => {
   try {
     const jobsRef = collection(db, "jobs");
     const snapshot = await getDocs(jobsRef);
-    let jobs = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    let jobs = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        position: data.position || data.title || "Job Position",
+        companyName: data.companyName || data.company || "Hiring Company",
+      };
+    });
 
     // Filter by active status by default for public users unless requested
     if (filters.onlyActive) {
@@ -98,7 +103,13 @@ export const getJobById = async (jobId) => {
     const jobRef = doc(db, "jobs", jobId);
     const snap = await getDoc(jobRef);
     if (snap.exists()) {
-      return { id: snap.id, ...snap.data() };
+      const data = snap.data();
+      return {
+        id: snap.id,
+        ...data,
+        position: data.position || data.title || "Job Position",
+        companyName: data.companyName || data.company || "Hiring Company",
+      };
     }
     return null;
   } catch (error) {
@@ -172,7 +183,13 @@ export const getCandidateProfile = async (userId) => {
     const userRef = doc(db, "users", userId);
     const snap = await getDoc(userRef);
     if (snap.exists()) {
-      return { id: snap.id, ...snap.data() };
+      const data = snap.data();
+      return {
+        id: snap.id,
+        ...data,
+        position: data.position || data.title || "Job Position",
+        companyName: data.companyName || data.company || "Hiring Company",
+      };
     }
     return null;
   } catch (error) {
@@ -329,7 +346,13 @@ export const getApplicationById = async (applicationId) => {
     const appRef = doc(db, "jobApplications", applicationId);
     const snap = await getDoc(appRef);
     if (snap.exists()) {
-      return { id: snap.id, ...snap.data() };
+      const data = snap.data();
+      return {
+        id: snap.id,
+        ...data,
+        position: data.position || data.title || "Job Position",
+        companyName: data.companyName || data.company || "Hiring Company",
+      };
     }
     return null;
   } catch (error) {
@@ -833,7 +856,13 @@ export const getCompanyDetails = async (companyId) => {
     const docRef = doc(db, "users", companyId);
     const snap = await getDoc(docRef);
     if (snap.exists()) {
-      return { id: snap.id, ...snap.data() };
+      const data = snap.data();
+      return {
+        id: snap.id,
+        ...data,
+        position: data.position || data.title || "Job Position",
+        companyName: data.companyName || data.company || "Hiring Company",
+      };
     }
     return null;
   } catch (error) {

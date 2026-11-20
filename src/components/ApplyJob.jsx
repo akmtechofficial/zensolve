@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db, auth, storage } from '../firebaseConfig';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth } from '../firebaseConfig';
+import { uploadCandidateResume, validateResumeFile, MAX_RESUME_SIZE_MB } from '../services/storageService';
 import {
   FaUser,
   FaEnvelope,
@@ -14,6 +14,7 @@ import {
   FaSpinner,
   FaBuilding,
   FaArrowLeft,
+  FaLock,
 } from 'react-icons/fa';
 import { Button } from './ui/Button';
 import { useAuth } from './useAuth';
@@ -26,19 +27,27 @@ const ALLOWED_FILE_TYPES = [
 const MAX_FILE_SIZE_MB = 10;
 
 const ApplyJob = ({ job: propJob, onSuccess }) => {
-  const { userData } = useAuth();
+  const { user, userData } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const job = propJob || location.state?.job;
 
-  const [applicantName, setApplicantName] = useState(auth.currentUser?.displayName || '');
-  const [applicantEmail, setApplicantEmail] = useState(auth.currentUser?.email || '');
-  const [applicantPhone, setApplicantPhone] = useState('');
+  const [applicantName, setApplicantName] = useState(user?.displayName || userData?.displayName || '');
+  const [applicantEmail, setApplicantEmail] = useState(user?.email || '');
+  const [applicantPhone, setApplicantPhone] = useState(userData?.phone || '');
   const [resume, setResume] = useState(null);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      if (!applicantName) setApplicantName(user.displayName || userData?.displayName || '');
+      if (!applicantEmail) setApplicantEmail(user.email || '');
+      if (!applicantPhone && userData?.phone) setApplicantPhone(userData.phone);
+    }
+  }, [user, userData]);
 
   if (!job) {
     return (
@@ -51,11 +60,47 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
     );
   }
 
+  // Strictly enforce sign-in before allowing any user to apply
+  if (!user) {
+    return (
+      <div className="py-8 px-6 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4 text-2xl">
+          <FaLock />
+        </div>
+        <h3 className="text-lg font-bold text-slate-900 mb-2 font-display">Sign In Required to Apply</h3>
+        <p className="text-xs text-slate-600 mb-6 max-w-sm mx-auto leading-relaxed">
+          You must be logged in to apply for <span className="font-semibold text-slate-800">{job.position}</span> at {job.companyName}.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              navigate(`/login?returnUrl=/jobs/${job.id}/apply`, {
+                state: { from: location, returnUrl: `/jobs/${job.id}/apply` },
+              });
+            }}
+          >
+            Sign In to Apply
+          </Button>
+          <Button
+            variant="outline"
+            size="md"
+            onClick={() => navigate('/signup')}
+          >
+            Create Account
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
-        setError(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit.`);
+      const validation = validateResumeFile(file);
+      if (!validation.valid) {
+        setError(validation.error);
         return;
       }
       setResume(file);
@@ -73,8 +118,9 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
     e.stopPropagation();
     const file = e.dataTransfer.files[0];
     if (file) {
-      if (file.size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
-        setError(`File size exceeds ${MAX_FILE_SIZE_MB}MB limit.`);
+      const validation = validateResumeFile(file);
+      if (!validation.valid) {
+        setError(validation.error);
         return;
       }
       setResume(file);
@@ -84,6 +130,14 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user?.uid) {
+      setError('You must be signed in to submit a job application.');
+      navigate(`/login?returnUrl=/jobs/${job.id}/apply`, {
+        state: { from: location, returnUrl: `/jobs/${job.id}/apply` },
+      });
+      return;
+    }
+
     if (!applicantName || !applicantEmail) {
       setError('Please provide your name and email address.');
       return;
@@ -95,17 +149,17 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
 
     try {
       let resumeURL = '';
+      const effectiveUid = user.uid;
+
       if (resume) {
         try {
-          const timestamp = Date.now();
-          const cleanName = resume.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-          const storageRef = ref(storage, `resumes/${timestamp}_${cleanName}`);
-          await uploadBytes(storageRef, resume);
-          setProgress(60);
-          resumeURL = await getDownloadURL(storageRef);
+          setProgress(40);
+          const uploadRes = await uploadCandidateResume(effectiveUid, resume, (pct) => {
+            setProgress(30 + Math.round(pct * 0.4));
+          });
+          resumeURL = uploadRes.downloadURL;
         } catch (storageErr) {
           console.warn('Storage upload note:', storageErr);
-          // If storage bucket is not configured, record filename for continuity
           resumeURL = `Uploaded: ${resume.name}`;
         }
       }
@@ -114,6 +168,7 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
       const applicationsRef = collection(db, 'jobApplications');
       await addDoc(applicationsRef, {
         jobId: job.id,
+        companyId: job.companyId || job.userId || 'company',
         applicantName,
         applicantEmail,
         applicantPhone,
@@ -122,8 +177,8 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
         jobPosition: job.position,
         companyName: job.companyName,
         appliedAt: serverTimestamp(),
-        userId: auth.currentUser?.uid || 'guest',
-        status: 'Pending',
+        userId: user.uid,
+        status: 'Applied',
         languages: userData?.languages || [],
       });
 

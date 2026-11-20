@@ -2,12 +2,13 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './useAuth';
 import { FaSpinner } from 'react-icons/fa';
+import ResendApprovalReminder from './ResendApprovalReminder';
 
 const ProtectedRoute = ({ children, requiredRole = null, requireEmployer = false, requireApproved = false }) => {
   const { user, loading, role, isAdmin, isCompany, isEmployer, isCandidate, isSuspended, isApprovedCompany, profileError, isPendingProfile, refreshUser } = useAuth();
   const location = useLocation();
 
-  if (loading || isPendingProfile) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] text-slate-500">
         <FaSpinner className="animate-spin text-indigo-600 text-3xl" />
@@ -20,6 +21,15 @@ const ProtectedRoute = ({ children, requiredRole = null, requireEmployer = false
       return <Navigate to="/admin/login" state={{ from: location }} replace />;
     }
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Profile pending check for standard users (admin bypasses pending check)
+  if (!isAdmin && isPendingProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] text-slate-500">
+        <FaSpinner className="animate-spin text-indigo-600 text-3xl" />
+      </div>
+    );
   }
 
   // Profile resolution failure check (e.g., Firestore permission or network error)
@@ -76,7 +86,7 @@ const ProtectedRoute = ({ children, requiredRole = null, requireEmployer = false
     );
   }
 
-  // Admin route protection: Strictly requires admin@zensolve.in
+  // Admin route protection: Strictly requires authorized admin privileges
   if (requiredRole === 'admin') {
     if (!isAdmin) {
       return (
@@ -87,7 +97,7 @@ const ProtectedRoute = ({ children, requiredRole = null, requireEmployer = false
             </div>
             <h2 className="text-2xl font-bold font-display text-white mb-2">Access Denied</h2>
             <p className="text-sm text-slate-400 mb-6 leading-relaxed">
-              Super-Admin console access is restricted strictly to the designated system administrator (<span className="text-indigo-400 font-mono font-semibold">admin@zensolve.in</span>). Your account ({user?.email}) is not authorized.
+              Super-Admin console access is restricted strictly to authorized system administrators. Your account (<span className="text-indigo-400 font-mono font-semibold">{user?.email}</span>) is not authorized.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               <a
@@ -118,27 +128,32 @@ const ProtectedRoute = ({ children, requiredRole = null, requireEmployer = false
 
     if (requireApproved && !isApprovedCompany && !isAdmin) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-          <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-amber-100 shadow-xl text-center">
-            <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+          <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-amber-200 shadow-xl text-center">
+            <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-sm">
               ⏳
             </div>
-            <h2 className="text-xl font-bold text-slate-900 mb-2">Pending Approval</h2>
-            <p className="text-sm text-slate-600 mb-6">
-              Your company account is currently pending verification by our moderation team. You can edit your company profile, but job postings will remain disabled until approval.
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Company Pending Verification</h2>
+            <p className="text-sm text-slate-600 mb-5">
+              Your company account is under review by ZenSolve Admins. You can prepare and view your dashboard, but job posting and candidate interactions remain locked until verification is granted.
             </p>
+            
+            <div className="mb-6 p-4 bg-slate-50 border border-slate-200/80 rounded-xl text-left">
+              <ResendApprovalReminder compact={false} />
+            </div>
+
             <div className="flex justify-center gap-3">
               <a
                 href="/hr/profile"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition shadow-sm"
               >
                 Complete Profile
               </a>
               <a
                 href="/hr"
-                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-200 transition"
+                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-200 transition"
               >
-                Dashboard
+                Back to Dashboard
               </a>
             </div>
           </div>

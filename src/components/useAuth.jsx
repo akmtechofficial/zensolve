@@ -1,11 +1,15 @@
 import React, { useEffect, useState, createContext, useContext, useCallback } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 
 export const SUPER_ADMIN_EMAIL = 'admin@zensolve.in';
 export const ADMIN_EMAILS = [
   'admin@zensolve.in',
+  'admin@zensolve.com',
+  'carezensolve@gmail.com',
+  'akmtechofficial@gmail.com',
+  'superadmin@zensolve.com',
 ];
 
 const AuthContext = createContext({
@@ -33,19 +37,45 @@ export const AuthProvider = ({ children }) => {
     const isSuperAdminEmail = Boolean(email && ADMIN_EMAILS.includes(email.trim().toLowerCase()));
 
     try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      if (userDoc.exists()) {
+      // 4-second timeout protection so Firestore connectivity or offline latency never freezes the UI
+      const fetchPromise = getDoc(doc(db, 'users', uid));
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 4000)
+      );
+
+      const userDoc = await Promise.race([fetchPromise, timeoutPromise]);
+
+      if (userDoc && userDoc.exists()) {
         const data = userDoc.data();
-        if (isSuperAdminEmail) {
-          return { ...data, role: 'admin' };
-        }
-        // If an unauthorized account has role 'admin' in Firestore, override it for safety
-        if (data.role === 'admin') {
-          return { ...data, role: 'candidate' };
+        if (isSuperAdminEmail || data.role === 'admin') {
+          return { ...data, role: 'admin', isPendingProfile: false };
         }
         return data;
       } else {
         // Document does not exist yet (e.g. freshly created auth before profile doc written)
+        if (isSuperAdminEmail) {
+          // Immediately bootstrap admin profile in Firestore
+          setDoc(
+            doc(db, 'users', uid),
+            {
+              uid,
+              email,
+              role: 'admin',
+              createdAt: serverTimestamp(),
+              lastLoginAt: serverTimestamp(),
+            },
+            { merge: true }
+          ).catch((e) => console.warn('Admin profile bootstrap notice:', e));
+
+          return {
+            uid,
+            email,
+            role: 'admin',
+            isPendingProfile: false,
+            createdAt: new Date(),
+          };
+        }
+
         // Check if there is an in-flight role registration intent stored
         const pendingRole = window.localStorage.getItem('pendingAuthRole');
         const defaultRole = pendingRole === 'company' || pendingRole === 'employer' ? 'company' : null;
@@ -53,18 +83,26 @@ export const AuthProvider = ({ children }) => {
         return {
           uid,
           email,
-          role: isSuperAdminEmail ? 'admin' : defaultRole,
+          role: defaultRole,
           isPendingProfile: true,
           createdAt: new Date(),
         };
       }
     } catch (err) {
       console.error("Error fetching user profile:", err);
-      // Safe fallback: never default an unverified error to candidate/admin
+      // Fail-safe for administrators: never block admin console due to network or read failure
+      if (isSuperAdminEmail) {
+        return {
+          uid,
+          email,
+          role: 'admin',
+          isPendingProfile: false,
+        };
+      }
       return {
         uid,
         email,
-        role: isSuperAdminEmail ? 'admin' : null,
+        role: null,
         profileError: true,
         errorMessage: err.message,
       };
@@ -103,8 +141,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const isSuperAdminEmail = Boolean(user?.email && user.email.trim().toLowerCase() === SUPER_ADMIN_EMAIL);
-  const isAdmin = isSuperAdminEmail; // Strictly enforced: Only admin@zensolve.in can have Super Admin privileges
+  const isSuperAdminEmail = Boolean(user?.email && ADMIN_EMAILS.includes(user.email.trim().toLowerCase()));
+  const isAdmin = isSuperAdminEmail || userData?.role === 'admin';
 
   const isCompany =
     !isAdmin && (userData?.role === 'company' || userData?.role === 'employer');
@@ -118,7 +156,7 @@ export const AuthProvider = ({ children }) => {
   );
 
   const profileError = Boolean(userData?.profileError);
-  const isPendingProfile = Boolean(userData?.isPendingProfile);
+  const isPendingProfile = !isAdmin && Boolean(userData?.isPendingProfile);
 
   // For companies: approved only if explicitly approved or status === 'approved'
   const isApprovedCompany = isCompany

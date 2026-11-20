@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../components/useAuth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { storage, db } from '../../firebaseConfig';
+import { db } from '../../firebaseConfig';
+import { uploadCandidateResume, validateResumeFile, deleteStorageFile, MAX_RESUME_SIZE_MB } from '../../services/storageService';
 import CandidateLayout from './CandidateLayout';
 import { Button } from '../../components/ui/Button';
 import {
@@ -32,8 +32,9 @@ const CandidateResume = () => {
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) {
-      if (selected.size / 1024 / 1024 > MAX_FILE_SIZE_MB) {
-        setFeedback({ type: 'error', text: `File size exceeds ${MAX_FILE_SIZE_MB}MB limit.` });
+      const validation = validateResumeFile(selected);
+      if (!validation.valid) {
+        setFeedback({ type: 'error', text: validation.error });
         return;
       }
       setFile(selected);
@@ -46,31 +47,25 @@ const CandidateResume = () => {
     if (!file || !user?.uid) return;
 
     setUploading(true);
-    setProgress(20);
+    setProgress(15);
     setFeedback(null);
 
     try {
-      const timestamp = Date.now();
-      const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const storageRef = ref(storage, `resumes/${user.uid}/${timestamp}_${cleanName}`);
-      
-      setProgress(40);
-      await uploadBytes(storageRef, file);
-      
-      setProgress(75);
-      const downloadURL = await getDownloadURL(storageRef);
+      const uploadRes = await uploadCandidateResume(user.uid, file, (pct) => {
+        setProgress(pct);
+      });
 
-      setProgress(90);
       const userDocRef = doc(db, 'users', user.uid);
       await updateDoc(userDocRef, {
-        resumeURL: downloadURL,
-        resumeName: file.name,
-        resumeStoragePath: storageRef.fullPath,
+        resumeURL: uploadRes.downloadURL,
+        resume: uploadRes.downloadURL,
+        resumeName: uploadRes.fileName,
+        resumeStoragePath: uploadRes.fullPath,
         resumeUploadedAt: serverTimestamp(),
       });
 
       setProgress(100);
-      setFeedback({ type: 'success', text: 'Resume uploaded and linked to your candidate profile!' });
+      setFeedback({ type: 'success', text: 'Resume uploaded and securely linked to your candidate profile!' });
       setFile(null);
       await refreshUser();
     } catch (err) {
@@ -87,6 +82,9 @@ const CandidateResume = () => {
 
     try {
       setUploading(true);
+      if (userData?.resumeStoragePath) {
+        await deleteStorageFile(userData.resumeStoragePath);
+      }
       const userDocRef = doc(db, 'users', user.uid);
       await updateDoc(userDocRef, {
         resumeURL: null,

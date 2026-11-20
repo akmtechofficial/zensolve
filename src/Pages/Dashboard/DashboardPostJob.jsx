@@ -4,8 +4,10 @@ import DashboardLayout from './DashboardLayout';
 import { createJob } from '../../services/recruitmentService';
 import { Button } from '../../components/ui/Button';
 import JobCard from '../../components/JobCard';
-import { FaCheckCircle, FaBriefcase, FaEye, FaLock, FaExclamationTriangle } from 'react-icons/fa';
+import { FaCheckCircle, FaBriefcase, FaEye, FaLock, FaExclamationTriangle, FaUpload } from 'react-icons/fa';
 import { useAuth } from '../../components/useAuth';
+import ResendApprovalReminder from '../../components/ResendApprovalReminder';
+import { uploadCompanyLogo, validateLogoFile, MAX_LOGO_SIZE_KB } from '../../services/storageService';
 
 const categories = [
   'IT & Software',
@@ -50,10 +52,34 @@ const DashboardPostJob = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !user?.uid) return;
+
+    const validation = validateLogoFile(file);
+    if (!validation.valid) {
+      setError(validation.error);
+      return;
+    }
+
+    setError(null);
+    setUploadingLogo(true);
+    try {
+      const res = await uploadCompanyLogo(user.uid, file);
+      setFormData((prev) => ({ ...prev, companyLogo: res.downloadURL }));
+    } catch (err) {
+      console.error('Job logo upload error:', err);
+      setError('Failed to upload logo: ' + err.message);
+    } finally {
+      setUploadingLogo(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -142,17 +168,44 @@ const DashboardPostJob = () => {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                      Company Logo URL
-                    </label>
-                    <input
-                      type="url"
-                      name="companyLogo"
-                      value={formData.companyLogo}
-                      onChange={handleChange}
-                      placeholder="https://example.com/logo.png"
-                      className="w-full px-4 py-2.5 rounded-2xl glass-input text-sm text-slate-900 placeholder:text-slate-400 font-medium"
-                    />
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-slate-700 block">
+                        Company Logo
+                      </label>
+                      <span className="text-[10px] text-slate-400">Max {MAX_LOGO_SIZE_KB} KB</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {formData.companyLogo ? (
+                        <img
+                          src={formData.companyLogo}
+                          alt="Logo"
+                          className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                          <FaBriefcase className="text-xs" />
+                        </div>
+                      )}
+                      <label className="cursor-pointer px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold transition flex items-center gap-1.5 border border-indigo-100 shrink-0">
+                        <FaUpload className="text-xs" />
+                        <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                          onChange={handleLogoUpload}
+                          disabled={uploadingLogo}
+                          className="hidden"
+                        />
+                      </label>
+                      <input
+                        type="url"
+                        name="companyLogo"
+                        value={formData.companyLogo}
+                        onChange={handleChange}
+                        placeholder="Or paste URL"
+                        className="flex-1 px-3 py-2 rounded-xl glass-input text-xs text-slate-900 placeholder:text-slate-400 font-medium"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -302,11 +355,16 @@ const DashboardPostJob = () => {
             </div>
 
             {!isApprovedCompany && (
-              <div className="p-4 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex items-start gap-3 text-amber-800 text-xs leading-relaxed">
-                <FaExclamationTriangle className="text-amber-500 mt-0.5 shrink-0 text-sm" />
-                <div>
-                  <span className="font-bold text-amber-900 block mb-0.5">Account Pending Super-Admin Approval</span>
-                  Your company profile is under verification. Unapproved companies cannot publish live jobs. You may fill in the details and preview how your listing will look once your account is active.
+              <div className="p-5 bg-amber-50/90 border border-amber-200/90 rounded-2xl space-y-3 text-amber-900 text-xs leading-relaxed">
+                <div className="flex items-start gap-3">
+                  <FaExclamationTriangle className="text-amber-500 mt-0.5 shrink-0 text-sm" />
+                  <div>
+                    <span className="font-bold text-amber-900 block mb-0.5">Account Pending ZenSolve Admin Approval</span>
+                    Your company profile is currently under review. Unapproved companies cannot publish live jobs. You may fill in the details and preview how your listing will look once your account is active.
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-amber-200/70">
+                  <ResendApprovalReminder compact={false} />
                 </div>
               </div>
             )}

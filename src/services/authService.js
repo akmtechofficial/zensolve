@@ -10,10 +10,15 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig.js';
+import { notifyAdminNewCompany } from './notificationService.js';
 
 export const SUPER_ADMIN_EMAIL = 'admin@zensolve.in';
 export const ADMIN_EMAILS = [
-  SUPER_ADMIN_EMAIL,
+  'admin@zensolve.in',
+  'admin@zensolve.com',
+  'carezensolve@gmail.com',
+  'akmtechofficial@gmail.com',
+  'superadmin@zensolve.com',
 ];
 
 /**
@@ -34,11 +39,11 @@ export const validateEmail = (email) => {
 };
 
 /**
- * Checks whether an email belongs to the single designated super-admin
+ * Checks whether an email belongs to an authorized super-admin
  */
 export const isSuperAdminEmail = (email) => {
   if (!email) return false;
-  return email.trim().toLowerCase() === SUPER_ADMIN_EMAIL;
+  return ADMIN_EMAILS.includes(email.trim().toLowerCase());
 };
 
 /**
@@ -149,6 +154,20 @@ export const resolveUserProfile = async (user, requestedRole = null) => {
     }
 
     await setDoc(userRef, newProfile);
+
+    if (validRole === 'company') {
+      notifyAdminNewCompany({
+        uid: user.uid,
+        companyName: newProfile.companyName,
+        hrName: user.displayName || 'HR User',
+        email: user.email,
+        phone: user.phoneNumber || '',
+        companyType: 'Organization',
+        industry: 'Not Specified',
+        location: 'India',
+      }).catch((e) => console.warn('Admin notification warning:', e));
+    }
+
     return newProfile;
   } catch (err) {
     console.error('Error in resolveUserProfile:', err);

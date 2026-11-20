@@ -2,20 +2,16 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { getJobs } from '../services/recruitmentService';
 import JobCard from '../components/JobCard';
-import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
 import ApplyJob from '../components/ApplyJob';
 import {
   FaSearch,
+  FaMapMarkerAlt,
   FaFilter,
   FaTimes,
-  FaBriefcase,
-  FaMapMarkerAlt,
-  FaClock,
   FaSortAmountDown,
-  FaBuilding,
   FaSlidersH,
+  FaCheck,
 } from 'react-icons/fa';
 
 const categories = [
@@ -33,10 +29,20 @@ const jobTypes = ['All', 'Full-time', 'Part-time', 'Remote', 'Contract', 'Intern
 
 const experienceLevels = ['All', '0-1 Years', '1-3 Years', '3-5 Years', '5+ Years'];
 
-const popularLocations = ['All', 'Remote', 'Bangalore', 'Mumbai', 'Delhi NCR', 'Hyderabad', 'Pune', 'Patna'];
+const popularLocations = [
+  'All',
+  'Remote',
+  'Bengaluru',
+  'Delhi NCR',
+  'Mumbai',
+  'Hyderabad',
+  'Pune',
+  'Kolkata',
+  'Patna',
+  'Ranchi',
+];
 
 const Jobs = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -101,6 +107,7 @@ const Jobs = () => {
         cleaned.set(key, val);
       }
     });
+
     setSearchParams(cleaned);
   };
 
@@ -148,7 +155,6 @@ const Jobs = () => {
   const filteredJobs = useMemo(() => {
     return allJobs
       .filter((job) => {
-        // Exclude closed or drafts from candidate view
         if (job.status === 'Closed' || job.status === 'Draft') return false;
 
         // Keyword filter
@@ -172,9 +178,13 @@ const Jobs = () => {
               job.location?.toLowerCase().includes('remote');
             if (!isRemote) return false;
           } else {
-            if (!job.location || !job.location.toLowerCase().includes(selectedLocation.toLowerCase())) {
-              return false;
-            }
+            const locQuery = selectedLocation.toLowerCase();
+            const jobLoc = (job.location || '').toLowerCase();
+            const isMatch =
+              jobLoc.includes(locQuery) ||
+              (locQuery === 'bengaluru' && jobLoc.includes('bangalore')) ||
+              (locQuery === 'bangalore' && jobLoc.includes('bengaluru'));
+            if (!isMatch) return false;
           }
         }
 
@@ -206,357 +216,275 @@ const Jobs = () => {
         return true;
       })
       .sort((a, b) => {
-        if (sortBy === 'salaryHigh') {
-          return (Number(b.salaryTo) || 0) - (Number(a.salaryTo) || 0);
+        if (sortBy === 'newest') {
+          return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
         }
-        if (sortBy === 'salaryLow') {
-          return (Number(a.salaryFrom) || 0) - (Number(b.salaryFrom) || 0);
+        if (sortBy === 'title') {
+          return (a.position || '').localeCompare(b.position || '');
         }
-        // default: newest first
-        const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
-        const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
-        return timeB - timeA;
+        if (sortBy === 'company') {
+          return (a.companyName || '').localeCompare(b.companyName || '');
+        }
+        return 0;
       });
   }, [allJobs, searchTerm, selectedLocation, selectedCategory, selectedJobType, selectedExp, sortBy]);
 
-  const activeFiltersCount =
-    (searchTerm ? 1 : 0) +
-    (selectedLocation !== 'All' ? 1 : 0) +
-    (selectedCategory !== 'All' ? 1 : 0) +
-    (selectedJobType !== 'All' ? 1 : 0) +
-    (selectedExp !== 'All' ? 1 : 0);
+  const activeFiltersCount = [
+    selectedLocation !== 'All',
+    selectedCategory !== 'All',
+    selectedJobType !== 'All',
+    selectedExp !== 'All',
+    searchTerm !== '',
+  ].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 py-8 sm:py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Top Search Banner */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 mb-8">
-          <form onSubmit={handleSearchSubmit}>
-            <div className="flex flex-col sm:flex-row items-stretch gap-3">
-              {/* Keyword Input */}
-              <div className="relative flex-1 flex items-center">
-                <FaSearch className="absolute left-4 text-slate-400 text-sm pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Job title, skills or company"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white transition"
-                  aria-label="Search by job title, skills or company"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchTerm('');
-                      updateParams({ search: '' });
-                    }}
-                    className="absolute right-3.5 text-xs text-slate-400 hover:text-slate-700"
-                  >
-                    <FaTimes />
-                  </button>
-                )}
-              </div>
-
-              {/* Location Input */}
-              <div className="relative flex-1 flex items-center">
-                <FaMapMarkerAlt className="absolute left-4 text-slate-400 text-sm pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="City, state or remote"
-                  value={selectedLocation === 'All' ? '' : selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value || 'All')}
-                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white transition"
-                  aria-label="City, state or remote"
-                />
-              </div>
-
-              {/* Submit & Mobile Filter Button */}
-              <div className="flex items-center gap-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm shadow-xs"
-                >
-                  Find Jobs
-                </Button>
-
-                {/* Mobile Filter Toggle */}
-                <button
-                  type="button"
-                  onClick={() => setMobileFiltersOpen(true)}
-                  className="lg:hidden flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold border border-slate-200"
-                  aria-label="Open filter options"
-                >
-                  <FaSlidersH className="text-xs" />
-                  <span>Filters</span>
-                  {activeFiltersCount > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-bold">
-                      {activeFiltersCount}
-                    </span>
-                  )}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-
-        {/* Results Header: Active Filter Chips & Sorting */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-display">
-              {searchTerm ? `Jobs matching "${searchTerm}"` : 'All Open Positions'}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Showing <span className="font-bold text-slate-900">{filteredJobs.length}</span> published opportunity{filteredJobs.length === 1 ? '' : 'ies'}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs">
-              <FaSortAmountDown className="text-indigo-600" />
-              <span>Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="bg-transparent font-medium text-slate-800 border-none focus:outline-none cursor-pointer"
-              >
-                <option value="newest">Newest First</option>
-                <option value="salaryHigh">Salary: High to Low</option>
-                <option value="salaryLow">Salary: Low to High</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Selected Filter Chips */}
-        {activeFiltersCount > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-1">
-              Active Filters:
-            </span>
-            {searchTerm && (
-              <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium">
-                Keywords: "{searchTerm}"
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 pb-16">
+      
+      {/* Top Search Bar */}
+      <div className="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-stretch gap-2">
+            
+            <div className="relative flex-1 flex items-center">
+              <FaSearch className="absolute left-3.5 text-slate-400 text-xs pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Role, skills, or company"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 font-medium focus:outline-none focus:border-indigo-600 focus:bg-white"
+              />
+              {searchTerm && (
                 <button
                   type="button"
                   onClick={() => {
                     setSearchTerm('');
                     updateParams({ search: '' });
                   }}
-                  className="hover:text-indigo-900"
+                  className="absolute right-3 text-slate-400 hover:text-slate-600 text-xs"
                 >
-                  <FaTimes size={9} />
+                  <FaTimes />
                 </button>
-              </span>
-            )}
-            {selectedLocation !== 'All' && (
-              <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium">
-                Location: {selectedLocation}
-                <button
-                  type="button"
-                  onClick={() => handleLocationChange('All')}
-                  className="hover:text-indigo-900"
-                >
-                  <FaTimes size={9} />
-                </button>
-              </span>
-            )}
-            {selectedCategory !== 'All' && (
-              <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium">
-                Category: {selectedCategory}
-                <button
-                  type="button"
-                  onClick={() => handleCategoryChange('All')}
-                  className="hover:text-indigo-900"
-                >
-                  <FaTimes size={9} />
-                </button>
-              </span>
-            )}
-            {selectedJobType !== 'All' && (
-              <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium">
-                Type: {selectedJobType}
-                <button
-                  type="button"
-                  onClick={() => handleJobTypeChange('All')}
-                  className="hover:text-indigo-900"
-                >
-                  <FaTimes size={9} />
-                </button>
-              </span>
-            )}
-            {selectedExp !== 'All' && (
-              <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium">
-                Exp: {selectedExp}
-                <button
-                  type="button"
-                  onClick={() => handleExpChange('All')}
-                  className="hover:text-indigo-900"
-                >
-                  <FaTimes size={9} />
-                </button>
-              </span>
-            )}
+              )}
+            </div>
+
+            <div className="relative sm:w-64 flex items-center">
+              <FaMapMarkerAlt className="absolute left-3.5 text-slate-400 text-xs pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Location / City"
+                value={selectedLocation === 'All' ? '' : selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value || 'All')}
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 font-medium focus:outline-none focus:border-indigo-600 focus:bg-white"
+              />
+            </div>
 
             <button
-              type="button"
-              onClick={resetAllFilters}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-800 ml-2 underline"
+              type="submit"
+              className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
             >
-              Clear all
+              <span>Search</span>
             </button>
-          </div>
-        )}
 
-        {/* Layout Grid: Sidebar Filters (Desktop) + Job Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Mobile Filters Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen(true)}
+              className="sm:hidden px-3 py-2 rounded-lg border border-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5"
+            >
+              <FaSlidersH className="text-xs" />
+              <span>Filters {activeFiltersCount > 0 ? `(${activeFiltersCount})` : ''}</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Main Layout: Sidebar Filters + Job Listings */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="flex items-start gap-8">
           
-          {/* Desktop Filter Sidebar (Span 3) */}
-          <aside className="hidden lg:block lg:col-span-3 sticky top-28 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-6">
+          {/* DESKTOP SIDEBAR FILTERS */}
+          <aside className="hidden lg:block w-64 flex-shrink-0 bg-white border border-slate-200 rounded-xl p-4 sticky top-36 space-y-6">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <span className="text-sm font-bold text-slate-900 font-display flex items-center gap-2">
-                <FaFilter className="text-indigo-600 text-xs" />
-                Filter Positions
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <FaFilter className="text-[10px] text-slate-400" />
+                Filters
               </span>
               {activeFiltersCount > 0 && (
                 <button
                   type="button"
                   onClick={resetAllFilters}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+                  className="text-xs text-indigo-600 hover:underline font-semibold"
                 >
-                  Reset
+                  Clear all
                 </button>
               )}
             </div>
 
-            {/* Category Filter */}
-            <div>
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                Job Category
-              </label>
-              <div className="space-y-1.5">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => handleCategoryChange(cat)}
-                    className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center justify-between ${
-                      selectedCategory === cat
-                        ? 'bg-indigo-50 text-indigo-700 font-bold'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
-                  >
-                    <span>{cat}</span>
-                    {selectedCategory === cat && <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />}
-                  </button>
+            {/* Category / Industry */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block">Category</label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="w-full text-xs p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-600"
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
                 ))}
-              </div>
+              </select>
             </div>
 
-            {/* Employment Type */}
-            <div className="pt-4 border-t border-slate-100">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                Employment Type
-              </label>
+            {/* Location */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block">Location</label>
+              <select
+                value={selectedLocation}
+                onChange={(e) => handleLocationChange(e.target.value)}
+                className="w-full text-xs p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-600"
+              >
+                {popularLocations.map((l) => (
+                  <option key={l} value={l}>{l}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Job Type */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block">Employment Type</label>
               <div className="space-y-1.5">
                 {jobTypes.map((type) => (
                   <button
                     key={type}
                     type="button"
                     onClick={() => handleJobTypeChange(type)}
-                    className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center justify-between ${
+                    className={`w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-lg text-left transition ${
                       selectedJobType === type
                         ? 'bg-indigo-50 text-indigo-700 font-bold'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        : 'text-slate-600 hover:bg-slate-50'
                     }`}
                   >
                     <span>{type}</span>
-                    {selectedJobType === type && <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />}
+                    {selectedJobType === type && <FaCheck className="text-[10px]" />}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Experience Level */}
-            <div className="pt-4 border-t border-slate-100">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                Experience Level
-              </label>
-              <div className="space-y-1.5">
+            {/* Experience */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block">Experience Level</label>
+              <select
+                value={selectedExp}
+                onChange={(e) => handleExpChange(e.target.value)}
+                className="w-full text-xs p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-600"
+              >
                 {experienceLevels.map((exp) => (
-                  <button
-                    key={exp}
-                    type="button"
-                    onClick={() => handleExpChange(exp)}
-                    className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center justify-between ${
-                      selectedExp === exp
-                        ? 'bg-indigo-50 text-indigo-700 font-bold'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
-                  >
-                    <span>{exp}</span>
-                    {selectedExp === exp && <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />}
-                  </button>
+                  <option key={exp} value={exp}>{exp}</option>
                 ))}
-              </div>
-            </div>
-
-            {/* Popular Locations */}
-            <div className="pt-4 border-t border-slate-100">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                Popular Locations
-              </label>
-              <div className="flex flex-wrap gap-1.5">
-                {popularLocations.map((loc) => (
-                  <button
-                    key={loc}
-                    type="button"
-                    onClick={() => handleLocationChange(loc)}
-                    className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition ${
-                      selectedLocation === loc
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    {loc}
-                  </button>
-                ))}
-              </div>
+              </select>
             </div>
           </aside>
 
-          {/* Job Listings Column (Span 9) */}
-          <main className="lg:col-span-9">
+          {/* MAIN AREA: LISTINGS */}
+          <main className="flex-1 min-w-0">
+            
+            {/* Header: Results count & Sort */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200">
+              <div>
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 font-display">
+                  {searchTerm ? `Jobs matching "${searchTerm}"` : 'All Available Jobs'}
+                </h1>
+                <p className="text-xs text-slate-500">
+                  Showing <span className="font-bold text-slate-900">{filteredJobs.length}</span> positions
+                </p>
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2">
+                <FaSortAmountDown className="text-slate-400 text-xs" />
+                <span className="text-xs text-slate-500">Sort by:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="text-xs py-1.5 px-2 bg-white border border-slate-200 rounded-lg text-slate-800 font-semibold focus:outline-none focus:border-indigo-600"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="title">Job Title (A-Z)</option>
+                  <option value="company">Company Name</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Active Filter Chips */}
+            {activeFiltersCount > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                <span className="text-[11px] text-slate-400 font-semibold">Active:</span>
+
+                {selectedCategory !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 text-xs text-slate-700 font-medium">
+                    <span>{selectedCategory}</span>
+                    <button onClick={() => handleCategoryChange('All')} className="text-slate-400 hover:text-slate-700">
+                      <FaTimes size={10} />
+                    </button>
+                  </span>
+                )}
+
+                {selectedLocation !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 text-xs text-slate-700 font-medium">
+                    <span>{selectedLocation}</span>
+                    <button onClick={() => handleLocationChange('All')} className="text-slate-400 hover:text-slate-700">
+                      <FaTimes size={10} />
+                    </button>
+                  </span>
+                )}
+
+                {selectedJobType !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 text-xs text-slate-700 font-medium">
+                    <span>{selectedJobType}</span>
+                    <button onClick={() => handleJobTypeChange('All')} className="text-slate-400 hover:text-slate-700">
+                      <FaTimes size={10} />
+                    </button>
+                  </span>
+                )}
+
+                {selectedExp !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 text-xs text-slate-700 font-medium">
+                    <span>Exp: {selectedExp}</span>
+                    <button onClick={() => handleExpChange('All')} className="text-slate-400 hover:text-slate-700">
+                      <FaTimes size={10} />
+                    </button>
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  onClick={resetAllFilters}
+                  className="text-xs text-indigo-600 hover:underline font-semibold ml-1"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
+
+            {/* Job Listings Grid */}
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <div
-                    key={n}
-                    className="bg-white p-6 rounded-2xl border border-slate-200/90 animate-pulse space-y-4"
-                  >
+                  <div key={n} className="bg-white p-4 rounded-xl border border-slate-200 animate-pulse space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-slate-200 rounded-xl" />
-                      <div className="space-y-2 flex-1">
-                        <div className="h-4 bg-slate-200 rounded w-1/3" />
-                        <div className="h-5 bg-slate-200 rounded w-2/3" />
+                      <div className="w-10 h-10 bg-slate-200 rounded-lg" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-3.5 bg-slate-200 rounded w-1/3" />
+                        <div className="h-4 bg-slate-200 rounded w-2/3" />
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <div className="h-6 bg-slate-200 rounded-full w-20" />
-                      <div className="h-6 bg-slate-200 rounded-full w-24" />
-                    </div>
-                    <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
-                      <div className="h-5 bg-slate-200 rounded w-28" />
-                      <div className="h-8 bg-slate-200 rounded-xl w-20" />
-                    </div>
+                    <div className="h-5 bg-slate-200 rounded w-1/2" />
                   </div>
                 ))}
               </div>
             ) : filteredJobs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredJobs.map((job) => (
                   <JobCard
                     key={job.id}
@@ -566,109 +494,115 @@ const Jobs = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-20 px-4 bg-white rounded-2xl border border-slate-200 shadow-xs max-w-md mx-auto">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-4">
-                  <FaBriefcase size={22} />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1 font-display">No Matching Openings</h3>
-                <p className="text-xs text-slate-600 mb-6 leading-relaxed">
-                  We couldn't find active positions matching your criteria. Try adjusting keywords or resetting your filter selections.
-                </p>
-                <Button variant="primary" size="sm" onClick={resetAllFilters} className="rounded-xl shadow-xs">
-                  Reset All Filters
-                </Button>
+              <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                <p className="text-sm font-bold text-slate-800">No jobs match your criteria</p>
+                <p className="text-xs text-slate-500 mt-1">Try resetting your location or keyword filters.</p>
+                <button
+                  type="button"
+                  onClick={resetAllFilters}
+                  className="mt-3 px-4 py-2 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold hover:bg-indigo-100"
+                >
+                  Reset all filters
+                </button>
               </div>
             )}
+
           </main>
 
         </div>
-
       </div>
 
-      {/* Mobile Filters Drawer / Modal */}
+      {/* MOBILE FILTERS DRAWER */}
       {mobileFiltersOpen && (
-        <Modal
-          isOpen={mobileFiltersOpen}
-          onClose={() => setMobileFiltersOpen(false)}
-          title="Filter Positions"
-          subtitle="Narrow results by category, type, and experience."
-          maxWidth="max-w-md"
-        >
-          <div className="space-y-5 py-2">
-            <div>
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                Job Category
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium"
-              >
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-xs">
+          <div className="w-full max-w-xs bg-white h-full p-5 flex flex-col justify-between overflow-y-auto">
+            <div className="space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <span className="text-sm font-bold text-slate-900">Filters</span>
+                <button
+                  type="button"
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-700"
+                >
+                  <FaTimes size={14} />
+                </button>
+              </div>
+
+              {/* Category */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">Category</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50"
+                >
+                  {categories.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Location */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">Location</label>
+                <select
+                  value={selectedLocation}
+                  onChange={(e) => handleLocationChange(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50"
+                >
+                  {popularLocations.map((l) => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Employment Type */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">Employment Type</label>
+                <select
+                  value={selectedJobType}
+                  onChange={(e) => handleJobTypeChange(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50"
+                >
+                  {jobTypes.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Experience */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">Experience</label>
+                <select
+                  value={selectedExp}
+                  onChange={(e) => handleExpChange(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-50"
+                >
+                  {experienceLevels.map((exp) => (
+                    <option key={exp} value={exp}>{exp}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                Employment Type
-              </label>
-              <select
-                value={selectedJobType}
-                onChange={(e) => handleJobTypeChange(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium"
+            <div className="pt-4 border-t border-slate-100 flex gap-2">
+              <button
+                type="button"
+                onClick={resetAllFilters}
+                className="flex-1 py-2 text-xs font-semibold border border-slate-200 rounded-lg text-slate-700"
               >
-                {jobTypes.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                Experience Level
-              </label>
-              <select
-                value={selectedExp}
-                onChange={(e) => handleExpChange(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium"
-              >
-                {experienceLevels.map((e) => (
-                  <option key={e} value={e}>
-                    {e}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => {
-                  resetAllFilters();
-                  setMobileFiltersOpen(false);
-                }}
-                className="flex-1"
-              >
-                Reset All
-              </Button>
-              <Button
-                variant="primary"
-                size="md"
+                Reset
+              </button>
+              <button
+                type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="flex-1"
+                className="flex-1 py-2 text-xs font-bold bg-indigo-600 text-white rounded-lg"
               >
-                Apply Filters
-              </Button>
+                Apply
+              </button>
             </div>
           </div>
-        </Modal>
+        </div>
       )}
 
       {/* Quick Apply Modal */}
@@ -678,7 +612,7 @@ const Jobs = () => {
           onClose={() => setQuickApplyJob(null)}
           title={`Apply for ${quickApplyJob.position}`}
           subtitle={`At ${quickApplyJob.companyName} • ${quickApplyJob.location || 'India'}`}
-          maxWidth="max-w-2xl"
+          maxWidth="max-w-xl"
         >
           <ApplyJob
             job={quickApplyJob}

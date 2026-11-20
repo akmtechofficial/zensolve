@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
-import { useAuth, SUPER_ADMIN_EMAIL } from '../../components/useAuth';
+import { useAuth, SUPER_ADMIN_EMAIL, ADMIN_EMAILS } from '../../components/useAuth';
 import { resolveUserProfile } from '../../services/authService';
 import {
   FaShieldAlt,
@@ -45,9 +45,9 @@ const AdminLogin = () => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Strict Enforcement: Only admin@zensolve.in can log in
-    if (normalizedEmail !== SUPER_ADMIN_EMAIL) {
-      setError(`Access Restricted: Only the authorized Super Admin ID (${SUPER_ADMIN_EMAIL}) can access this portal.`);
+    // Strict Enforcement: Allow designated admin accounts
+    if (!ADMIN_EMAILS.includes(normalizedEmail)) {
+      setError(`Access Restricted: "${normalizedEmail}" is not in the authorized Super Admin list.`);
       return;
     }
 
@@ -58,10 +58,10 @@ const AdminLogin = () => {
 
     setLoading(true);
     try {
-      const credential = await signInWithEmailAndPassword(auth, SUPER_ADMIN_EMAIL, password);
+      const credential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
       
       // Secondary verification
-      if (credential.user?.email?.toLowerCase() !== SUPER_ADMIN_EMAIL) {
+      if (!credential.user?.email || !ADMIN_EMAILS.includes(credential.user.email.toLowerCase())) {
         await signOut(auth);
         throw new Error('Unauthorized account credentials.');
       }
@@ -74,10 +74,10 @@ const AdminLogin = () => {
     } catch (err) {
       console.error('Super Admin Login Error:', err);
       if (err.code === 'auth/user-not-found') {
-        setError(`The account ${SUPER_ADMIN_EMAIL} has not been created in Firebase Authentication yet.`);
+        setError(`The account ${normalizedEmail} has not been created in Firebase Authentication yet.`);
         setCanInitialize(true);
       } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        setError('Incorrect password for admin@zensolve.in. Please try again.');
+        setError(`Incorrect password for ${normalizedEmail}. Please try again.`);
         setCanInitialize(true); // Allow setting up if credentials aren't initialized yet
       } else if (err.code === 'auth/too-many-requests') {
         setError('Too many failed login attempts. Access temporarily locked for security. Please try again later.');
@@ -96,13 +96,19 @@ const AdminLogin = () => {
       return;
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!ADMIN_EMAILS.includes(normalizedEmail)) {
+      setError(`Only authorized Super Admin emails can be initialized.`);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const cred = await createUserWithEmailAndPassword(auth, SUPER_ADMIN_EMAIL, password);
+      const cred = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
       await resolveUserProfile(cred.user, 'admin');
       await refreshUser();
-      setInitSuccess(`Admin account (${SUPER_ADMIN_EMAIL}) successfully initialized in Firebase! Redirecting...`);
+      setInitSuccess(`Admin account (${normalizedEmail}) successfully initialized in Firebase! Redirecting...`);
       setTimeout(() => {
         navigate('/admin', { replace: true });
       }, 1500);
@@ -207,7 +213,7 @@ const AdminLogin = () => {
             <form onSubmit={handleAdminLogin} className="space-y-4">
               <div>
                 <label className="text-xs font-semibold text-slate-300 mb-1.5 block">
-                  Super Admin ID (Fixed)
+                  Super Admin Email
                 </label>
                 <div className="relative">
                   <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs pointer-events-none" />
@@ -220,9 +226,22 @@ const AdminLogin = () => {
                     placeholder="admin@zensolve.in"
                   />
                 </div>
-                <p className="text-[10px] text-slate-500 mt-1">
-                  Only <span className="text-indigo-400 font-semibold">{SUPER_ADMIN_EMAIL}</span> is permitted to authenticate.
-                </p>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {['admin@zensolve.in', 'carezensolve@gmail.com', 'admin@zensolve.com'].map((em) => (
+                    <button
+                      key={em}
+                      type="button"
+                      onClick={() => setEmail(em)}
+                      className={`text-[10px] px-2 py-0.5 rounded-lg border font-mono transition ${
+                        email.trim().toLowerCase() === em
+                          ? 'bg-indigo-600/30 border-indigo-500/60 text-indigo-300 font-semibold'
+                          : 'bg-slate-900 border-white/10 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>

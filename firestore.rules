@@ -12,8 +12,17 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return isAuthenticated() &&
-        request.auth.token.email == 'admin@zensolve.in';
+      return isAuthenticated() && (
+        request.auth.token.email in [
+          'admin@zensolve.in',
+          'admin@zensolve.com',
+          'carezensolve@gmail.com',
+          'akmtechofficial@gmail.com',
+          'superadmin@zensolve.com'
+        ] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
     }
 
     function isSuspended() {
@@ -41,11 +50,16 @@ service cloud.firestore {
         (resource.data.role in ['company', 'employer'] &&
          (resource.data.approved == true || resource.data.status == 'approved'));
 
-      // Registration: candidates and companies create their initial profile (cannot grant themselves approved or admin status)
-      allow create: if isAuthenticated() && request.auth.uid == userId &&
-        (request.resource.data.role in ['candidate', 'company', 'employer']) &&
-        (!('approved' in request.resource.data) || request.resource.data.approved == false) &&
-        (!('suspended' in request.resource.data) || request.resource.data.suspended == false);
+      // Registration: candidates and companies create their initial profile; super-admins can create any profile
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (
+          request.auth.uid == userId &&
+          (request.resource.data.role in ['candidate', 'company', 'employer']) &&
+          (!('approved' in request.resource.data) || request.resource.data.approved == false) &&
+          (!('suspended' in request.resource.data) || request.resource.data.suspended == false)
+        )
+      );
 
       // Updates: user can update their own permitted fields but CANNOT self-promote to admin, self-approve, or unsuspended themselves
       allow update: if isSuperAdmin() || (
@@ -103,11 +117,11 @@ service cloud.firestore {
         )
       );
 
-      // Candidates can submit applications (must bind userId and initial status 'Applied')
+      // Candidates can submit applications (must bind userId and initial status 'Applied' or 'Pending')
       allow create: if isAuthenticated() &&
         !isSuspended() &&
         request.resource.data.userId == request.auth.uid &&
-        request.resource.data.status == 'Applied';
+        (request.resource.data.status in ['Applied', 'Pending']);
 
       // Updates:
       // 1. Super-admin full access

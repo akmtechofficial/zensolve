@@ -171,20 +171,40 @@ const AdminSettings = () => {
             </div>
           </div>
 
-          <div className="pt-2 max-w-xs">
-            <label className="text-xs font-semibold text-slate-700 block mb-1">
-              Maximum Candidate Resume Size (MB)
-            </label>
-            <input
-              type="number"
-              value={settings.maxUploadSizeMb}
-              onChange={(e) =>
-                setSettings((prev) => ({ ...prev, maxUploadSizeMb: Number(e.target.value) || 10 }))
-              }
-              min="1"
-              max="25"
-              className="w-full px-4 py-2.5 rounded-xl glass-input text-xs font-bold text-slate-900"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 max-w-md">
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
+                Max Candidate Resume Size (MB)
+              </label>
+              <input
+                type="number"
+                value={settings.maxUploadSizeMb || 10}
+                onChange={(e) =>
+                  setSettings((prev) => ({ ...prev, maxUploadSizeMb: Number(e.target.value) || 10 }))
+                }
+                min="1"
+                max="25"
+                className="w-full px-4 py-2.5 rounded-xl glass-input text-xs font-bold text-slate-900"
+              />
+              <span className="text-[10px] text-slate-400 mt-0.5 block">Standard cap: 10 MB</span>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
+                Max Company Logo Size (KB)
+              </label>
+              <input
+                type="number"
+                value={settings.maxLogoSizeKb || 500}
+                onChange={(e) =>
+                  setSettings((prev) => ({ ...prev, maxLogoSizeKb: Number(e.target.value) || 500 }))
+                }
+                min="100"
+                max="2048"
+                className="w-full px-4 py-2.5 rounded-xl glass-input text-xs font-bold text-slate-900"
+              />
+              <span className="text-[10px] text-slate-400 mt-0.5 block">Standard cap: 500 KB</span>
+            </div>
           </div>
         </div>
 

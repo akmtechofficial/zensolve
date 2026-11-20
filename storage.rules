@@ -7,7 +7,15 @@ service firebase.storage {
     }
 
     function isSuperAdmin() {
-      return isAuthenticated() && request.auth.token.email == 'admin@zensolve.in';
+      return isAuthenticated() && (
+        request.auth.token.email in [
+          'admin@zensolve.in',
+          'admin@zensolve.com',
+          'carezensolve@gmail.com',
+          'akmtechofficial@gmail.com',
+          'superadmin@zensolve.com'
+        ]
+      );
     }
 
     // Candidate Resumes: Strictly Private
@@ -27,10 +35,20 @@ service firebase.storage {
       allow delete: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
     }
 
-    // Company Logos & Public Branding Assets
+    // Company Logos & Public Branding Assets (Strict 500 KB limit)
     match /company_logos/{companyId}/{fileName} {
       allow read: if true;
-      allow write: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin()) && request.resource.size < 5 * 1024 * 1024;
+      allow write: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin()) &&
+        request.resource.size <= 500 * 1024 &&
+        (request.resource.contentType.matches('image/.*') || request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']);
+      allow delete: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin());
+    }
+
+    match /companies/{companyId}/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin()) &&
+        request.resource.size <= 500 * 1024 &&
+        (request.resource.contentType.matches('image/.*') || request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']);
       allow delete: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin());
     }
 

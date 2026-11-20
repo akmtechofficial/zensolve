@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../components/useAuth';
+import ResendApprovalReminder from '../../components/ResendApprovalReminder';
 import {
   FaTachometerAlt,
   FaBriefcase,
@@ -167,16 +168,18 @@ const DashboardLayout = ({ children, title, subtitle, actions }) => {
         
         {/* Pending Approval Warning Banner (If Company not verified) */}
         {!isApprovedCompany && (
-          <div className="bg-amber-50 border-b border-amber-200 p-4 text-xs text-amber-900 flex items-start gap-3 relative z-20">
-            <FaExclamationTriangle className="text-amber-600 text-base flex-shrink-0 mt-0.5" />
-            <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <strong className="font-bold">Company Profile Pending Administrative Approval:</strong>{' '}
-                <span>Your organization registration is currently under review by ZenSolve Super-Admins. You can set up your profile, but publishing active jobs to public candidates is disabled until approved.</span>
+          <div className="bg-amber-50 border-b border-amber-200 p-4 text-xs text-amber-900 relative z-20">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <FaExclamationTriangle className="text-amber-600 text-base flex-shrink-0 mt-0.5" />
+                <div>
+                  <strong className="font-bold">Company Profile Pending Admin Approval:</strong>{' '}
+                  <span>Your organization is under review. Job postings are disabled until approval. If urgent, request an expedited review from ZenSolve office below.</span>
+                </div>
               </div>
-              <span className="px-2.5 py-1 rounded-full bg-amber-100 border border-amber-300 text-[10px] font-bold text-amber-800 uppercase tracking-wider whitespace-nowrap">
-                Review in Progress
-              </span>
+              <div className="flex items-center gap-2 self-start md:self-auto pl-7 md:pl-0">
+                <ResendApprovalReminder compact={true} />
+              </div>
             </div>
           </div>
         )}
