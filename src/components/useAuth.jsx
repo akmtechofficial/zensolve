@@ -117,7 +117,21 @@ export const AuthProvider = ({ children }) => {
   }, [fetchUserData]);
 
   useEffect(() => {
+    // Hard safety net: if Firebase Auth SDK does not fire within 6 seconds
+    // (network lag, cold start, service-worker cache), force loading off so
+    // the UI does not freeze on a white spinner indefinitely.
+    const safetyTimer = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          console.warn('[useAuth] Auth state did not resolve within 6s — forcing loading:false');
+          return false;
+        }
+        return prev;
+      });
+    }, 6000);
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      clearTimeout(safetyTimer);
       setUser(currentUser);
       if (currentUser) {
         const data = await fetchUserData(currentUser.uid, currentUser.email);
@@ -128,7 +142,10 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      unsubscribe();
+    };
   }, [fetchUserData]);
 
   const logout = async () => {

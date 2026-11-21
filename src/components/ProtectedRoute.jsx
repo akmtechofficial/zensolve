@@ -9,9 +9,17 @@ const ProtectedRoute = ({ children, requiredRole = null, requireEmployer = false
   const location = useLocation();
 
   if (loading) {
+    // Show spinner for max 6 seconds (useAuth safety timer will force resolve).
+    // For admin routes: if we are still loading after the safety window, show
+    // a targeted message so the admin knows what is happening.
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] text-slate-500">
-        <FaSpinner className="animate-spin text-indigo-600 text-3xl" />
+        <div className="flex flex-col items-center gap-3">
+          <FaSpinner className="animate-spin text-indigo-600 text-3xl" />
+          {requiredRole === 'admin' && (
+            <p className="text-xs text-slate-400 mt-1">Verifying admin session…</p>
+          )}
+        </div>
       </div>
     );
   }
