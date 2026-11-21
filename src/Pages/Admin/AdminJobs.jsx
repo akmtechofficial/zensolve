@@ -193,10 +193,22 @@ const AdminJobs = () => {
                     </td>
 
                     <td className="py-4 px-4">
-                      <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                        <FaBuilding className="text-slate-400 text-xs" />
-                        <span>{job.companyName || 'Confidential'}</span>
-                      </div>
+                      {job.clientCompanyName ? (
+                        <div>
+                          <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                            <FaBuilding className="text-indigo-600 text-xs shrink-0" />
+                            <span className="truncate max-w-[180px]">{job.clientCompanyName}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">
+                            Agency: {job.companyName || 'Unknown'}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                          <FaBuilding className="text-slate-400 text-xs shrink-0" />
+                          <span>{job.companyName || 'Confidential'}</span>
+                        </div>
+                      )}
                     </td>
 
                     <td className="py-4 px-4 text-slate-600">

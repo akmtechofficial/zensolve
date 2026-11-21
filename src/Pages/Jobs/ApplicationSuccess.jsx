@@ -18,9 +18,14 @@ const ApplicationSuccess = () => {
     applicationId,
     jobPosition,
     companyName,
+    clientCompanyName,
     applicantName,
     applicantEmail,
   } = location.state || {};
+
+  const hiringDisplay = clientCompanyName
+    ? ` at ${clientCompanyName} (via ${companyName || 'Staffing Partner'})`
+    : (companyName ? ` at ${companyName}` : '');
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center py-20 px-4 sm:px-6 relative overflow-hidden">
@@ -61,7 +66,7 @@ const ApplicationSuccess = () => {
             {applicantName ? `Thank you, ${applicantName}. ` : 'Thank you! '}
             Your application for{' '}
             <strong className="text-slate-900 font-bold">{jobPosition || 'the selected position'}</strong>
-            {companyName ? ` at ${companyName}` : ''} has been safely recorded in the employer's recruitment pipeline.
+            {hiringDisplay} has been safely recorded in the recruitment pipeline.
           </p>
 
           {applicationId && (

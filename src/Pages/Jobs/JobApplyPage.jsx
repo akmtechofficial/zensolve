@@ -175,6 +175,8 @@ const JobApplyPage = () => {
         jobId: job.id,
         companyId: job.companyId || job.userId || 'company',
         companyName: job.companyName || 'Verified Partner',
+        clientCompanyName: job.clientCompanyName || null,
+        clientCompanyLocation: job.clientCompanyLocation || null,
         jobPosition: job.position,
         location: job.location || 'India',
         userId: user.uid,
@@ -209,6 +211,7 @@ const JobApplyPage = () => {
           applicationId: result.id,
           jobPosition: job.position,
           companyName: job.companyName,
+          clientCompanyName: job.clientCompanyName || null,
           applicantName,
           applicantEmail,
         },
@@ -317,10 +320,22 @@ const JobApplyPage = () => {
                 {job.position}
               </h1>
               <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 mt-2">
-                <span className="font-semibold text-indigo-600 flex items-center gap-1.5">
-                  <FaBuilding />
-                  <span>{job.companyName}</span>
-                </span>
+                {job.clientCompanyName ? (
+                  <>
+                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                      <FaBuilding className="text-indigo-600" />
+                      <span>Hiring For: {job.clientCompanyName}</span>
+                    </span>
+                    <span className="text-slate-400 font-medium">
+                      (via {job.companyName})
+                    </span>
+                  </>
+                ) : (
+                  <span className="font-semibold text-indigo-600 flex items-center gap-1.5">
+                    <FaBuilding />
+                    <span>{job.companyName}</span>
+                  </span>
+                )}
                 <span>•</span>
                 <span className="flex items-center gap-1.5">
                   <FaMapMarkerAlt className="text-slate-400" />

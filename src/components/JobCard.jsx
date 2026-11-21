@@ -110,7 +110,9 @@ const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
     return null;
   })();
 
-  const companyInitial = job?.companyName ? job.companyName.charAt(0).toUpperCase() : 'Z';
+  const hiringCompany = job?.clientCompanyName || job?.companyName || 'Verified Company';
+  const agencyName = job?.clientCompanyName ? (job?.companyName || null) : null;
+  const companyInitial = hiringCompany.charAt(0).toUpperCase();
 
   return (
     <div
@@ -124,7 +126,7 @@ const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
             {job?.companyLogo ? (
               <img
                 src={job.companyLogo}
-                alt={`${job.companyName} logo`}
+                alt={`${hiringCompany} logo`}
                 className="w-10 h-10 rounded-lg object-contain bg-white border border-slate-200 p-0.5 flex-shrink-0"
                 onError={(e) => {
                   e.target.style.display = 'none';
@@ -141,16 +143,23 @@ const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
             </div>
 
             <div className="min-w-0">
-              <Link
-                to={`/company/${encodeURIComponent(job.companyName || 'zen')}`}
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs font-semibold text-slate-500 hover:text-indigo-600 transition flex items-center gap-1 truncate"
-              >
-                <span className="truncate">{job?.companyName || 'Verified Company'}</span>
-                {job?.verified !== false && (
-                  <FaCheckCircle className="text-emerald-500 text-[10px] flex-shrink-0" title="Verified" />
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Link
+                  to={`/company/${encodeURIComponent(job.companyName || 'zen')}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-xs font-semibold text-slate-700 hover:text-indigo-600 transition flex items-center gap-1 truncate"
+                >
+                  <span className="font-bold text-slate-900 truncate">{hiringCompany}</span>
+                  {job?.verified !== false && (
+                    <FaCheckCircle className="text-emerald-500 text-[10px] flex-shrink-0" title="Verified" />
+                  )}
+                </Link>
+                {agencyName && (
+                  <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded font-medium truncate">
+                    via {agencyName}
+                  </span>
                 )}
-              </Link>
+              </div>
               
               <h2 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-indigo-600 transition tracking-tight mt-0.5 truncate">
                 {job?.position || 'Job Opening'}

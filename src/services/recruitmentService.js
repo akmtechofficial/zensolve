@@ -46,6 +46,7 @@ export const getJobs = async (filters = {}) => {
         (job) =>
           (job.position && job.position.toLowerCase().includes(q)) ||
           (job.companyName && job.companyName.toLowerCase().includes(q)) ||
+          (job.clientCompanyName && job.clientCompanyName.toLowerCase().includes(q)) ||
           (job.location && job.location.toLowerCase().includes(q)) ||
           (job.category && job.category.toLowerCase().includes(q)) ||
           (job.description && job.description.toLowerCase().includes(q))

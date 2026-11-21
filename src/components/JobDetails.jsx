@@ -220,12 +220,33 @@ const JobDetails = () => {
 
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Link
-                        to={`/company/${encodeURIComponent(job.companyName || '')}`}
-                        className="text-sm sm:text-base font-bold text-slate-700 hover:text-indigo-600 transition"
-                      >
-                        {job.companyName}
-                      </Link>
+                      {job?.clientCompanyName ? (
+                        <>
+                          <span className="text-sm sm:text-base font-extrabold text-slate-900">
+                            {job.clientCompanyName}
+                          </span>
+                          <span className="text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md font-medium">
+                            Hiring Client
+                          </span>
+                          <span className="text-xs text-slate-400">â€¢</span>
+                          <span className="text-xs text-slate-500 font-medium">
+                            via Staffing Partner:
+                          </span>
+                          <Link
+                            to={`/company/${encodeURIComponent(job.companyName || '')}`}
+                            className="text-xs font-semibold text-slate-700 hover:text-indigo-600 transition underline underline-offset-2"
+                          >
+                            {job.companyName}
+                          </Link>
+                        </>
+                      ) : (
+                        <Link
+                          to={`/company/${encodeURIComponent(job.companyName || '')}`}
+                          className="text-sm sm:text-base font-bold text-slate-700 hover:text-indigo-600 transition"
+                        >
+                          {job.companyName}
+                        </Link>
+                      )}
                       {job.verified !== false && <VerifiedBadge text="Verified Partner" size="sm" />}
                     </div>
 
@@ -345,15 +366,31 @@ const JobDetails = () => {
 
               {/* Company Info Box */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-                <h4 className="text-sm font-bold text-slate-900">About The Company</h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {job.companyName} is a verified employer actively expanding their organization on ZenSolve.
-                </p>
+                <h4 className="text-sm font-bold text-slate-900">
+                  {job.clientCompanyName ? 'Hiring & Placement Details' : 'About The Company'}
+                </h4>
+                {job.clientCompanyName ? (
+                  <div className="space-y-2 text-xs text-slate-600 leading-relaxed">
+                    <p>
+                      <strong className="text-slate-800">Target Employer:</strong> {job.clientCompanyName}
+                    </p>
+                    <p>
+                      <strong className="text-slate-800">Manpower / Staffing Partner:</strong> {job.companyName}
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      Applications will be managed and reviewed by {job.companyName} for placement at {job.clientCompanyName}.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    {job.companyName} is a verified employer actively expanding their organization on ZenSolve.
+                  </p>
+                )}
                 <Link
                   to={`/company/${encodeURIComponent(job.companyName || '')}`}
                   className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 block pt-1"
                 >
-                  View Company Profile & All Openings →
+                  View Agency Profile & All Openings →
                 </Link>
               </div>
 

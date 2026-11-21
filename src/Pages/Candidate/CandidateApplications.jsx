@@ -200,10 +200,20 @@ const CandidateApplications = () => {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
-                        <span className="font-semibold text-indigo-600 flex items-center gap-1">
-                          <FaBuilding className="text-[11px]" />
-                          <span>{app.companyName}</span>
-                        </span>
+                        {app.clientCompanyName ? (
+                          <span className="font-semibold text-slate-900 flex items-center gap-1">
+                            <FaBuilding className="text-indigo-600 text-[11px]" />
+                            <span>{app.clientCompanyName}</span>
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              (via {app.companyName})
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-indigo-600 flex items-center gap-1">
+                            <FaBuilding className="text-[11px]" />
+                            <span>{app.companyName}</span>
+                          </span>
+                        )}
                         <span>•</span>
                         <span className="flex items-center gap-1">
                           <FaCalendarAlt className="text-[11px] text-slate-400" />
