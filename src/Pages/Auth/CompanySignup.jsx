@@ -21,25 +21,34 @@ import { Button } from '../../components/ui/Button';
 import { notifyAdminNewCompany } from '../../services/notificationService';
 
 const COMPANY_TYPES = [
-  'Private Limited',
-  'Public Limited',
-  'Startup / Early Stage',
-  'LLC',
-  'Partnership / LLP',
-  'Recruitment / Staffing Agency',
-  'Enterprise',
+  'Manpower Supply & Staffing Agency',
+  'Recruitment & Placement Consultancy',
+  'Contract & Permanent Staffing Firm',
+  'IT & Technical Staffing Agency',
+  'Executive Search & HR Solutions',
+  'Private Limited Staffing Company',
+  'LLP / Partnership Agency',
+  'Proprietorship Staffing Firm',
 ];
 
 const INDUSTRIES = [
-  'IT & Software Development',
-  'Finance & Banking',
-  'Healthcare & Pharmaceuticals',
-  'Construction & Infrastructure',
-  'Education & EdTech',
-  'Logistics & Supply Chain',
-  'Retail & E-Commerce',
-  'Manufacturing & Industrial',
-  'Consulting & Professional Services',
+  'Multi-Industry Staffing (All Sectors)',
+  'IT, Software & Tech Talent',
+  'Manufacturing, Plant & Industrial Labor',
+  'Construction, Civil & Real Estate Manpower',
+  'Banking, Financial Services & Insurance (BFSI)',
+  'Healthcare, Nursing & Pharmaceuticals',
+  'Logistics, Warehousing & Supply Chain',
+  'Retail, Sales & Customer Support Staffing',
+  'Hospitality, Security & Facility Management',
+];
+
+const CLIENT_TIERS = [
+  '1 - 5 Client Companies',
+  '6 - 20 Client Companies',
+  '21 - 50 Client Companies',
+  '50+ Enterprise Clients',
+  'New Agency (Building Client Network)',
 ];
 
 import { useAuth } from '../../components/useAuth';
@@ -51,8 +60,10 @@ const CompanySignup = () => {
     hrName: '',
     email: '',
     phone: '',
-    companyType: 'Private Limited',
-    industry: 'IT & Software Development',
+    companyType: 'Manpower Supply & Staffing Agency',
+    industry: 'Multi-Industry Staffing (All Sectors)',
+    clientCount: '1 - 5 Client Companies',
+    gstNumber: '',
     location: '',
     website: '',
     logo: '',
@@ -134,18 +145,24 @@ const CompanySignup = () => {
         }
       }
 
-      // Save Company account in Firestore with PENDING APPROVAL state
+      // Save Company/Agency account in Firestore with PENDING APPROVAL state
       // Note: role is strictly set to 'company' — users cannot self-assign privileged roles.
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         companyName: formData.companyName,
+        agencyName: formData.companyName,
         hrName: formData.hrName,
         displayName: formData.hrName,
         email: formData.email,
         businessEmail: formData.email,
         phone: formData.phone || '',
         companyType: formData.companyType,
+        agencyType: formData.companyType,
         industry: formData.industry,
+        specialization: formData.industry,
+        clientCount: formData.clientCount || '',
+        gstNumber: formData.gstNumber || '',
+        isManpowerAgency: true,
         location: formData.location || 'India',
         website: formData.website || '',
         logo: finalLogoUrl,
@@ -162,11 +179,15 @@ const CompanySignup = () => {
       notifyAdminNewCompany({
         uid: user.uid,
         companyName: formData.companyName,
+        agencyName: formData.companyName,
         hrName: formData.hrName,
         email: formData.email,
         phone: formData.phone || '',
         companyType: formData.companyType,
         industry: formData.industry,
+        clientCount: formData.clientCount || '',
+        gstNumber: formData.gstNumber || '',
+        isManpowerAgency: true,
         location: formData.location || 'India',
         website: formData.website || '',
         description: formData.description || '',
@@ -211,42 +232,42 @@ const CompanySignup = () => {
               ZenSolve
             </span>
           </Link>
-          <span className="text-xs font-semibold uppercase tracking-wider text-violet-700 px-3 py-1 rounded-full bg-violet-50 border border-violet-200 block w-max mx-auto mb-2">
-            Employer & Recruiter Portal
+          <span className="text-xs font-semibold uppercase tracking-wider text-indigo-700 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 block w-max mx-auto mb-2">
+            Manpower & Staffing Agency Portal
           </span>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
-            Register Your Organization
+            Register Your Staffing Agency
           </h2>
           <p className="text-sm text-slate-600 mt-1 max-w-md mx-auto">
-            Set up your multi-company recruitment dashboard and hire verified talent across India.
+            Supply verified manpower, manage client company vacancies, and source pre-screened talent across India.
           </p>
         </div>
 
         {/* Card Form */}
         <div className="glass-surface-3 glass-specular p-6 sm:p-10 rounded-3xl border border-slate-200/90 shadow-xl bg-white/95">
           
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs mb-6 flex items-start gap-3">
-            <FaShieldAlt className="text-amber-600 text-base flex-shrink-0 mt-0.5" />
+          <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-200/90 text-indigo-950 text-xs mb-6 flex items-start gap-3">
+            <FaShieldAlt className="text-indigo-600 text-base flex-shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold block">Enterprise Verification Notice:</span>
-              <span>All company registrations undergo administrative review before job vacancies can be published publicly.</span>
+              <span className="font-bold block text-indigo-900">Manpower Agency Verification:</span>
+              <span>All staffing and recruitment agencies undergo administrative review before vacancies for client companies can be published publicly.</span>
             </div>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4">
             
-            {/* 2-Column: Company Name & HR Name */}
+            {/* 2-Column: Agency Name & Contact Person */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  Company / Organization Name <span className="text-rose-500">*</span>
+                  Staffing / Manpower Agency Name <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <FaBuilding className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                   <input
                     type="text"
                     name="companyName"
-                    placeholder="e.g. Acme Tech Global"
+                    placeholder="e.g. Apex Manpower Solutions LLP"
                     value={formData.companyName}
                     onChange={handleChange}
                     required
@@ -257,14 +278,14 @@ const CompanySignup = () => {
 
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  HR / Primary Contact Name <span className="text-rose-500">*</span>
+                  Authorized HR / Director Name <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <FaUserTie className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                   <input
                     type="text"
                     name="hrName"
-                    placeholder="e.g. Priya Sharma (Head of Talent)"
+                    placeholder="e.g. Priya Sharma (Operations Head)"
                     value={formData.hrName}
                     onChange={handleChange}
                     required
@@ -278,14 +299,14 @@ const CompanySignup = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  Business / Official Email <span className="text-rose-500">*</span>
+                  Official Agency Email <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                   <input
                     type="email"
                     name="email"
-                    placeholder="hr@company.com"
+                    placeholder="contact@agency.com"
                     value={formData.email}
                     onChange={handleChange}
                     required
@@ -296,7 +317,7 @@ const CompanySignup = () => {
 
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  Mobile / Contact Number <span className="text-rose-500">*</span>
+                  Mobile / WhatsApp Contact <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <FaPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
@@ -313,11 +334,11 @@ const CompanySignup = () => {
               </div>
             </div>
 
-            {/* Company Type & Industry */}
+            {/* Agency Type & Specialization */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  Company Structure / Type
+                  Agency Business Structure
                 </label>
                 <select
                   name="companyType"
@@ -335,7 +356,7 @@ const CompanySignup = () => {
 
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  Primary Industry Sector
+                  Primary Staffing Specialization
                 </label>
                 <select
                   name="industry"
@@ -352,18 +373,53 @@ const CompanySignup = () => {
               </div>
             </div>
 
+            {/* Active Clients & GSTIN */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+                  Active Client Companies (Placement Capacity)
+                </label>
+                <select
+                  name="clientCount"
+                  value={formData.clientCount}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-slate-900 font-medium"
+                >
+                  {CLIENT_TIERS.map((tier) => (
+                    <option key={tier} value={tier}>
+                      {tier}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+                  GSTIN / Government Agency Reg. No (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="gstNumber"
+                  placeholder="e.g. 10AAAAA0000A1Z5"
+                  value={formData.gstNumber}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-slate-900 placeholder:text-slate-400 font-medium uppercase"
+                />
+              </div>
+            </div>
+
             {/* Location & Website */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  Headquarters Location <span className="text-rose-500">*</span>
+                  Headquarters / Operating Region <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <FaMapMarkerAlt className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                   <input
                     type="text"
                     name="location"
-                    placeholder="e.g. Bangalore / Patna / Mumbai"
+                    placeholder="e.g. Bangalore / Patna / Delhi NCR / Pan-India"
                     value={formData.location}
                     onChange={handleChange}
                     required
@@ -374,14 +430,14 @@ const CompanySignup = () => {
 
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                  Company Website URL
+                  Agency Website / Portfolio (Optional)
                 </label>
                 <div className="relative">
                   <FaGlobe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                   <input
                     type="url"
                     name="website"
-                    placeholder="https://company.com"
+                    placeholder="https://youragency.com"
                     value={formData.website}
                     onChange={handleChange}
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm text-slate-900 placeholder:text-slate-400 font-medium"
@@ -394,7 +450,7 @@ const CompanySignup = () => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-semibold text-slate-700 block">
-                  Company Brand Logo (Optional)
+                  Agency Brand Logo (Optional)
                 </label>
                 <span className="text-[10px] text-slate-400">Max {MAX_LOGO_SIZE_KB} KB</span>
               </div>
@@ -451,12 +507,12 @@ const CompanySignup = () => {
             {/* Company Description */}
             <div>
               <label className="text-xs font-semibold text-slate-700 block mb-1.5">
-                About Organization / Company Profile <span className="text-rose-500">*</span>
+                About Agency & Manpower Sourcing Capabilities <span className="text-rose-500">*</span>
               </label>
               <textarea
                 name="description"
                 rows="3"
-                placeholder="Briefly describe your company, work culture, team size, and core products..."
+                placeholder="Mention your key client industries, talent pool, geographic coverage, and manpower placement track record..."
                 value={formData.description}
                 onChange={handleChange}
                 required
@@ -518,7 +574,7 @@ const CompanySignup = () => {
               loading={loading}
               className="w-full shadow-md shadow-indigo-500/10 font-bold"
             >
-              Submit Organization Registration
+              Submit Agency Registration
             </Button>
           </form>
 

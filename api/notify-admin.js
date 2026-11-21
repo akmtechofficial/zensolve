@@ -25,6 +25,9 @@ export default async function handler(req, res) {
       phone,
       companyType,
       industry,
+      clientCount,
+      gstNumber,
+      isManpowerAgency,
       location,
       website,
       uid,
@@ -59,16 +62,16 @@ export default async function handler(req, res) {
     const countNumber = reminderCount || 1;
 
     const subject = isUrgent
-      ? `⚡ [URGENT REMINDER ${countNumber}/3] Company Approval Request: ${companyName || 'Unknown Company'}`
-      : `🚨 New Company Registration Pending Approval: ${companyName || 'Unknown Company'}`;
+      ? `⚡ [URGENT REMINDER ${countNumber}/3] Staffing Agency Approval Request: ${companyName || 'Unknown Agency'}`
+      : `🚨 New Staffing / Manpower Agency Pending Approval: ${companyName || 'Unknown Agency'}`;
 
     const alertTitle = isUrgent
-      ? `⚡ Faster Approval Requested (Reminder ${countNumber} of 3 Today)`
-      : `🚨 Action Required: New Company Approval Pending`;
+      ? `⚡ Expedited Agency Verification Requested (Reminder ${countNumber} of 3 Today)`
+      : `🚨 Action Required: New Manpower Agency Approval Pending`;
 
     const alertMessage = isUrgent
-      ? `The employer "<strong>${companyName || 'Employer'}</strong>" has sent an expedited verification reminder. They are waiting to publish job vacancies on ZenSolve.`
-      : `A new company has registered on ZenSolve and is awaiting your review. They cannot publish job vacancies until approved in the admin console.`;
+      ? `The staffing agency "<strong>${companyName || 'Agency'}</strong>" has sent an expedited verification reminder. They are waiting to publish client company vacancies on ZenSolve.`
+      : `A new manpower / staffing agency has registered on ZenSolve and is awaiting your review. They cannot publish job vacancies for client companies until approved in the admin console.`;
 
     const htmlContent = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
@@ -96,20 +99,20 @@ export default async function handler(req, res) {
 
           <!-- Company Details Table -->
           <h2 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
-            Company Information
+            Agency & Manpower Information
           </h2>
 
           <table style="width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.6;">
             <tr>
-              <td style="padding: 8px 0; color: #64748b; width: 140px; font-weight: 600;">Company Name:</td>
+              <td style="padding: 8px 0; color: #64748b; width: 150px; font-weight: 600;">Agency Name:</td>
               <td style="padding: 8px 0; color: #0f172a; font-weight: 700;">${companyName || 'Not Provided'}</td>
             </tr>
             <tr style="border-top: 1px solid #f8fafc;">
-              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">HR Representative:</td>
+              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Authorized Contact:</td>
               <td style="padding: 8px 0; color: #0f172a;">${hrName || 'Not Provided'}</td>
             </tr>
             <tr style="border-top: 1px solid #f8fafc;">
-              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Business Email:</td>
+              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Agency Email:</td>
               <td style="padding: 8px 0; color: #2563eb; font-weight: 600;">
                 <a href="mailto:${email}" style="color: #2563eb; text-decoration: none;">${email || 'Not Provided'}</a>
               </td>
@@ -119,13 +122,23 @@ export default async function handler(req, res) {
               <td style="padding: 8px 0; color: #0f172a;">${phone || 'Not Provided'}</td>
             </tr>
             <tr style="border-top: 1px solid #f8fafc;">
-              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Company Type:</td>
-              <td style="padding: 8px 0; color: #0f172a;">${companyType || 'Private Limited'}</td>
+              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Business Structure:</td>
+              <td style="padding: 8px 0; color: #0f172a;">${companyType || 'Manpower Supply & Staffing Agency'}</td>
             </tr>
             <tr style="border-top: 1px solid #f8fafc;">
-              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Industry:</td>
-              <td style="padding: 8px 0; color: #0f172a;">${industry || 'Not Specified'}</td>
+              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Specialization:</td>
+              <td style="padding: 8px 0; color: #0f172a;">${industry || 'Multi-Industry Staffing'}</td>
             </tr>
+            ${clientCount ? `
+            <tr style="border-top: 1px solid #f8fafc;">
+              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Active Client Tie-ups:</td>
+              <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${clientCount}</td>
+            </tr>` : ''}
+            ${gstNumber ? `
+            <tr style="border-top: 1px solid #f8fafc;">
+              <td style="padding: 8px 0; color: #64748b; font-weight: 600;">GSTIN / Reg No:</td>
+              <td style="padding: 8px 0; color: #0f172a; font-family: monospace;">${gstNumber}</td>
+            </tr>` : ''}
             <tr style="border-top: 1px solid #f8fafc;">
               <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Location:</td>
               <td style="padding: 8px 0; color: #0f172a;">${location || 'India'}</td>

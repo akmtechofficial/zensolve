@@ -490,10 +490,10 @@ export const AuthExperience = ({ initialMode = 'login' }) => {
                         >
                           <div className="flex items-center gap-2 mb-1">
                             <FaBuilding className={role === 'company' ? 'text-indigo-400' : 'text-slate-500'} />
-                            <span className="font-bold text-xs sm:text-sm text-white">Company / HR</span>
+                            <span className="font-bold text-xs sm:text-sm text-white">Staffing / Manpower Agency</span>
                           </div>
                           <span className="text-[10px] text-slate-400 block leading-tight">
-                            Post vacancies & hire talent
+                            Post client vacancies & supply talent
                           </span>
                         </button>
                       </div>

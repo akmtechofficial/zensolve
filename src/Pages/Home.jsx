@@ -108,13 +108,13 @@ const Home = () => {
           <div className="bg-slate-900 rounded-2xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
             <div className="space-y-1">
               <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
-                For Employers & HR Teams
+                For Staffing & Manpower Agencies
               </span>
               <h3 className="text-lg sm:text-xl font-bold font-display">
-                Looking to hire top talent across India?
+                Looking to place talent for client companies across India?
               </h3>
               <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
-                Register your organization to publish vacancies, access candidate resumes, and manage hiring stages.
+                Register your staffing agency to publish vacancies for client companies, access candidate resumes, and manage placements.
               </p>
             </div>
 

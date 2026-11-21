@@ -253,9 +253,21 @@ const AdminCompanyDetail = () => {
                   </span>
                 </div>
                 <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
-                  <span className="text-[11px] font-medium text-slate-600 block">Company Type</span>
-                  <span className="font-bold text-slate-900 text-sm mt-0.5 block">{company.companyType || 'Corporate'}</span>
+                  <span className="text-[11px] font-medium text-slate-600 block">Agency Structure</span>
+                  <span className="font-bold text-slate-900 text-sm mt-0.5 block">{company.companyType || company.agencyType || 'Staffing Firm'}</span>
                 </div>
+                {company.clientCount && (
+                  <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100/70">
+                    <span className="text-[11px] font-medium text-indigo-700 block">Active Client Tie-ups</span>
+                    <span className="font-bold text-indigo-950 text-sm mt-0.5 block">{company.clientCount}</span>
+                  </div>
+                )}
+                {company.gstNumber && (
+                  <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                    <span className="text-[11px] font-medium text-slate-600 block">GSTIN / Reg No</span>
+                    <span className="font-bold text-slate-900 text-sm mt-0.5 block font-mono uppercase">{company.gstNumber}</span>
+                  </div>
+                )}
               </div>
 
               {company.description && (
