@@ -7,6 +7,7 @@ import {
   scheduleInterview,
   saveInternalNotes,
   getInternalNotes,
+  fetchCandidateFullProfile,
 } from '../../services/recruitmentService';
 import { getSecureResumeUrl } from '../../services/storageService';
 import DashboardLayout from '../Dashboard/DashboardLayout';
@@ -93,8 +94,9 @@ const HRApplicantDetail = () => {
           if (!isOwner) {
             setError('Unauthorized: This candidate application belongs to another organization.');
           } else {
-            setApplication(data);
-            setSelectedStatus(data.status || 'Applied');
+            const enriched = await fetchCandidateFullProfile(applicationId, data);
+            setApplication(enriched);
+            setSelectedStatus(enriched.status || 'Applied');
 
             // S06: Load confidential HR notes from protected subcollection
             try {

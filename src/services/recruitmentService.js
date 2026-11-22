@@ -1,4 +1,4 @@
-import { db } from "../firebaseConfig";
+import { db, auth } from "../firebaseConfig";
 import {
   collection,
   getDocs,
@@ -270,6 +270,61 @@ export const checkExistingApplication = async (jobIdOrOptions, maybeUserId, mayb
     console.error("Error checking existing application:", error);
     return null;
   }
+};
+
+/**
+ * Fetch candidate's complete profile for an application
+ * Combines local document snapshot with server-authorized profile fetch if legacy
+ */
+export const fetchCandidateFullProfile = async (applicationId, fallbackData = {}) => {
+  try {
+    // If the application already has complete snapshot with education or experience or skills, use it
+    if (
+      (fallbackData?.education && fallbackData.education.length > 0) ||
+      (fallbackData?.experience && fallbackData.experience.length > 0) ||
+      (fallbackData?.profileSnapshot?.education && fallbackData.profileSnapshot.education.length > 0)
+    ) {
+      const snap = fallbackData.profileSnapshot || {};
+      return {
+        ...fallbackData,
+        ...snap,
+        skills: fallbackData.skills || snap.skills || fallbackData.applicantSkills || [],
+        languages: fallbackData.languages || snap.languages || [],
+        education: fallbackData.education || snap.education || [],
+        experience: fallbackData.experience || snap.experience || [],
+        bio: fallbackData.applicantBio || snap.bio || fallbackData.bio || '',
+        headline: fallbackData.applicantHeadline || snap.headline || fallbackData.headline || '',
+        photoURL: fallbackData.applicantPhoto || snap.photoURL || fallbackData.photoURL || '',
+        location: fallbackData.applicantLocation || snap.location || fallbackData.location || '',
+      };
+    }
+
+    // If missing from legacy doc, query secure server API
+    if (auth.currentUser) {
+      const idToken = await auth.currentUser.getIdToken();
+      const response = await fetch('/api/get-candidate-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ applicationId }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.profile) {
+          return {
+            ...fallbackData,
+            ...result.profile,
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Profile fetch notice:', err);
+  }
+  return fallbackData;
 };
 
 /**
