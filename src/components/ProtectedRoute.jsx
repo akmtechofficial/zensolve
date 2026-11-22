@@ -94,44 +94,22 @@ const ProtectedRoute = ({ children, requiredRole = null, requireEmployer = false
     );
   }
 
-  // Admin route protection: Strictly requires authorized admin privileges
+  // Admin route protection: Strictly requires authorized admin privileges (admin@zensolve.in)
   if (requiredRole === 'admin') {
     if (!isAdmin) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-[#07090E] px-4 text-slate-100 font-sans">
-          <div className="max-w-md w-full bg-slate-900/90 rounded-3xl p-8 border border-rose-500/30 shadow-2xl text-center backdrop-blur-xl">
-            <div className="w-16 h-16 bg-rose-500/10 text-rose-400 border border-rose-500/30 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl font-bold">
-              🚫
-            </div>
-            <h2 className="text-2xl font-bold font-display text-white mb-2">Access Denied</h2>
-            <p className="text-sm text-slate-400 mb-6 leading-relaxed">
-              Super-Admin console access is restricted strictly to authorized system administrators. Your account (<span className="text-indigo-400 font-mono font-semibold">{user?.email}</span>) is not authorized.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <a
-                href="/admin/login"
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition"
-              >
-                Sign In as Admin
-              </a>
-              <a
-                href="/"
-                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-white/10 transition"
-              >
-                Return to Homepage
-              </a>
-            </div>
-          </div>
-        </div>
-      );
+      // Auto-route non-admin users to their authorized workspace
+      if (isCompany || isEmployer) {
+        return <Navigate to="/hr" replace />;
+      }
+      return <Navigate to="/candidate/profile" replace />;
     }
   }
 
   // Company / HR route protection
   if (requiredRole === 'company' || requireEmployer) {
     if (!isCompany && !isEmployer && !isAdmin) {
-      // Candidate tried accessing HR panel
-      return <Navigate to="/candidate" replace />;
+      // Candidate tried accessing HR panel -> route to candidate profile
+      return <Navigate to="/candidate/profile" replace />;
     }
 
     if (requireApproved && !isApprovedCompany && !isAdmin) {

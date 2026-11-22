@@ -4,13 +4,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 
 export const SUPER_ADMIN_EMAIL = 'admin@zensolve.in';
-export const ADMIN_EMAILS = [
-  'admin@zensolve.in',
-  'admin@zensolve.com',
-  'carezensolve@gmail.com',
-  'akmtechofficial@gmail.com',
-  'superadmin@zensolve.com',
-];
+export const ADMIN_EMAILS = ['admin@zensolve.in'];
 
 const AuthContext = createContext({
   user: null,
@@ -34,7 +28,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = useCallback(async (uid, email) => {
     if (!uid) return null;
-    const isSuperAdminEmail = Boolean(email && ADMIN_EMAILS.includes(email.trim().toLowerCase()));
+    const isSuperAdminEmail = Boolean(email && email.trim().toLowerCase() === SUPER_ADMIN_EMAIL);
 
     try {
       // 4-second timeout protection so Firestore connectivity or offline latency never freezes the UI
@@ -47,8 +41,12 @@ export const AuthProvider = ({ children }) => {
 
       if (userDoc && userDoc.exists()) {
         const data = userDoc.data();
-        if (isSuperAdminEmail || data.role === 'admin') {
+        if (isSuperAdminEmail) {
           return { ...data, role: 'admin', isPendingProfile: false };
+        }
+        // If an unauthorized account has role 'admin' in Firestore, override to candidate
+        if (data.role === 'admin') {
+          return { ...data, role: 'candidate', isPendingProfile: false };
         }
         return data;
       } else {
@@ -158,8 +156,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const isSuperAdminEmail = Boolean(user?.email && ADMIN_EMAILS.includes(user.email.trim().toLowerCase()));
-  const isAdmin = isSuperAdminEmail || userData?.role === 'admin';
+  // Strict Super-Admin: ONLY admin@zensolve.in is granted admin privileges
+  const isSuperAdminEmail = Boolean(user?.email && user.email.trim().toLowerCase() === SUPER_ADMIN_EMAIL);
+  const isAdmin = isSuperAdminEmail;
 
   const isCompany =
     !isAdmin && (userData?.role === 'company' || userData?.role === 'employer');

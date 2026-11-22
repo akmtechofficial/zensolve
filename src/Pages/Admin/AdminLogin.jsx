@@ -45,9 +45,9 @@ const AdminLogin = () => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Strict Enforcement: Allow designated admin accounts
-    if (!ADMIN_EMAILS.includes(normalizedEmail)) {
-      setError(`Access Restricted: "${normalizedEmail}" is not in the authorized Super Admin list.`);
+    // Strict Enforcement: Only admin@zensolve.in
+    if (normalizedEmail !== SUPER_ADMIN_EMAIL) {
+      setError(`Access Restricted: Only "${SUPER_ADMIN_EMAIL}" is authorized to access the Super Admin console.`);
       return;
     }
 
@@ -61,7 +61,7 @@ const AdminLogin = () => {
       const credential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
       
       // Secondary verification
-      if (!credential.user?.email || !ADMIN_EMAILS.includes(credential.user.email.toLowerCase())) {
+      if (!credential.user?.email || credential.user.email.trim().toLowerCase() !== SUPER_ADMIN_EMAIL) {
         await signOut(auth);
         throw new Error('Unauthorized account credentials.');
       }
@@ -97,8 +97,8 @@ const AdminLogin = () => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    if (!ADMIN_EMAILS.includes(normalizedEmail)) {
-      setError(`Only authorized Super Admin emails can be initialized.`);
+    if (normalizedEmail !== SUPER_ADMIN_EMAIL) {
+      setError(`Only "${SUPER_ADMIN_EMAIL}" can be initialized as Super Admin.`);
       return;
     }
 

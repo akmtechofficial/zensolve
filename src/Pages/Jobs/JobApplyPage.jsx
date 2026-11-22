@@ -40,9 +40,11 @@ const MAX_FILE_SIZE_MB = 10;
 
 const JobApplyPage = () => {
   const { jobId } = useParams();
-  const { user, userData, loading: authLoading } = useAuth();
+  const { user, userData, isCompany, isEmployer, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isCompanyUser = Boolean(isCompany || isEmployer || userData?.role === 'company' || userData?.role === 'employer');
 
   const [job, setJob] = useState(null);
   const [loadingJob, setLoadingJob] = useState(true);
@@ -191,6 +193,11 @@ const JobApplyPage = () => {
       navigate(`/login?returnUrl=/jobs/${jobId}/apply`, {
         state: { from: location, returnUrl: `/jobs/${jobId}/apply` },
       });
+      return;
+    }
+
+    if (isCompanyUser) {
+      setError('Company accounts cannot apply for jobs. Please log in with a candidate account.');
       return;
     }
 
@@ -380,6 +387,39 @@ const JobApplyPage = () => {
               onClick={() => navigate('/signup')}
             >
               Create Account
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Guard: Logged-in companies / employers cannot apply for jobs
+  if (isCompanyUser) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center py-20 px-4">
+        <div className="glass-surface-2 p-8 sm:p-10 rounded-3xl border border-slate-200 text-center max-w-md bg-white shadow-xl">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4 text-3xl border border-amber-200">
+            🏢
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2 font-display">Company Account Detected</h2>
+          <p className="text-xs text-slate-600 mb-6 leading-relaxed">
+            You are currently logged in with a Company / Staffing Partner profile. Company accounts cannot apply for job openings.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => navigate('/hr')}
+            >
+              Go to Company Panel
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => navigate('/jobs')}
+            >
+              Browse Openings
             </Button>
           </div>
         </div>

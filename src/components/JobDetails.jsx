@@ -32,7 +32,8 @@ const JobDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { id: paramId, jobId: paramJobId } = useParams();
-  const { user } = useAuth();
+  const { user, isCompany, isEmployer, userData } = useAuth();
+  const isCompanyAccount = Boolean(isCompany || isEmployer || userData?.role === 'company' || userData?.role === 'employer');
 
   const [job, setJob] = useState(location.state?.job || null);
   const [loading, setLoading] = useState(!job);
@@ -97,6 +98,7 @@ const JobDetails = () => {
   }, [user?.uid, user?.email, job?.id]);
 
   const handleApply = () => {
+    if (isCompanyAccount) return;
     if (job?.status === 'Closed' || hasApplied) return;
     if (!user) {
       navigate(`/login?returnUrl=/jobs/${job.id}/apply`, {
@@ -480,7 +482,11 @@ const JobDetails = () => {
                   <span className="text-[11px] text-slate-500">Gross Annual CTC</span>
                 </div>
 
-                {hasApplied ? (
+                {isCompanyAccount ? (
+                  <div className="w-full py-3.5 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 text-xs font-semibold text-center">
+                    Employer Account (Applications Disabled)
+                  </div>
+                ) : hasApplied ? (
                   <div className="w-full py-3 px-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-bold flex items-center justify-center gap-2">
                     <FaCheckCircle className="text-emerald-600" />
                     <span>Application Submitted</span>

@@ -274,6 +274,26 @@ export const checkExistingApplication = async (jobIdOrOptions, maybeUserId, mayb
 export const submitJobApplication = async (applicationData) => {
   try {
     const { jobId, userId, applicantEmail } = applicationData;
+
+    // Company account guard: Companies/Employers are not allowed to apply for jobs
+    if (userId) {
+      try {
+        const userSnap = await getDoc(doc(db, "users", userId));
+        if (userSnap.exists()) {
+          const uRole = userSnap.data().role;
+          if (uRole === 'company' || uRole === 'employer') {
+            return {
+              success: false,
+              isCompanyAccount: true,
+              error: "Company accounts are not permitted to apply for jobs. Please log in with a candidate account.",
+            };
+          }
+        }
+      } catch (err) {
+        console.warn("User role validation notice:", err);
+      }
+    }
+
     // Strict duplicate check: 1 candidate = 1 application per job
     const existing = await checkExistingApplication(jobId, userId, applicantEmail);
     if (existing) {

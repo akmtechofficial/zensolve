@@ -50,7 +50,7 @@ const ALLOWED_FILE_TYPES = [
 const MAX_FILE_SIZE_MB = 10;
 
 const ApplyJob = ({ job: propJob, onSuccess }) => {
-  const { user, userData } = useAuth();
+  const { user, userData, isCompany, isEmployer } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const job = propJob || location.state?.job;
@@ -311,6 +311,11 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
       return;
     }
 
+    if (isCompany || isEmployer || userData?.role === 'company' || userData?.role === 'employer') {
+      setError('Company accounts cannot apply for jobs. Please log in with a candidate account.');
+      return;
+    }
+
     if (!applicantName || !applicantEmail) {
       setError('Please provide your name and email address.');
       return;
@@ -438,6 +443,44 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
       setIsSubmitting(false);
     }
   };
+
+  if (isCompany || isEmployer || userData?.role === 'company' || userData?.role === 'employer') {
+    return (
+      <div className="w-full text-center space-y-4 py-8 px-2">
+        <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center text-3xl mx-auto shadow-xs">
+          🏢
+        </div>
+        <h3 className="text-xl font-bold text-slate-900 font-display">
+          Company Account Detected
+        </h3>
+        <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
+          Logged-in company / employer accounts cannot apply for jobs. Job applications are reserved exclusively for candidates.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-3">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              if (onSuccess) onSuccess();
+              navigate('/hr');
+            }}
+          >
+            Go to Company Panel
+          </Button>
+          <Button
+            variant="outline"
+            size="md"
+            onClick={() => {
+              if (onSuccess) onSuccess();
+              navigate('/jobs');
+            }}
+          >
+            Browse Openings
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (checkingApplied) {
     return (

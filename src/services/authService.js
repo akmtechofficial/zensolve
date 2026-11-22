@@ -13,13 +13,7 @@ import { auth, db } from '../firebaseConfig.js';
 import { notifyAdminNewCompany } from './notificationService.js';
 
 export const SUPER_ADMIN_EMAIL = 'admin@zensolve.in';
-export const ADMIN_EMAILS = [
-  'admin@zensolve.in',
-  'admin@zensolve.com',
-  'carezensolve@gmail.com',
-  'akmtechofficial@gmail.com',
-  'superadmin@zensolve.com',
-];
+export const ADMIN_EMAILS = ['admin@zensolve.in'];
 
 /**
  * Validates and normalizes email format
@@ -43,7 +37,7 @@ export const validateEmail = (email) => {
  */
 export const isSuperAdminEmail = (email) => {
   if (!email) return false;
-  return ADMIN_EMAILS.includes(email.trim().toLowerCase());
+  return email.trim().toLowerCase() === SUPER_ADMIN_EMAIL;
 };
 
 /**
@@ -369,6 +363,8 @@ export const signInWithPasswordFallback = async (email, password) => {
  * Determine smart role-based destination for authenticated users
  */
 export const getPostAuthRedirectUrl = (userData, user, explicitReturnUrl = null) => {
+  const isSuperAdmin = isSuperAdminEmail(user?.email);
+
   // If a safe returnUrl was passed (e.g. from /jobs/:id/apply)
   if (
     explicitReturnUrl &&
@@ -378,16 +374,24 @@ export const getPostAuthRedirectUrl = (userData, user, explicitReturnUrl = null)
     !explicitReturnUrl.startsWith('/register') &&
     !explicitReturnUrl.startsWith('/auth')
   ) {
-    return explicitReturnUrl;
+    // If the destination is an admin route, strictly ensure user is super admin
+    if (explicitReturnUrl.startsWith('/admin')) {
+      if (isSuperAdmin) return explicitReturnUrl;
+    } else {
+      return explicitReturnUrl;
+    }
   }
 
-  if (isSuperAdminEmail(user?.email)) {
+  // 1. Super Admin -> /admin
+  if (isSuperAdmin) {
     return '/admin';
   }
 
+  // 2. Company / Staffing Partner -> /hr
   if (userData?.role === 'company' || userData?.role === 'employer') {
     return '/hr';
   }
 
-  return '/candidate';
+  // 3. Candidate -> /candidate/profile (as required: candidate login leads to profile)
+  return '/candidate/profile';
 };

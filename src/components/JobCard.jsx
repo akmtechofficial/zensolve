@@ -19,7 +19,8 @@ import { isJobSaved } from '../firebaseUtils';
 const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isCompany, isEmployer, userData } = useAuth();
+  const isCompanyAccount = Boolean(isCompany || isEmployer || userData?.role === 'company' || userData?.role === 'employer');
   const [isSaved, setIsSaved] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
@@ -45,6 +46,10 @@ const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
 
   const handleApply = (e) => {
     e.stopPropagation();
+    if (isCompanyAccount) {
+      navigate('/hr');
+      return;
+    }
     if (hasApplied) return;
     if (!user) {
       navigate(`/login?returnUrl=/jobs/${job.id}/apply`, {
@@ -275,7 +280,11 @@ const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
             Details
           </button>
 
-          {hasApplied ? (
+          {isCompanyAccount ? (
+            <span className="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-500 text-xs font-semibold border border-slate-200">
+              Employer View
+            </span>
+          ) : hasApplied ? (
             <button
               type="button"
               onClick={(e) => {
