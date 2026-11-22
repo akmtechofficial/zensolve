@@ -1,8 +1,8 @@
 import React from 'react';
-import AuthExperience from './AuthExperience';
+import Signup from '../Pages/Auth/Signup';
 
 const Register = () => {
-  return <AuthExperience initialMode="signup" />;
+  return <Signup />;
 };
 
 export default Register;

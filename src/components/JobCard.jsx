@@ -8,6 +8,8 @@ import {
   FaTrashAlt,
   FaArrowRight,
   FaCheckCircle,
+  FaLaptopHouse,
+  FaGraduationCap,
 } from 'react-icons/fa';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from './useAuth';
@@ -191,10 +193,24 @@ const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
             <span>{job?.location || 'Pan India'}</span>
           </span>
 
+          {job?.workMode && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-medium border border-indigo-100">
+              <FaLaptopHouse className="text-[10px] text-indigo-500" />
+              <span>{job.workMode}</span>
+            </span>
+          )}
+
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium">
             <FaClock className="text-[10px] text-slate-400" />
             <span>{job?.jobType || job?.type || 'Full-time'}</span>
           </span>
+
+          {job?.qualification && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium">
+              <FaGraduationCap className="text-[10px] text-slate-400" />
+              <span>{job.qualification}</span>
+            </span>
+          )}
 
           {job?.category && (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium">
@@ -206,6 +222,12 @@ const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
           {job?.vacancies && (
             <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/80 font-bold text-[11px]">
               {job.vacancies} Openings
+            </span>
+          )}
+
+          {job?.registrationFeeType && job.registrationFeeType.includes('Free') && (
+            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/80 font-bold text-[10px]">
+              Free Apply
             </span>
           )}
         </div>

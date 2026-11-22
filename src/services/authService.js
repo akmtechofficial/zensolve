@@ -250,6 +250,9 @@ export const completeEmailLinkSignIn = async (providedEmail = null) => {
 export const signInWithGoogleProvider = async (selectedRole = 'candidate') => {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+  provider.addScope('email');
+  provider.addScope('profile');
+
   const sanitizedRole = selectedRole === 'company' || selectedRole === 'employer' ? 'company' : 'candidate';
 
   try {
@@ -266,11 +269,24 @@ export const signInWithGoogleProvider = async (selectedRole = 'candidate') => {
   } catch (error) {
     console.error('Google Sign-In Error:', error);
 
-    // If popup was blocked by browser, gracefully trigger redirect
-    if (error.code === 'auth/popup-blocked') {
-      window.localStorage.setItem('pendingAuthRole', sanitizedRole);
-      await signInWithRedirect(auth, provider);
-      return { redirecting: true };
+    // If popup was blocked or interrupted by browser, gracefully trigger redirect
+    if (
+      error.code === 'auth/popup-blocked' ||
+      error.code === 'auth/cancelled-popup-request' ||
+      error.code === 'auth/internal-error'
+    ) {
+      try {
+        window.localStorage.setItem('pendingAuthRole', sanitizedRole);
+        await signInWithRedirect(auth, provider);
+        return { redirecting: true };
+      } catch (redirectErr) {
+        console.error('Google redirect fallback error:', redirectErr);
+        return {
+          success: false,
+          error: 'Browser blocked sign-in popup. Please allow popups or try again.',
+          code: redirectErr.code,
+        };
+      }
     }
 
     if (error.code === 'auth/popup-closed-by-user') {
@@ -278,9 +294,18 @@ export const signInWithGoogleProvider = async (selectedRole = 'candidate') => {
     }
 
     let friendlyMessage = 'Google authentication failed. Please try again.';
-    if (error.code === 'auth/account-exists-with-different-credential') {
+    if (error.code === 'auth/unauthorized-domain') {
+      friendlyMessage = `Current domain (${window.location.hostname}) is not authorized in Firebase Console. Add it under Firebase Authentication > Settings > Authorized Domains.`;
+    } else if (error.code === 'auth/operation-not-allowed') {
+      friendlyMessage = 'Google Sign-In provider is disabled in Firebase Authentication console.';
+    } else if (error.code === 'auth/account-exists-with-different-credential') {
       friendlyMessage = 'An account already exists with this email using a different sign-in method.';
+    } else if (error.code === 'auth/network-request-failed') {
+      friendlyMessage = 'Network connection failed. Please check your internet connection.';
+    } else if (error.message) {
+      friendlyMessage = error.message;
     }
+
     return { success: false, error: friendlyMessage, code: error.code };
   }
 };

@@ -325,37 +325,15 @@ export const AuthExperience = ({ initialMode = 'login' }) => {
             {/* The Glass Console Card */}
             <div className="glass-dark-card-elevated glass-specular-dark rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl relative">
               
-              {/* Segmented Mode Switcher: Sign In vs Create Account */}
+              {/* Header inside console card */}
               {!linkSent && (
-                <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-900/80 border border-white/10 mb-6 shadow-inner">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode('login');
-                      setError(null);
-                    }}
-                    className={`py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                      mode === 'login'
-                        ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode('signup');
-                      setError(null);
-                    }}
-                    className={`py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                      mode === 'signup'
-                        ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    Create Account
-                  </button>
+                <div className="mb-6">
+                  <h2 className="text-xl sm:text-2xl font-bold font-display text-white tracking-tight">
+                    Sign In to ZenSolve
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Enter your email to receive a passwordless sign-in link, or continue with Google.
+                  </p>
                 </div>
               )}
 
@@ -674,21 +652,19 @@ export const AuthExperience = ({ initialMode = 'login' }) => {
                     </AnimatePresence>
                   </div>
 
-                  {/* Alternative Traditional Signup Link */}
-                  {mode === 'signup' && (
-                    <div className="pt-2 text-center text-[11px] text-slate-400 space-y-1">
-                      <span>Prefer multi-step registration? </span>
-                      <div className="flex justify-center gap-3 pt-0.5">
-                        <Link to="/signup/candidate" className="text-indigo-400 hover:underline">
-                          Candidate Full Form
-                        </Link>
-                        <span>•</span>
-                        <Link to="/signup/company" className="text-indigo-400 hover:underline">
-                          Company Enterprise Form
-                        </Link>
-                      </div>
-                    </div>
-                  )}
+                  {/* Bottom Sign-Up Link for Login page */}
+                  <div className="pt-5 border-t border-white/10 text-center space-y-2.5">
+                    <p className="text-xs text-slate-400">
+                      Don't have a ZenSolve account yet?
+                    </p>
+                    <Link
+                      to="/signup"
+                      className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-indigo-300 hover:text-white flex items-center justify-center gap-2 transition"
+                    >
+                      <span>Create New Account / Sign Up</span>
+                      <FaArrowRight className="text-[10px]" />
+                    </Link>
+                  </div>
 
                 </div>
               )}

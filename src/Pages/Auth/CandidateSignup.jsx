@@ -12,8 +12,10 @@ import {
   FaExclamationTriangle,
   FaCheckCircle,
   FaArrowRight,
+  FaSpinner,
 } from 'react-icons/fa';
 import { Button } from '../../components/ui/Button';
+import { signInWithGoogleProvider, getPostAuthRedirectUrl } from '../../services/authService';
 
 import { useAuth } from '../../components/useAuth';
 
@@ -29,8 +31,35 @@ const CandidateSignup = () => {
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleGoogleSignup = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      const res = await signInWithGoogleProvider('candidate');
+      if (res.cancelled) {
+        setGoogleLoading(false);
+        return;
+      }
+      if (res.redirecting) return;
+
+      if (res.success) {
+        await refreshUser();
+        const dest = getPostAuthRedirectUrl(res.userData, res.user, '/candidate');
+        navigate(dest, { replace: true });
+      } else {
+        setError(res.error || 'Google signup failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Google Signup error:', err);
+      setError(err.message || 'Failed to authenticate with Google.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -140,7 +169,36 @@ const CandidateSignup = () => {
         </div>
 
         {/* Card Form */}
-        <div className="glass-surface-3 glass-specular p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-xl bg-white/95">
+        <div className="glass-surface-3 glass-specular p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-xl bg-white/95 space-y-5">
+          
+          {/* Quick Google Sign Up */}
+          <button
+            type="button"
+            onClick={handleGoogleSignup}
+            disabled={googleLoading || loading}
+            className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold flex items-center justify-center gap-3 transition shadow-xs cursor-pointer"
+          >
+            {googleLoading ? (
+              <FaSpinner className="animate-spin text-slate-400" />
+            ) : (
+              <>
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z" />
+                  <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5.1 3.7-8.8z" />
+                  <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8 0-1.3.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.8 0 12s.7 3.3 1.9 5.7l3.7-2.9z" />
+                  <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.4C3.7 20.1 7.5 23 12 23z" />
+                </svg>
+                <span>Continue with Google</span>
+              </>
+            )}
+          </button>
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-t border-slate-200" />
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">or sign up with email</span>
+            <div className="flex-1 border-t border-slate-200" />
+          </div>
+
           <form onSubmit={handleRegister} className="space-y-4">
             
             {/* Full Name */}

@@ -15,6 +15,12 @@ import {
   FaShieldAlt,
   FaFileContract,
   FaExclamationCircle,
+  FaGraduationCap,
+  FaLaptopHouse,
+  FaCalendarCheck,
+  FaBullseye,
+  FaInfoCircle,
+  FaMoneyBillAlt,
 } from 'react-icons/fa';
 import { useAuth } from './useAuth';
 import { isJobSaved } from '../firebaseUtils';
@@ -281,21 +287,165 @@ const JobDetails = () => {
                 <Badge variant="default" size="md" icon={<FaClock className="text-xs" />}>
                   {job.jobType || 'Full-time'}
                 </Badge>
+                {job.workMode && (
+                  <Badge variant="default" size="md" icon={<FaLaptopHouse className="text-xs" />}>
+                    {job.workMode}
+                  </Badge>
+                )}
                 <Badge variant="default" size="md" icon={<FaMapMarkerAlt className="text-xs" />}>
                   {job.location || 'India'}
                 </Badge>
+                {job.qualification && (
+                  <Badge variant="default" size="md" icon={<FaGraduationCap className="text-xs" />}>
+                    {job.qualification}
+                  </Badge>
+                )}
+                {job.weekdays && (
+                  <Badge variant="default" size="md" icon={<FaCalendarCheck className="text-xs" />}>
+                    {job.weekdays}
+                  </Badge>
+                )}
                 {job.experience && (
                   <Badge variant="default" size="md">
-                    Experience: {job.experience}
+                    Exp: {job.experience}
                   </Badge>
                 )}
                 {job.vacancies && (
-                  <Badge variant="default" size="md">
+                  <Badge variant="default" size="md" icon={<FaUsers className="text-xs" />}>
                     {job.vacancies} Vacanc{Number(job.vacancies) === 1 ? 'y' : 'ies'}
                   </Badge>
                 )}
+                {job.registrationFeeType && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold ${
+                    job.registrationFeeType.includes('Free')
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-amber-50 text-amber-800 border border-amber-200'
+                  }`}>
+                    {job.registrationFeeType}
+                  </span>
+                )}
               </div>
             </div>
+
+            {/* Quick Specs Grid */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">
+                Job Overview & Specifications
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                  <span className="text-[11px] text-slate-500 font-medium block">Work Mode</span>
+                  <span className="text-sm font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                    <FaLaptopHouse className="text-indigo-600 text-xs" />
+                    {job.workMode || 'In-Office'}
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                  <span className="text-[11px] text-slate-500 font-medium block">Working Days / Shifts</span>
+                  <span className="text-sm font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                    <FaCalendarCheck className="text-indigo-600 text-xs" />
+                    {job.weekdays || 'Regular Schedule'}
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                  <span className="text-[11px] text-slate-500 font-medium block">Min. Qualification</span>
+                  <span className="text-sm font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                    <FaGraduationCap className="text-indigo-600 text-xs" />
+                    {job.qualification || 'Not Specified'}
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                  <span className="text-[11px] text-slate-500 font-medium block">Daily Target / Work</span>
+                  <span className="text-sm font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                    <FaBullseye className="text-indigo-600 text-xs" />
+                    {job.dailyTarget || 'No Target'}
+                  </span>
+                  {job.dailyTargetDetails && (
+                    <span className="text-[10px] text-slate-500 block mt-0.5 truncate">
+                      {job.dailyTargetDetails}
+                    </span>
+                  )}
+                </div>
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                  <span className="text-[11px] text-slate-500 font-medium block">Total Open Seats</span>
+                  <span className="text-sm font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                    <FaUsers className="text-indigo-600 text-xs" />
+                    {job.vacancies || '1'} Positions
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                  <span className="text-[11px] text-slate-500 font-medium block">Registration / Fee</span>
+                  <span className={`text-sm font-bold mt-0.5 flex items-center gap-1.5 ${
+                    !job.registrationFeeType || job.registrationFeeType.includes('Free')
+                      ? 'text-emerald-700'
+                      : 'text-amber-700'
+                  }`}>
+                    <FaMoneyBillWave className="text-xs" />
+                    {job.registrationFeeType || '100% Free'}
+                  </span>
+                </div>
+              </div>
+
+              {/* If registration fee has note or amount */}
+              {job.registrationFeeType && !job.registrationFeeType.includes('Free') && (
+                <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <FaInfoCircle className="text-amber-600" />
+                    <span>Fee / Deposit Notice: {job.registrationFeeType} {job.registrationFeeAmount ? `(₹${job.registrationFeeAmount})` : ''}</span>
+                  </div>
+                  {job.registrationFeeNote && (
+                    <p className="text-amber-800 leading-relaxed pl-5">
+                      {job.registrationFeeNote}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Branch / Multi-Location Breakdown */}
+            {job.locationsList && job.locationsList.length > 0 && (
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <FaMapMarkerAlt className="text-indigo-600" />
+                    <span>Openings By Location / Branch ({job.locationsList.length})</span>
+                  </h3>
+                  <span className="text-xs font-bold text-slate-500">
+                    Total: {job.vacancies || job.locationsList.reduce((acc, curr) => acc + (Number(curr.seats) || 1), 0)} Seats
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {job.locationsList.map((loc, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold flex-shrink-0">
+                          {idx + 1}
+                        </div>
+                        <span className="text-xs font-bold text-slate-800 truncate">
+                          {loc.city || 'City Location'}
+                        </span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 text-xs font-extrabold flex-shrink-0 ml-2">
+                        {loc.seats || 1} {Number(loc.seats) === 1 ? 'Seat' : 'Seats'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Requirements & Skills */}
+            {job.requirements && (
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 font-display flex items-center gap-2">
+                  <FaCheckCircle className="text-indigo-600 text-base" />
+                  <span>Candidate Requirements & Eligibility</span>
+                </h3>
+                <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+                  {job.requirements}
+                </div>
+              </div>
+            )}
 
             {/* Description & Overview */}
             <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs space-y-4">

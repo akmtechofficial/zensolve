@@ -171,11 +171,36 @@ const CandidateResume = () => {
             </div>
           </div>
         ) : (
-          <div className="p-6 rounded-3xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-3">
-            <FaExclamationTriangle className="text-amber-600 text-lg flex-shrink-0" />
-            <div>
-              <span className="font-bold block">No Resume on File</span>
-              <span>Upload your PDF or Word document below to enable 1-click applications across ZenSolve.</span>
+          <div className="space-y-4">
+            <div className="p-6 rounded-3xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-3">
+              <FaExclamationTriangle className="text-amber-600 text-lg flex-shrink-0" />
+              <div>
+                <span className="font-bold block">No Resume on File</span>
+                <span>Upload your PDF/Word document below or build your digital resume by completing your profile.</span>
+              </div>
+            </div>
+
+            {/* Profile Resume Builder Option */}
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-indigo-50 via-purple-50 to-white border border-indigo-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-100/70 px-2.5 py-0.5 rounded-full inline-block">
+                  Resume Builder
+                </span>
+                <h4 className="text-sm font-bold text-slate-900 font-display">
+                  Don't have a ready-made resume?
+                </h4>
+                <p className="text-xs text-slate-600 max-w-md leading-relaxed">
+                  Complete your profile with your education, skills, languages, and work experience to instantly generate a verified digital CV.
+                </p>
+              </div>
+
+              <a
+                href="/candidate/profile"
+                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-xs shrink-0"
+              >
+                <span>Complete Profile & Build CV</span>
+                <FaExternalLinkAlt className="text-[10px]" />
+              </a>
             </div>
           </div>
         )}

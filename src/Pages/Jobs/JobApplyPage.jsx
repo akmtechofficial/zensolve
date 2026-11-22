@@ -6,8 +6,11 @@ import {
   getCandidateProfile,
   submitJobApplication,
   checkExistingApplication,
+  getCandidateApplications,
 } from '../../services/recruitmentService';
 import { uploadCandidateResume, validateResumeFile, MAX_RESUME_SIZE_MB } from '../../services/storageService';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import {
@@ -26,6 +29,10 @@ import {
   FaShieldAlt,
   FaClock,
   FaLock,
+  FaFileAlt,
+  FaHistory,
+  FaExternalLinkAlt,
+  FaGraduationCap,
 } from 'react-icons/fa';
 
 const MAX_FILE_SIZE_MB = 10;
@@ -45,8 +52,14 @@ const JobApplyPage = () => {
   const [applicantName, setApplicantName] = useState('');
   const [applicantEmail, setApplicantEmail] = useState('');
   const [applicantPhone, setApplicantPhone] = useState('');
-  const [useProfileResume, setUseProfileResume] = useState(true);
+  
+  // Resume state choices: 'profile' | 'saved' | 'upload' | 'digital'
+  const [resumeChoice, setResumeChoice] = useState('profile');
+  const [previousResumes, setPreviousResumes] = useState([]);
+  const [selectedPreviousResumeUrl, setSelectedPreviousResumeUrl] = useState('');
   const [newResumeFile, setNewResumeFile] = useState(null);
+  const [candidateProfile, setCandidateProfile] = useState(null);
+  
   const [notes, setNotes] = useState('');
   const [experienceYears, setExperienceYears] = useState('');
   const [noticePeriod, setNoticePeriod] = useState('Immediate / 15 Days');
@@ -85,18 +98,62 @@ const JobApplyPage = () => {
     }
   }, [authLoading, user, jobId, navigate, location]);
 
-  // 3. Prefill candidate info and check duplicate
+  // 3. Prefill candidate info, check duplicate, and load past resumes
   useEffect(() => {
+    let isMounted = true;
     const checkCandidateState = async () => {
       if (user?.uid && jobId) {
-        // Prefill form
+        // Prefill contact
         setApplicantName(userData?.displayName || user.displayName || '');
         setApplicantEmail(user.email || '');
         setApplicantPhone(userData?.phone || '');
 
+        // Fetch candidate profile for digital CV fallback
+        try {
+          const prof = await getCandidateProfile(user.uid);
+          if (isMounted) setCandidateProfile(prof);
+        } catch (e) {
+          console.warn('Candidate profile fetch notice:', e);
+        }
+
+        // Fetch past applications to extract distinct previously uploaded resumes
+        try {
+          const apps = await getCandidateApplications({ userId: user.uid, applicantEmail: user.email });
+          const distinct = [];
+          const seenUrls = new Set();
+          if (userData?.resumeURL) seenUrls.add(userData.resumeURL);
+          if (userData?.resume) seenUrls.add(userData.resume);
+
+          apps.forEach((app) => {
+            if (app.resume && !seenUrls.has(app.resume) && !app.resume.startsWith('profile://')) {
+              seenUrls.add(app.resume);
+              distinct.push({
+                url: app.resume,
+                companyName: app.companyName || 'Prior Job',
+                appliedDate: app.appliedAt?.toDate ? app.appliedAt.toDate().toLocaleDateString('en-IN') : 'Recent',
+              });
+            }
+          });
+
+          if (isMounted) {
+            setPreviousResumes(distinct);
+            // Default resume choice
+            if (userData?.resumeURL || userData?.resume) {
+              setResumeChoice('profile');
+            } else if (distinct.length > 0) {
+              setResumeChoice('saved');
+              setSelectedPreviousResumeUrl(distinct[0].url);
+            } else {
+              setResumeChoice('upload');
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to load past resumes:', err);
+        }
+
         // Check duplicate application
         const existing = await checkExistingApplication(jobId, user.uid, user.email);
-        if (existing) {
+        if (existing && isMounted) {
           setAlreadyApplied(true);
           setExistingAppId(existing.id);
         }
@@ -106,6 +163,10 @@ const JobApplyPage = () => {
     if (user) {
       checkCandidateState();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [user, userData, jobId]);
 
   const handleFileChange = (e) => {
@@ -117,7 +178,7 @@ const JobApplyPage = () => {
         return;
       }
       setNewResumeFile(file);
-      setUseProfileResume(false);
+      setResumeChoice('upload');
       setError(null);
     }
   };
@@ -151,22 +212,49 @@ const JobApplyPage = () => {
     setError(null);
 
     try {
-      let finalResumeURL = userData?.resumeURL || userData?.resume || '';
+      let finalResumeURL = '';
+
+      if (resumeChoice === 'profile') {
+        finalResumeURL = userData?.resumeURL || userData?.resume || '';
+      } else if (resumeChoice === 'saved') {
+        finalResumeURL = selectedPreviousResumeUrl || '';
+      } else if (resumeChoice === 'digital') {
+        finalResumeURL = 'profile://digital-cv';
+      }
 
       // If user uploaded a new resume specifically for this job
-      if (newResumeFile && user?.uid) {
+      if (resumeChoice === 'upload' && newResumeFile && user?.uid) {
         try {
           setProgress(40);
           const uploadRes = await uploadCandidateResume(user.uid, newResumeFile, (pct) => {
             setProgress(30 + Math.round(pct * 0.4)); // scale from 30 to 70%
           });
           finalResumeURL = uploadRes.downloadURL;
+
+          // Auto-save newly uploaded resume into user profile so they never have to upload again
+          try {
+            const userRef = doc(db, 'users', user.uid);
+            await updateDoc(userRef, {
+              resumeURL: finalResumeURL,
+              resume: finalResumeURL,
+              resumeName: newResumeFile.name,
+              resumeUploadedAt: serverTimestamp(),
+            });
+          } catch (profErr) {
+            console.warn('Auto-save to profile notice:', profErr);
+          }
         } catch (uploadErr) {
           console.error('Resume upload error:', uploadErr);
           setError('Failed to upload resume: ' + uploadErr.message);
           setSubmitting(false);
           return;
         }
+      }
+
+      if (!finalResumeURL) {
+        setError('Please select or upload a resume, or choose to apply with your completed digital profile.');
+        setSubmitting(false);
+        return;
       }
 
       setProgress(80);
@@ -493,43 +581,147 @@ const JobApplyPage = () => {
                 </select>
               </div>
 
-              {/* Resume Selection / Upload */}
-              <div className="border-t border-slate-100 pt-4 space-y-3">
-                <label className="text-xs font-semibold text-slate-700 block">
-                  Select Resume / CV Attachment <span className="text-rose-500">*</span>
-                </label>
+              {/* Resume Selection / Auto-Load / Digital Profile */}
+              <div className="border-t border-slate-100 pt-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                    Choose Application Resume <span className="text-rose-500">*</span>
+                  </label>
+                  <span className="text-[11px] text-slate-500 font-medium">Auto-loaded from your account</span>
+                </div>
 
-                {userData?.resumeURL && (
+                {/* Option 1: Saved Profile Resume (Active CV) */}
+                {(userData?.resumeURL || userData?.resume) && (
                   <div
                     onClick={() => {
-                      setUseProfileResume(true);
+                      setResumeChoice('profile');
                       setNewResumeFile(null);
                     }}
                     className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
-                      useProfileResume
-                        ? 'border-indigo-500 bg-indigo-50/40 ring-1 ring-indigo-500'
-                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+                      resumeChoice === 'profile'
+                        ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20 shadow-xs'
+                        : 'border-slate-200 bg-white hover:bg-slate-50'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <FaFilePdf className="text-rose-500 text-xl" />
+                      <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center text-lg shrink-0">
+                        <FaFilePdf />
+                      </div>
                       <div>
-                        <span className="text-xs font-bold text-slate-900 block">
-                          Use Saved Profile Resume ({userData?.resumeName || 'Primary_Resume.pdf'})
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-900 block font-display">
+                            {userData?.resumeName || 'Primary Profile Resume.pdf'}
+                          </span>
+                          <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                            Saved in Profile
+                          </span>
+                        </div>
                         <span className="text-[11px] text-slate-500">
-                          Pre-verified document attached to your ZenSolve account
+                          Pre-verified document attached to your candidate account
                         </span>
                       </div>
                     </div>
-                    <span className="text-xs font-bold text-indigo-600">
-                      {useProfileResume ? 'Selected' : 'Select'}
+                    <span className={`text-xs font-bold px-3 py-1 rounded-xl transition ${
+                      resumeChoice === 'profile' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {resumeChoice === 'profile' ? 'Selected' : 'Use This'}
                     </span>
                   </div>
                 )}
 
-                {/* Upload alternative */}
-                <div className="border-2 border-dashed border-slate-200 hover:border-indigo-300 rounded-2xl p-6 text-center bg-slate-50/50 relative cursor-pointer">
+                {/* Option 2: Previously Used Resumes from prior applications */}
+                {previousResumes.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                      <FaHistory className="text-slate-400" />
+                      <span>Resumes Used in Previous Applications:</span>
+                    </span>
+                    <div className="space-y-2">
+                      {previousResumes.map((p, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => {
+                            setResumeChoice('saved');
+                            setSelectedPreviousResumeUrl(p.url);
+                            setNewResumeFile(null);
+                          }}
+                          className={`p-3.5 rounded-xl border transition cursor-pointer flex items-center justify-between text-xs ${
+                            resumeChoice === 'saved' && selectedPreviousResumeUrl === p.url
+                              ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20 shadow-xs'
+                              : 'border-slate-200 bg-white hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <FaFilePdf className="text-rose-500 text-base shrink-0" />
+                            <div>
+                              <span className="font-bold text-slate-900 block">
+                                Resume submitted to {p.companyName}
+                              </span>
+                              <span className="text-[10px] text-slate-500">
+                                Applied on {p.appliedDate}
+                              </span>
+                            </div>
+                          </div>
+                          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg ${
+                            resumeChoice === 'saved' && selectedPreviousResumeUrl === p.url
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            {resumeChoice === 'saved' && selectedPreviousResumeUrl === p.url ? 'Selected' : 'Select'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Option 3: Don't have a resume? Complete profile to build digital resume */}
+                {(!userData?.resumeURL && !userData?.resume) && (
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50 to-slate-50 border border-indigo-200/80 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg shrink-0 shadow-xs">
+                        <FaGraduationCap />
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                          Don't have a PDF / Word Resume yet?
+                        </h4>
+                        <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                          Complete your profile with education, skills, and work history. The portal will automatically format your profile into a verified Digital Resume for recruiters.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                      <Link
+                        to="/candidate/profile"
+                        target="_blank"
+                        className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+                      >
+                        <span>Complete Profile / Build Resume</span>
+                        <FaExternalLinkAlt className="text-[9px]" />
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setResumeChoice('digital');
+                          setNewResumeFile(null);
+                        }}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${
+                          resumeChoice === 'digital'
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                            : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {resumeChoice === 'digital' ? '✓ Profile Selected as Digital CV' : 'Apply with Completed Digital Profile'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Option 4: Upload New Resume file (Saved automatically to profile) */}
+                <div className="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-5 text-center bg-slate-50/50 hover:bg-indigo-50/10 transition relative cursor-pointer">
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx"
@@ -543,14 +735,19 @@ const JobApplyPage = () => {
                       <span className="text-slate-500 font-normal">
                         ({(newResumeFile.size / 1024 / 1024).toFixed(2)} MB)
                       </span>
+                      <span className="ml-2 text-[10px] px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 font-medium">
+                        Will be saved to your profile
+                      </span>
                     </div>
                   ) : (
                     <div className="space-y-1">
                       <FaFileUpload className="mx-auto text-slate-400 text-xl mb-1" />
                       <p className="text-xs font-bold text-slate-700">
-                        Or upload a customized resume for this position
+                        {userData?.resumeURL ? 'Or upload a new resume file (Auto-saves to your profile)' : 'Upload a resume document (PDF, DOC, DOCX up to 10MB)'}
                       </p>
-                      <p className="text-[11px] text-slate-500">PDF, DOC, DOCX up to 10MB</p>
+                      <p className="text-[11px] text-slate-500">
+                        Once uploaded, it remains safely saved in your profile so you never have to re-upload.
+                      </p>
                     </div>
                   )}
                 </div>
