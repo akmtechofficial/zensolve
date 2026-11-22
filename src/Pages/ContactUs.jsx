@@ -12,6 +12,11 @@ import {
   FaCheckCircle,
   FaExclamationTriangle,
   FaClock,
+  FaGlobe,
+  FaBuilding,
+  FaUserTie,
+  FaIdCard,
+  FaCalendarAlt,
 } from 'react-icons/fa';
 
 const ContactUs = () => {
@@ -24,9 +29,30 @@ const ContactUs = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [contactDetails, setContactDetails] = useState({
-    email: 'support@zensolve.com',
-    phone: '+91 (Support Desk)',
-    address: 'Patna, Bihar, India',
+    companyName: 'Zensolve Infotech Solution Private Limited',
+    cin: 'U78100JH2024PTC021852',
+    incorporationDate: 'January 15, 2024',
+    email: 'support@infozensolve.in',
+    mcaEmail: 'rupeshkumar.uci@gmail.com',
+    phone: '+91 2269622941',
+    address: '452, Ramnagar, Bhagalpur Road, Godda, Jharkhand – 814133',
+    landmark: '2nd Floor, Bhagalpur Road, Ramnagar, near Railway Station / Godda Block Road, Godda',
+    website: 'https://www.infozensolve.in/',
+    directors: [
+      {
+        name: 'Anand Kumar',
+        designation: 'Director',
+        din: '10465254',
+        appointmentDate: 'January 15, 2024',
+      },
+      {
+        name: 'Rupesh Kumar Thakur',
+        designation: 'Director',
+        din: '10465255',
+        appointmentDate: 'January 15, 2024',
+        searchUrl: 'https://www.google.com/search?kgmid=%2Fg%2F11fyxykg4l&q=company+ke+contact+location+and+directors+details+send+me+rupesh+kumar+thakur',
+      },
+    ],
   });
 
   useEffect(() => {
@@ -77,18 +103,19 @@ const ContactUs = () => {
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-60 mask-radial" />
       <div className="absolute top-1/4 -left-48 w-96 h-96 bg-indigo-500/5 blur-3xl pointer-events-none rounded-full" />
+      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/5 blur-3xl pointer-events-none rounded-full" />
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-7xl mx-auto relative z-10 space-y-12">
         
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-14">
+        <div className="text-center max-w-2xl mx-auto">
           <span className="text-xs font-semibold uppercase tracking-wider text-indigo-700 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200">
             Assistance & Inquiries
           </span>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight font-display mt-3">
             Get in Touch With Us
           </h1>
-          <p className="text-slate-600 text-base mt-2">
+          <p className="text-slate-600 text-sm sm:text-base mt-2">
             Have questions about career matching, employer registration, or corporate partnerships? We are here to help.
           </p>
         </div>
@@ -98,62 +125,105 @@ const ContactUs = () => {
           
           {/* Contact Details Column (Span 5) */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="glass-panel bg-white/90 p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-sm space-y-6">
-              <h3 className="text-xl font-bold text-slate-900 tracking-tight">Contact Information</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Connect directly with our recruitment desk, employer solutions specialists, and candidate career coaches.
-              </p>
+            <div className="glass-panel bg-white/95 p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-sm space-y-6">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight font-display">Contact Information</h3>
+                <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                  Connect directly with our recruitment desk, employer solutions specialists, and corporate office.
+                </p>
+              </div>
 
-              <div className="space-y-4 pt-2">
+              <div className="space-y-4 pt-1">
+                {/* Office Address */}
                 <div className="flex items-start gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5 border border-indigo-100">
                     <FaMapMarkerAlt size={16} />
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">Office Address</span>
-                    <span className="text-sm text-slate-800 font-medium leading-snug">
+                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">Registered Office Address</span>
+                    <span className="text-xs sm:text-sm text-slate-800 font-semibold leading-snug block">
                       {contactDetails.address}
+                    </span>
+                    <span className="text-[11px] text-slate-500 block mt-0.5 leading-snug">
+                      <strong>Landmark:</strong> {contactDetails.landmark}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-100">
-                    <FaEnvelope size={15} />
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">Email Inquiry</span>
-                    <a
-                      href={`mailto:${contactDetails.email}`}
-                      className="text-sm text-indigo-600 hover:underline font-medium"
-                    >
-                      {contactDetails.email}
-                    </a>
-                  </div>
-                </div>
-
+                {/* Direct Phone */}
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0 border border-violet-100">
                     <FaPhone size={15} />
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">Direct Hotline</span>
+                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">Official Telephone Hotline</span>
                     <a
                       href={`tel:${contactDetails.phone}`}
-                      className="text-sm text-slate-800 hover:text-indigo-600 font-medium"
+                      className="text-sm text-slate-900 hover:text-indigo-600 font-bold block"
                     >
                       {contactDetails.phone}
                     </a>
                   </div>
                 </div>
 
+                {/* Support Email */}
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-100">
+                    <FaEnvelope size={15} />
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">Official Support Email</span>
+                    <a
+                      href={`mailto:${contactDetails.email}`}
+                      className="text-sm text-indigo-600 hover:underline font-bold block truncate"
+                    >
+                      {contactDetails.email}
+                    </a>
+                  </div>
+                </div>
+
+                {/* MCA Registered Email */}
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100">
+                    <FaBuilding size={15} />
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">MCA Registered Email</span>
+                    <a
+                      href={`mailto:${contactDetails.mcaEmail}`}
+                      className="text-sm text-indigo-600 hover:underline font-bold block truncate"
+                    >
+                      {contactDetails.mcaEmail}
+                    </a>
+                  </div>
+                </div>
+
+                {/* Website */}
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center flex-shrink-0 border border-sky-100">
+                    <FaGlobe size={15} />
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">Official Website</span>
+                    <a
+                      href={contactDetails.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-indigo-600 hover:underline font-semibold block"
+                    >
+                      www.infozensolve.in
+                    </a>
+                  </div>
+                </div>
+
+                {/* Support Hours */}
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 border border-amber-100">
                     <FaClock size={15} />
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">Support Hours</span>
-                    <span className="text-sm text-slate-800 font-medium">Monday – Saturday: 9:30 AM – 6:30 PM IST</span>
+                    <span className="text-xs text-slate-500 font-semibold block uppercase tracking-wider">Support Desk Hours</span>
+                    <span className="text-xs text-slate-700 font-medium block">Monday – Saturday: 9:30 AM – 6:30 PM IST</span>
                   </div>
                 </div>
               </div>
@@ -166,7 +236,12 @@ const ContactUs = () => {
               onSubmit={handleSubmit}
               className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200/90 space-y-4 shadow-xl bg-white/95"
             >
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Send Us a Direct Message</h3>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 font-display">Send Us a Direct Message</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Our recruiting desk and corporate support team will review and reply within 24 hours.
+                </p>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -228,7 +303,7 @@ const ContactUs = () => {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows="4"
-                  placeholder="How can our recruitment or consultancy team assist you today?"
+                  placeholder="How can our recruitment or manpower consulting team assist you today?"
                   required
                   className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm leading-relaxed"
                 />
@@ -253,13 +328,70 @@ const ContactUs = () => {
                 variant="primary"
                 size="lg"
                 loading={isSubmitting}
-                className="w-full shadow-md shadow-indigo-500/10"
+                className="w-full shadow-md shadow-indigo-500/10 cursor-pointer"
               >
                 Send Message
               </Button>
             </form>
           </div>
 
+        </div>
+
+        {/* Corporate Statutory & Directors Information Panel */}
+        <div className="max-w-6xl mx-auto glass-panel p-6 sm:p-10 rounded-3xl bg-white/95 border border-slate-200/90 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+            <div>
+              <div className="flex items-center gap-2">
+                <FaBuilding className="text-indigo-600" />
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 font-display">
+                  Corporate Governance & Board of Directors
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Zensolve Infotech Solution Private Limited • CIN: {contactDetails.cin} • Incorporated on {contactDetails.incorporationDate}
+              </p>
+            </div>
+            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full self-start sm:self-auto">
+              MCA Verified Entity
+            </span>
+          </div>
+
+          {/* Directors Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-700 border-collapse border border-slate-200 rounded-xl overflow-hidden">
+              <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px]">
+                <tr>
+                  <th className="py-3 px-4 border border-slate-200">Director Name</th>
+                  <th className="py-3 px-4 border border-slate-200">Designation</th>
+                  <th className="py-3 px-4 border border-slate-200">DIN (Director Identification No.)</th>
+                  <th className="py-3 px-4 border border-slate-200">Appointment Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 bg-white">
+                {contactDetails.directors.map((dir, i) => (
+                  <tr key={i} className="hover:bg-slate-50">
+                    <td className="py-3 px-4 border border-slate-200 font-bold text-slate-900">
+                      {dir.searchUrl ? (
+                        <a
+                          href={dir.searchUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-600 hover:underline"
+                        >
+                          {dir.name}
+                        </a>
+                      ) : (
+                        dir.name
+                      )}
+                    </td>
+                    <td className="py-3 px-4 border border-slate-200 font-semibold text-slate-700">{dir.designation}</td>
+                    <td className="py-3 px-4 border border-slate-200 font-mono text-slate-900">{dir.din}</td>
+                    <td className="py-3 px-4 border border-slate-200 text-slate-600">{dir.appointmentDate}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
       </div>

@@ -11,25 +11,35 @@ export const LEGAL_CONFIG = {
   // 1. Identity & Corporate Entity
   entity: {
     displayName: "ZenSolve",
-    provisionalLegalName: "Zensolve infotech solution Pvt. Ltd",
-    verificationStatus: "pending_verification", // pending_verification | verified | unknown
-    cin: "UNKNOWN", // Explicitly unknown until certificate of incorporation is audited
-    cinStatus: "unknown",
-    registeredOfficeAddress: "Hsda - Mahagama 4 lane Zero mile Godda, Jharkhand, India",
-    addressStatus: "pending_verification",
+    provisionalLegalName: "Zensolve Infotech Solution Private Limited",
+    verificationStatus: "verified",
+    cin: "U78100JH2024PTC021852",
+    cinStatus: "verified",
+    incorporationDate: "January 15, 2024",
+    registeredOfficeAddress: "452, Ramnagar, Bhagalpur Road, Godda, Jharkhand – 814133",
+    landmark: "2nd Floor, Bhagalpur Road, Ramnagar, near Railway Station / Godda Block Road, Godda",
+    addressStatus: "verified",
     websiteDomain: "infozensolve.in",
+    websiteUrl: "https://www.infozensolve.in/",
     operationalStatus: "Active Digital Job Portal",
+    directors: [
+      { name: "Anand Kumar", designation: "Director", din: "10465254", appointmentDate: "January 15, 2024" },
+      { name: "Rupesh Kumar Thakur", designation: "Director", din: "10465255", appointmentDate: "January 15, 2024" },
+    ],
   },
 
   // 2. Communications & Statutory Contact
   contacts: {
-    provisionalPrivacyEmail: "carezensolve@gmail.com",
-    privacyEmailStatus: "owner_supplied_provisional",
-    supportEmail: "carezensolve@gmail.com",
-    grievanceContactPerson: "Not Confirmed / Formal Statutory Appointment Pending",
-    grievanceContactStatus: "unconfirmed",
-    securityEmail: "carezensolve@gmail.com",
-    securityContactStatus: "provisional",
+    supportEmail: "support@infozensolve.in",
+    mcaEmail: "rupeshkumar.uci@gmail.com",
+    privacyEmail: "support@infozensolve.in",
+    provisionalPrivacyEmail: "support@infozensolve.in",
+    privacyEmailStatus: "official",
+    phone: "+91 2269622941",
+    grievanceContactPerson: "Rupesh Kumar Thakur / Anand Kumar",
+    grievanceContactStatus: "active",
+    securityEmail: "support@infozensolve.in",
+    securityContactStatus: "active",
   },
 
   // 3. Technical & Processor Environment

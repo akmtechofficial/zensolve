@@ -38,9 +38,16 @@ const Footer = () => {
               </div>
               <span className="font-bold text-slate-900 text-base font-display">ZenSolve</span>
             </Link>
-            <p className="text-slate-500 leading-relaxed max-w-xs">
-              Multi-company recruitment platform connecting verified Indian employers with job seekers.
+            <p className="text-slate-500 leading-relaxed max-w-xs text-[11px]">
+              <strong>Zensolve Infotech Solution Private Limited</strong> (CIN: U78100JH2024PTC021852)
             </p>
+            <p className="text-slate-500 leading-relaxed max-w-xs text-[11px]">
+              452, Ramnagar, Bhagalpur Road, Godda, Jharkhand – 814133
+            </p>
+            <div className="pt-1 text-[11px] text-slate-500 space-y-0.5">
+              <div>Phone: <a href="tel:+912269622941" className="text-slate-700 hover:text-indigo-600 font-semibold">+91 2269622941</a></div>
+              <div>Support: <a href="mailto:support@infozensolve.in" className="text-indigo-600 hover:underline">support@infozensolve.in</a></div>
+            </div>
           </div>
 
           {/* For Candidates */}
@@ -108,6 +115,16 @@ const Footer = () => {
             </h4>
             <ul className="space-y-1.5">
               <li>
+                <Link to="/about" className="hover:text-indigo-600 transition font-medium">
+                  About Us & Governance
+                </Link>
+              </li>
+              <li>
+                <Link to="/contactus" className="hover:text-indigo-600 transition">
+                  Contact Support
+                </Link>
+              </li>
+              <li>
                 <Link to="/privacy" className="hover:text-indigo-600 transition">
                   Privacy Policy
                 </Link>
@@ -120,11 +137,6 @@ const Footer = () => {
               <li>
                 <Link to="/report-fraud" className="text-rose-600 hover:underline font-semibold transition">
                   Report Job Fraud
-                </Link>
-              </li>
-              <li>
-                <Link to="/contactus" className="hover:text-indigo-600 transition">
-                  Contact Support
                 </Link>
               </li>
             </ul>

@@ -15,6 +15,7 @@ import ApplyJob from './components/ApplyJob';
 import ThankYou from './components/ThankYou';
 import SaveJob from './components/SaveJob';
 import ContactUs from './Pages/ContactUs';
+import AboutUs from './Pages/AboutUs';
 import CompanyProfile from './Pages/CompanyProfile';
 import CompanyDirectory from './Pages/CompanyDirectory';
 
@@ -149,6 +150,9 @@ const App = () => {
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/saved-jobs" element={<SaveJob />} />
             <Route path="/contactus" element={<ContactUs />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/about-us" element={<AboutUs />} />
 
             {/* Companies Public Directory & Profiles */}
             <Route path="/companies" element={<CompanyDirectory />} />
