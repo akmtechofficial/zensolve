@@ -34,6 +34,7 @@ import {
 } from 'react-icons/fa';
 
 import { useAuth } from '../../components/useAuth';
+import ResumePdfViewerModal from '../../components/ResumePdfViewerModal';
 
 const statusOptions = ['All', 'Applied', 'Under Review', 'Shortlisted', 'Interview Scheduled', 'Selected', 'Rejected', 'Withdrawn'];
 
@@ -54,6 +55,10 @@ const DashboardApplicants = () => {
   const [modalNote, setModalNote] = useState('');
   const [modalUpdatingStatus, setModalUpdatingStatus] = useState(false);
   const [modalFeedback, setModalFeedback] = useState(null);
+
+  // Digital PDF Resume Viewer Modal State
+  const [resumeViewerOpen, setResumeViewerOpen] = useState(false);
+  const [resumeApplicant, setResumeApplicant] = useState(null);
 
   const fetchApps = async () => {
     if (!user) return;
@@ -139,22 +144,50 @@ const DashboardApplicants = () => {
     setModalUpdatingStatus(false);
   };
 
-  const handleDownloadResume = async (app) => {
-    if (!app?.resume) return;
+  const handleViewResume = async (app) => {
+    if (!app) return;
+    const resumeVal = app.resume || '';
+
+    // If it's a digital profile CV (starts with profile://, is DIGITAL_PROFILE_CV, or has no separate uploaded document)
+    if (
+      !resumeVal ||
+      resumeVal === 'DIGITAL_PROFILE_CV' ||
+      resumeVal.startsWith('profile://') ||
+      app.isDigitalProfile
+    ) {
+      setDownloadingResume(true);
+      try {
+        const enriched = await fetchCandidateFullProfile(app.id, app);
+        setResumeApplicant(enriched);
+      } catch (err) {
+        setResumeApplicant(app);
+      } finally {
+        setDownloadingResume(false);
+      }
+      setResumeViewerOpen(true);
+      return;
+    }
+
+    // If an external document file (PDF, DOCX) is attached
     setDownloadingResume(true);
     try {
       const url = await getSecureResumeUrl({
-        resumePath: app.resumeStoragePath || app.resume,
+        resumePath: app.resumeStoragePath || resumeVal,
         applicationId: app.id,
       });
       if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
         window.open(url, '_blank', 'noopener,noreferrer');
       } else {
-        alert('Invalid or missing resume download link.');
+        // Fallback to rendering the candidate's digital CV sheet if storage URL is inaccessible
+        const enriched = await fetchCandidateFullProfile(app.id, app);
+        setResumeApplicant(enriched);
+        setResumeViewerOpen(true);
       }
     } catch (err) {
-      console.error('Error opening resume:', err);
-      alert('Unable to load candidate resume: ' + err.message);
+      console.warn('Error opening attached resume file, rendering digital CV instead:', err);
+      const enriched = await fetchCandidateFullProfile(app.id, app);
+      setResumeApplicant(enriched);
+      setResumeViewerOpen(true);
     } finally {
       setDownloadingResume(false);
     }
@@ -313,26 +346,15 @@ const DashboardApplicants = () => {
 
                     {/* Resume / CV */}
                     <td className="py-4 px-4">
-                      {app.resume && app.resume !== 'DIGITAL_PROFILE_CV' && !app.resume.startsWith('profile://') ? (
-                        <button
-                          type="button"
-                          onClick={() => handleDownloadResume(app)}
-                          disabled={downloadingResume}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-surface-1 text-indigo-600 border border-indigo-200 hover:border-indigo-400 text-xs font-semibold transition shadow-xs cursor-pointer disabled:opacity-50"
-                        >
-                          <FaFilePdf className="text-rose-500 text-xs" />
-                          <span>View Resume</span>
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenProfileModal(app)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold hover:bg-emerald-100 transition cursor-pointer"
-                        >
-                          <FaIdCard className="text-emerald-600 text-xs" />
-                          <span>Digital Profile CV</span>
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleViewResume(app)}
+                        disabled={downloadingResume}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 text-indigo-700 hover:bg-indigo-50/50 text-xs font-bold transition shadow-2xs cursor-pointer disabled:opacity-50"
+                      >
+                        <FaFilePdf className="text-rose-500 text-xs" />
+                        <span>View Resume</span>
+                      </button>
                     </td>
 
                     {/* Quick Status Select */}
@@ -745,11 +767,11 @@ const DashboardApplicants = () => {
                   ) : (
                     <button
                       type="button"
-                      onClick={() => window.print()}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition cursor-pointer"
+                      onClick={() => handleViewResume(selectedApplicant)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer"
                     >
-                      <FaPrint size={11} />
-                      <span>Print Profile CV</span>
+                      <FaFilePdf size={13} />
+                      <span>View & Print Profile CV (PDF)</span>
                     </button>
                   )}
                 </div>
@@ -819,6 +841,13 @@ const DashboardApplicants = () => {
           </div>
         </div>
       )}
+
+      {/* A4 PDF Curriculum Vitae Viewer Modal */}
+      <ResumePdfViewerModal
+        isOpen={resumeViewerOpen}
+        onClose={() => setResumeViewerOpen(false)}
+        applicant={resumeApplicant}
+      />
 
     </DashboardLayout>
   );

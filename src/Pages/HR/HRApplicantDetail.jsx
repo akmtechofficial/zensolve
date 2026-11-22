@@ -11,6 +11,7 @@ import {
 } from '../../services/recruitmentService';
 import { getSecureResumeUrl } from '../../services/storageService';
 import DashboardLayout from '../Dashboard/DashboardLayout';
+import ResumePdfViewerModal from '../../components/ResumePdfViewerModal';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import {
@@ -79,6 +80,7 @@ const HRApplicantDetail = () => {
 
   // Resume Retrieval State
   const [downloadingResume, setDownloadingResume] = useState(false);
+  const [resumeViewerOpen, setResumeViewerOpen] = useState(false);
 
   useEffect(() => {
     const fetchApp = async () => {
@@ -118,6 +120,15 @@ const HRApplicantDetail = () => {
 
   const handleDownloadResume = async () => {
     if (!application?.resume) return;
+
+    if (
+      application.resume === 'DIGITAL_PROFILE_CV' ||
+      application.resume.startsWith('profile://')
+    ) {
+      setResumeViewerOpen(true);
+      return;
+    }
+
     setDownloadingResume(true);
     try {
       const url = await getSecureResumeUrl({
@@ -454,19 +465,21 @@ const HRApplicantDetail = () => {
                     </span>
                   </button>
                 ) : (
-                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-900 font-semibold">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-emerald-900 font-semibold">
                     <div className="flex items-center gap-2">
-                      <FaIdCard className="text-emerald-600 text-base" />
+                      <FaIdCard className="text-emerald-600 text-base flex-shrink-0" />
                       <span>Applied with Verified Digital Profile Resume</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => window.print()}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition"
-                    >
-                      <FaPrint size={10} />
-                      <span>Print Dossier</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setResumeViewerOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-sm transition cursor-pointer"
+                      >
+                        <FaFilePdf size={12} />
+                        <span>View & Print CV (PDF)</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -848,6 +861,13 @@ const HRApplicantDetail = () => {
         </div>
 
       </div>
+      {/* Candidate A4 PDF CV Modal */}
+      <ResumePdfViewerModal
+        isOpen={resumeViewerOpen}
+        onClose={() => setResumeViewerOpen(false)}
+        applicant={application}
+      />
+
     </DashboardLayout>
   );
 };
