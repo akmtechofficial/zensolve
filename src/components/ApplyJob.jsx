@@ -9,7 +9,12 @@ import {
   validateLogoFile,
   MAX_RESUME_SIZE_MB,
 } from '../services/storageService';
-import { getCandidateProfile, saveCandidateProfile } from '../services/recruitmentService';
+import {
+  getCandidateProfile,
+  saveCandidateProfile,
+  checkExistingApplication,
+  submitJobApplication,
+} from '../services/recruitmentService';
 import { notifyCompanyOfApplication } from '../services/emailService';
 import {
   FaUser,
@@ -58,6 +63,9 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [alreadyApplied, setAlreadyApplied] = useState(false);
+  const [checkingApplied, setCheckingApplied] = useState(true);
+  const [existingAppId, setExistingAppId] = useState(null);
 
   // Digital Profile states
   const [profileData, setProfileData] = useState({
@@ -128,6 +136,37 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
       if (!applicantPhone && userData?.phone) setApplicantPhone(userData.phone);
     }
   }, [user, userData, applicantName, applicantEmail, applicantPhone]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const verifyApplicationStatus = async () => {
+      if (user?.uid && job?.id) {
+        setCheckingApplied(true);
+        try {
+          const existing = await checkExistingApplication(job.id, user.uid, user.email);
+          if (isMounted) {
+            if (existing) {
+              setAlreadyApplied(true);
+              setExistingAppId(existing.id);
+            } else {
+              setAlreadyApplied(false);
+            }
+          }
+        } catch (err) {
+          console.warn('Error checking application status:', err);
+        } finally {
+          if (isMounted) setCheckingApplied(false);
+        }
+      } else if (isMounted) {
+        setCheckingApplied(false);
+      }
+    };
+
+    verifyApplicationStatus();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.uid, user?.email, job?.id]);
 
   if (!job) {
     return (
@@ -277,6 +316,15 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
       return;
     }
 
+    // 1. Strict Duplicate Check before processing any files
+    const existing = await checkExistingApplication(job.id, user.uid, applicantEmail || user.email);
+    if (existing) {
+      setAlreadyApplied(true);
+      setExistingAppId(existing.id);
+      setError('Aap iss job ke liye pehle hi apply kar chuke hain. Ek candidate ek job par sirf ek baar apply kar sakta hai.');
+      return;
+    }
+
     setIsSubmitting(true);
     setProgress(20);
     setError(null);
@@ -305,8 +353,9 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
       }
 
       setProgress(80);
-      const applicationsRef = collection(db, 'jobApplications');
-      await addDoc(applicationsRef, {
+
+      // Submit application with server-level deduplication
+      const appResult = await submitJobApplication({
         jobId: job.id,
         companyId: job.companyId || job.userId || 'company',
         applicantName,
@@ -333,11 +382,22 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
         notes,
         jobPosition: job.position,
         companyName: job.companyName,
-        appliedAt: serverTimestamp(),
         userId: user.uid,
-        status: 'Applied',
         languages: profileData.languages || [],
       });
+
+      if (!appResult.success) {
+        if (appResult.isDuplicate) {
+          setAlreadyApplied(true);
+          setExistingAppId(appResult.existingId);
+        }
+        setError(appResult.error || 'Failed to submit application.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      setAlreadyApplied(true);
+      setExistingAppId(appResult.id);
 
       // Keep user profile fresh with submitted phone & name
       await saveCandidateProfile(user.uid, {
@@ -378,6 +438,66 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
       setIsSubmitting(false);
     }
   };
+
+  if (checkingApplied) {
+    return (
+      <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-500">
+        <FaSpinner className="animate-spin text-2xl text-indigo-600" />
+        <span className="text-xs font-semibold">Checking application records...</span>
+      </div>
+    );
+  }
+
+  if (alreadyApplied) {
+    return (
+      <div className="w-full text-center space-y-4 py-4">
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-left">
+          <div>
+            <span className="text-xs text-slate-500 font-semibold block">Position</span>
+            <span className="text-base font-bold text-slate-900">{job.position}</span>
+            <span className="text-xs text-indigo-600 font-medium block mt-0.5">
+              {job.clientCompanyName ? `${job.clientCompanyName} (via ${job.companyName})` : job.companyName}
+            </span>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold flex items-center gap-1">
+            <FaCheckCircle className="text-emerald-600" />
+            Applied
+          </span>
+        </div>
+
+        <div className="p-8 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl mx-auto shadow-xs">
+            <FaCheckCircle />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 font-display">
+            Application Already Submitted
+          </h3>
+          <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
+            Aap iss job opening (<strong>{job.position}</strong>) ke liye pehle hi apply kar chuke hain. Ek candidate ek job par sirf ek baar apply kar sakta hai.
+          </p>
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-emerald-200 text-emerald-800 text-xs font-bold shadow-xs">
+              <FaCheckCircle className="text-emerald-600" />
+              <span>Status: Application Under Review</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="flex justify-center gap-3 pt-2">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              if (onSuccess) onSuccess();
+              else navigate('/jobs');
+            }}
+          >
+            Explore More Jobs
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

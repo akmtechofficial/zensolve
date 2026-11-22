@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { db } from '../firebaseConfig'; // Import Firestore
+import { db, auth } from '../firebaseConfig'; // Import Firestore
 import { collection, addDoc } from 'firebase/firestore';
+import { checkExistingApplication } from '../services/recruitmentService';
 import { FaEnvelope, FaPhoneAlt, FaUser, FaMapMarkerAlt, FaFileAlt } from 'react-icons/fa'; // Icons for inputs
 
 const ApplyJobForm = ({ job }) => {
@@ -22,6 +23,12 @@ const ApplyJobForm = ({ job }) => {
     }
 
     try {
+      const existing = await checkExistingApplication(job.id, auth.currentUser?.uid, email);
+      if (existing) {
+        setError('Aap pehle hi iss job ke liye apply kar chuke hain.');
+        return;
+      }
+
       // Prepare application data
       const applicationData = {
         name,

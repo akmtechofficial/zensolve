@@ -24,7 +24,7 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from './useAuth';
 import { isJobSaved } from '../firebaseUtils';
-import { getJobById, toggleSaveJob, getCandidateApplications } from '../services/recruitmentService';
+import { getJobById, toggleSaveJob, getCandidateApplications, checkExistingApplication } from '../services/recruitmentService';
 import { VerifiedBadge, Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 
@@ -84,9 +84,10 @@ const JobDetails = () => {
     let isMounted = true;
     const checkApplied = async () => {
       if (user?.uid && job?.id) {
-        const userApps = await getCandidateApplications({ userId: user.uid, applicantEmail: user.email });
-        const applied = userApps.some((app) => app.jobId === job.id);
-        if (isMounted) setHasApplied(applied);
+        const existing = await checkExistingApplication(job.id, user.uid, user.email);
+        if (isMounted) setHasApplied(Boolean(existing));
+      } else if (isMounted) {
+        setHasApplied(false);
       }
     };
     checkApplied();
@@ -96,7 +97,7 @@ const JobDetails = () => {
   }, [user?.uid, user?.email, job?.id]);
 
   const handleApply = () => {
-    if (job?.status === 'Closed') return;
+    if (job?.status === 'Closed' || hasApplied) return;
     if (!user) {
       navigate(`/login?returnUrl=/jobs/${job.id}/apply`, {
         state: { from: location, returnUrl: `/jobs/${job.id}/apply` },

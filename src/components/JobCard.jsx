@@ -13,7 +13,7 @@ import {
 } from 'react-icons/fa';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from './useAuth';
-import { toggleSaveJob } from '../services/recruitmentService';
+import { toggleSaveJob, checkExistingApplication } from '../services/recruitmentService';
 import { isJobSaved } from '../firebaseUtils';
 
 const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
@@ -22,23 +22,30 @@ const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
   const { user } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    const checkSaved = async () => {
+    const checkStatus = async () => {
       if (user?.uid && job?.id) {
         const saved = await isJobSaved(user.uid, job.id);
         if (isMounted) setIsSaved(saved);
+
+        const existing = await checkExistingApplication(job.id, user.uid, user.email);
+        if (isMounted) setHasApplied(Boolean(existing));
+      } else if (isMounted) {
+        setHasApplied(false);
       }
     };
-    checkSaved();
+    checkStatus();
     return () => {
       isMounted = false;
     };
-  }, [user?.uid, job?.id]);
+  }, [user?.uid, user?.email, job?.id]);
 
   const handleApply = (e) => {
     e.stopPropagation();
+    if (hasApplied) return;
     if (!user) {
       navigate(`/login?returnUrl=/jobs/${job.id}/apply`, {
         state: { from: location, returnUrl: `/jobs/${job.id}/apply` },
@@ -268,14 +275,29 @@ const JobCard = ({ job, onQuickApply, showRemoveAction = false, onRemove }) => {
             Details
           </button>
 
-          <button
-            type="button"
-            onClick={handleApply}
-            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-xs"
-          >
-            <span>Apply</span>
-            <FaArrowRight className="text-[9px]" />
-          </button>
+          {hasApplied ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/jobs/${job.id}`, { state: { job } });
+              }}
+              className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold flex items-center gap-1 shadow-xs cursor-pointer hover:bg-emerald-100 transition"
+              title="You have already applied for this position"
+            >
+              <FaCheckCircle className="text-[10px] text-emerald-600" />
+              <span>Applied</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleApply}
+              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-xs"
+            >
+              <span>Apply</span>
+              <FaArrowRight className="text-[9px]" />
+            </button>
+          )}
         </div>
       </div>
     </div>

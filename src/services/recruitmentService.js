@@ -224,9 +224,20 @@ export const saveCandidateProfile = async (userId, profileData) => {
 
 /**
  * Check if candidate has already applied for this job
+ * Accepts (jobId, userId, applicantEmail) OR ({ jobId, userId, applicantEmail })
  */
-export const checkExistingApplication = async (jobId, userId, applicantEmail) => {
+export const checkExistingApplication = async (jobIdOrOptions, maybeUserId, maybeEmail) => {
   try {
+    let jobId = jobIdOrOptions;
+    let userId = maybeUserId;
+    let applicantEmail = maybeEmail;
+
+    if (typeof jobIdOrOptions === 'object' && jobIdOrOptions !== null) {
+      jobId = jobIdOrOptions.jobId;
+      userId = jobIdOrOptions.userId;
+      applicantEmail = jobIdOrOptions.applicantEmail || jobIdOrOptions.email;
+    }
+
     if (!jobId) return null;
     const appsRef = collection(db, "jobApplications");
     
@@ -258,18 +269,18 @@ export const checkExistingApplication = async (jobId, userId, applicantEmail) =>
 };
 
 /**
- * Submit official job application
+ * Submit official job application (with strict single-application enforcement)
  */
 export const submitJobApplication = async (applicationData) => {
   try {
     const { jobId, userId, applicantEmail } = applicationData;
-    // Duplicate check
+    // Strict duplicate check: 1 candidate = 1 application per job
     const existing = await checkExistingApplication(jobId, userId, applicantEmail);
     if (existing) {
       return {
         success: false,
         isDuplicate: true,
-        error: "You have already submitted an application for this position.",
+        error: "Aap pehle hi iss job ke liye apply kar chuke hain. Ek candidate ek job ke liye sirf ek baar apply kar sakta hai.",
         existingId: existing.id,
       };
     }
@@ -309,9 +320,18 @@ export const submitJobApplication = async (applicationData) => {
 
 /**
  * Get all applications for a specific candidate
+ * Accepts (userId, applicantEmail) OR ({ userId, applicantEmail })
  */
-export const getCandidateApplications = async (userId, applicantEmail) => {
+export const getCandidateApplications = async (userIdOrOptions, maybeEmail) => {
   try {
+    let userId = userIdOrOptions;
+    let applicantEmail = maybeEmail;
+
+    if (typeof userIdOrOptions === 'object' && userIdOrOptions !== null) {
+      userId = userIdOrOptions.userId;
+      applicantEmail = userIdOrOptions.applicantEmail || userIdOrOptions.email;
+    }
+
     const appsRef = collection(db, "jobApplications");
     let apps = [];
 
