@@ -747,15 +747,89 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
                 {Array.isArray(profileData.skills) && profileData.skills.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {profileData.skills.map((s, idx) => (
-                      <span key={idx} className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-semibold border border-slate-200/80">
+                      <span key={idx} className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 text-xs font-semibold border border-indigo-100">
                         {s}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400 italic">No skills specified yet. Click 'Edit Profile' to add skills.</p>
+                  <p className="text-xs text-slate-400 italic">No skills added yet.</p>
                 )}
               </div>
+
+              {/* Languages Known */}
+              {Array.isArray(profileData.languages) && profileData.languages.length > 0 && (
+                <div>
+                  <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+                    <FaIdBadge className="text-indigo-600 text-[10px]" />
+                    <span>Languages Known (भाषायें)</span>
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {profileData.languages.map((l, idx) => {
+                      const name = typeof l === 'string' ? l : l.name;
+                      const prof = typeof l === 'string' ? '' : l.proficiency;
+                      return (
+                        <span key={idx} className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-semibold border border-slate-200">
+                          {name} {prof && <span className="text-indigo-600 font-normal">({prof})</span>}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Work Experience */}
+              {Array.isArray(profileData.experience) && profileData.experience.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block flex items-center gap-1.5">
+                    <FaBriefcase className="text-indigo-600 text-[10px]" />
+                    <span>Work Experience</span>
+                  </span>
+                  <div className="space-y-2">
+                    {profileData.experience.map((exp, idx) => (
+                      <div key={idx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                        <div className="flex items-center justify-between font-bold text-slate-900">
+                          <span>{exp.role || exp.title}</span>
+                          {(exp.duration || exp.years) && (
+                            <span className="text-[10px] text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                              {exp.duration || exp.years}
+                            </span>
+                          )}
+                        </div>
+                        {(exp.company || exp.companyName) && (
+                          <div className="text-slate-600 font-medium">{exp.company || exp.companyName}</div>
+                        )}
+                        {exp.description && (
+                          <div className="text-slate-500 mt-1 text-[11px]">{exp.description}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Education Credentials */}
+              {Array.isArray(profileData.education) && profileData.education.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block flex items-center gap-1.5">
+                    <FaGraduationCap className="text-indigo-600 text-[10px]" />
+                    <span>Education</span>
+                  </span>
+                  <div className="space-y-2">
+                    {profileData.education.map((edu, idx) => (
+                      <div key={idx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                        <div className="flex items-center justify-between font-bold text-slate-900">
+                          <span>{edu.degree || edu.qualification}</span>
+                          {edu.year && <span className="text-[10px] text-slate-500">{edu.year}</span>}
+                        </div>
+                        {(edu.school || edu.college || edu.institution) && (
+                          <div className="text-slate-600">{edu.school || edu.college || edu.institution}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Bio / Summary */}
               {profileData.bio && (

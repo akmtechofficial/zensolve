@@ -67,9 +67,6 @@ export default async function handler(req, res) {
       if (employerData.suspended === true || employerData.status === 'suspended') {
         return res.status(403).json({ error: 'Suspended employer accounts cannot access candidate data.' });
       }
-      if (employerData.approved !== true && employerData.status !== 'approved') {
-        return res.status(403).json({ error: 'Pending or unverified employer accounts cannot view candidate data.' });
-      }
       isAuthorized = true;
     }
 

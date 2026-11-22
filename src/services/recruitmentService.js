@@ -205,20 +205,93 @@ export const getCandidateProfile = async (userId) => {
 
 /**
  * Save / Update Candidate Profile
+ * Strips restricted security fields so Firestore rules never trigger permission denied.
+ * Also synchronizes the candidate's full dossier to all active job applications.
  */
 export const saveCandidateProfile = async (userId, profileData) => {
   try {
     if (!userId) throw new Error("User ID is required");
+
+    // Strip restricted fields so Firestore rules diff never triggers permission denied
+    const {
+      role,
+      email,
+      approved,
+      status,
+      suspended,
+      uid,
+      id,
+      reviewedBy,
+      reviewedAt,
+      ...safeProfileData
+    } = profileData;
+
     const userRef = doc(db, "users", userId);
-    await setDoc(
-      userRef,
-      {
-        ...profileData,
-        role: "candidate",
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      await updateDoc(userRef, {
+        ...safeProfileData,
         updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+      });
+    } else {
+      await setDoc(userRef, {
+        ...safeProfileData,
+        email: profileData.email || '',
+        role: "candidate",
+        status: "unverified",
+        approved: false,
+        suspended: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    // Opportunistically sync candidate profile fields to all active job applications
+    try {
+      const appsRef = collection(db, "jobApplications");
+      const q = query(appsRef, where("userId", "==", userId));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const updatePromises = snap.docs.map(async (d) => {
+          const appDocData = d.data();
+          if (appDocData.status !== "Rejected" && appDocData.status !== "Withdrawn") {
+            const updatedSnapshot = {
+              ...(appDocData.profileSnapshot || {}),
+              ...safeProfileData,
+              displayName: safeProfileData.displayName || appDocData.applicantName,
+              phone: safeProfileData.phone || appDocData.applicantPhone,
+              location: safeProfileData.location || appDocData.applicantLocation,
+              headline: safeProfileData.headline || appDocData.applicantHeadline,
+              bio: safeProfileData.bio || appDocData.applicantBio,
+              skills: safeProfileData.skills || appDocData.skills || [],
+              languages: safeProfileData.languages || appDocData.languages || [],
+              education: safeProfileData.education || appDocData.education || [],
+              experience: safeProfileData.experience || appDocData.experience || [],
+            };
+            return updateDoc(d.ref, {
+              applicantName: safeProfileData.displayName || appDocData.applicantName,
+              applicantPhone: safeProfileData.phone || appDocData.applicantPhone,
+              applicantLocation: safeProfileData.location || appDocData.applicantLocation,
+              applicantHeadline: safeProfileData.headline || appDocData.applicantHeadline,
+              applicantBio: safeProfileData.bio || appDocData.applicantBio,
+              skills: safeProfileData.skills || appDocData.skills || [],
+              languages: safeProfileData.languages || appDocData.languages || [],
+              education: safeProfileData.education || appDocData.education || [],
+              experience: safeProfileData.experience || appDocData.experience || [],
+              experienceYears: safeProfileData.experienceYears || appDocData.experienceYears || '',
+              noticePeriod: safeProfileData.noticePeriod || appDocData.noticePeriod || '',
+              profileSnapshot: updatedSnapshot,
+              updatedAt: serverTimestamp(),
+            }).catch((err) => console.warn("App sync notice:", err));
+          }
+        });
+        await Promise.all(updatePromises);
+      }
+    } catch (syncErr) {
+      console.warn("Applications sync warning:", syncErr);
+    }
+
     return { success: true };
   } catch (error) {
     console.error("Error updating candidate profile:", error);

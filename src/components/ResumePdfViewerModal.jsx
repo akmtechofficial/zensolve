@@ -32,7 +32,7 @@ const ResumePdfViewerModal = ({ isOpen, onClose, applicant }) => {
   const headline = applicant.applicantHeadline || snapshot.headline || applicant.headline || applicant.jobPosition || 'Professional';
   const email = applicant.applicantEmail || snapshot.email || applicant.email || '';
   const phone = applicant.applicantPhone || snapshot.phone || applicant.phone || '';
-  const location = applicant.applicantLocation || snapshot.location || applicant.location || '';
+  const location = snapshot.location || snapshot.city || applicant.applicantLocation || applicant.city || applicant.location || '';
   const bio = applicant.applicantBio || snapshot.bio || applicant.bio || '';
   
   const skills = Array.isArray(applicant.skills) && applicant.skills.length > 0

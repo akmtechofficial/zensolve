@@ -167,6 +167,21 @@ service cloud.firestore {
       // S04, S07, S09, S06: Strict role-based updates with diff whitelist validation
       allow update: if isAdmin() || (
         isAuthenticated() && !isSuspended() && (
+          // Candidate profile sync on active applications
+          (
+            resource.data.userId == request.auth.uid &&
+            resource.data.status in ['Applied', 'Pending', 'Shortlisted', 'Interview Scheduled'] &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'applicantName', 'applicantPhone', 'applicantPhoto', 'applicantHeadline',
+              'applicantBio', 'applicantLocation', 'skills', 'languages', 'education',
+              'experience', 'experienceYears', 'noticePeriod', 'portfolioURL', 'linkedinURL',
+              'githubURL', 'profileSnapshot', 'updatedAt'
+            ]) &&
+            request.resource.data.userId == resource.data.userId &&
+            request.resource.data.jobId == resource.data.jobId &&
+            request.resource.data.companyId == resource.data.companyId &&
+            request.resource.data.status == resource.data.status
+          ) ||
           // Candidate withdrawal: can only transition to 'Withdrawn' if not in terminal states, restricted field whitelist
           (
             resource.data.userId == request.auth.uid &&
