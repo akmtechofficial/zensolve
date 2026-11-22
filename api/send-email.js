@@ -1,0 +1,423 @@
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+export default async function handler(req, res) {
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+  }
+
+  try {
+    const { type, payload } = req.body || {};
+
+    const emailUser = process.env.EMAIL_USER || 'carezensolve@gmail.com';
+    const emailPass = process.env.EMAIL_PASS;
+    const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'carezensolve@gmail.com';
+
+    if (!emailPass) {
+      console.error('EMAIL_PASS environment variable is not configured.');
+      return res.status(500).json({ error: 'Mail server credentials are not configured.' });
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPass,
+      },
+    });
+
+    const formattedTime = new Date().toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      dateStyle: 'full',
+      timeStyle: 'medium',
+    });
+
+    let mailOptions = null;
+
+    // 1. Candidate Applied -> Email to Company (with link to company panel)
+    if (type === 'NEW_APPLICATION') {
+      const {
+        companyEmail,
+        companyName,
+        clientCompanyName,
+        applicantName,
+        applicantEmail,
+        applicantPhone,
+        jobPosition,
+        jobId,
+        isDigitalProfile,
+        notes,
+      } = payload || {};
+
+      const targetEmail = companyEmail || adminEmail;
+      const companyPanelLink = jobId 
+        ? `https://infozensolve.in/hr/jobs/${jobId}/applicants` 
+        : `https://infozensolve.in/hr/applicants`;
+
+      const subject = `💼 New Application: ${applicantName} applied for ${jobPosition}`;
+
+      const htmlContent = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+          <div style="background: #0f172a; padding: 24px; text-align: center; border-bottom: 3px solid #4f46e5;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;">ZenSolve Recruiter Portal</h1>
+            <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 13px;">New Candidate Application Received</p>
+          </div>
+
+          <div style="padding: 24px;">
+            <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <h2 style="color: #3730a3; margin: 0 0 4px 0; font-size: 16px; font-weight: 700;">
+                ${applicantName} applied for ${jobPosition}
+              </h2>
+              <p style="margin: 0; color: #4338ca; font-size: 12px;">
+                ${clientCompanyName ? `Placement at: <strong>${clientCompanyName}</strong> • ` : ''}Managed by ${companyName || 'Your Agency'}
+              </p>
+            </div>
+
+            <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+              Applicant Overview
+            </h3>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.6;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; width: 140px; font-weight: 600;">Full Legal Name:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${applicantName || 'Candidate'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Email Address:</td>
+                <td style="padding: 6px 0; color: #2563eb; font-weight: 600;">
+                  <a href="mailto:${applicantEmail}" style="color: #2563eb; text-decoration: none;">${applicantEmail || 'Not Provided'}</a>
+                </td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Contact Phone:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 600;">${applicantPhone || 'Not Provided'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">CV Format:</td>
+                <td style="padding: 6px 0; color: #059669; font-weight: 700;">
+                  ${isDigitalProfile ? 'Verified Digital Profile CV' : 'Uploaded File Resume (PDF)'}
+                </td>
+              </tr>
+              ${notes ? `
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600; vertical-align: top;">Candidate Note:</td>
+                <td style="padding: 6px 0; color: #334155; font-style: italic;">"${notes}"</td>
+              </tr>` : ''}
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Submitted At:</td>
+                <td style="padding: 6px 0; color: #64748b; font-size: 12px;">${formattedTime}</td>
+              </tr>
+            </table>
+
+            <!-- Button linking directly to company panel -->
+            <div style="margin: 28px 0 16px 0; text-align: center;">
+              <a href="${companyPanelLink}" 
+                 style="background: #4f46e5; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none; padding: 13px 30px; border-radius: 8px; display: inline-block; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);">
+                Click to View Candidate in Company Panel →
+              </a>
+            </div>
+
+            <p style="text-align: center; color: #94a3b8; font-size: 11px; margin: 0;">
+              Direct Link: <a href="${companyPanelLink}" style="color: #6366f1;">${companyPanelLink}</a>
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+            Sent by ZenSolve Recruitment Platform for ${companyName || 'Your Organization'}.
+          </div>
+        </div>
+      `;
+
+      mailOptions = {
+        from: `"ZenSolve Recruitment" <${emailUser}>`,
+        to: targetEmail,
+        bcc: adminEmail, // Keeps admin informed of all platform activity
+        subject,
+        html: htmlContent,
+      };
+
+    // 2. New Company Registered -> Email to Admin (with link to admin panel)
+    } else if (type === 'NEW_COMPANY') {
+      const {
+        companyName,
+        hrName,
+        email,
+        phone,
+        companyType,
+        industry,
+        gstNumber,
+        location,
+        website,
+        uid,
+      } = payload || {};
+
+      const adminPanelLink = 'https://infozensolve.in/admin/companies';
+      const subject = `🏢 New Company Registered: ${companyName || 'New Agency'} registered on your website`;
+
+      const htmlContent = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+          <div style="background: #0f172a; padding: 24px; text-align: center; border-bottom: 3px solid #10b981;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;">ZenSolve Superadmin Alert</h1>
+            <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 13px;">New Employer / Agency Registration</p>
+          </div>
+
+          <div style="padding: 24px;">
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px 18px; margin-bottom: 24px;">
+              <p style="margin: 0; color: #065f46; font-size: 14px; font-weight: 700;">
+                A new company has registered on your website: ${companyName}
+              </p>
+              <p style="margin: 6px 0 0 0; color: #047857; font-size: 12px; line-height: 1.5;">
+                Please review their profile and verify/approve them so they can publish client hiring openings.
+              </p>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.6;">
+              <tr>
+                <td style="padding: 8px 0; color: #64748b; width: 150px; font-weight: 600;">Company / Agency:</td>
+                <td style="padding: 8px 0; color: #0f172a; font-weight: 700;">${companyName || 'Not Provided'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Authorized Contact:</td>
+                <td style="padding: 8px 0; color: #0f172a;">${hrName || 'Not Provided'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Business Email:</td>
+                <td style="padding: 8px 0; color: #2563eb; font-weight: 600;">
+                  <a href="mailto:${email}" style="color: #2563eb; text-decoration: none;">${email || 'Not Provided'}</a>
+                </td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Contact Phone:</td>
+                <td style="padding: 8px 0; color: #0f172a;">${phone || 'Not Provided'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Industry / Type:</td>
+                <td style="padding: 8px 0; color: #0f172a;">${industry || 'Staffing & Recruitment'} (${companyType || 'Private Limited'})</td>
+              </tr>
+              ${gstNumber ? `
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">GSTIN / Reg:</td>
+                <td style="padding: 8px 0; color: #0f172a; font-family: monospace;">${gstNumber}</td>
+              </tr>` : ''}
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Operating Location:</td>
+                <td style="padding: 8px 0; color: #0f172a;">${location || 'India'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Registered At:</td>
+                <td style="padding: 8px 0; color: #64748b; font-size: 12px;">${formattedTime}</td>
+              </tr>
+            </table>
+
+            <!-- Button linking directly to Admin Panel -->
+            <div style="margin: 28px 0 16px 0; text-align: center;">
+              <a href="${adminPanelLink}" 
+                 style="background: #10b981; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none; padding: 13px 30px; border-radius: 8px; display: inline-block; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);">
+                Click to View & Approve on Admin Panel →
+              </a>
+            </div>
+
+            <p style="text-align: center; color: #94a3b8; font-size: 11px; margin: 0;">
+              Direct URL: <a href="${adminPanelLink}" style="color: #10b981;">${adminPanelLink}</a>
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+            ZenSolve Automated Administration Alerts.
+          </div>
+        </div>
+      `;
+
+      mailOptions = {
+        from: `"ZenSolve Admin Alerts" <${emailUser}>`,
+        to: adminEmail,
+        subject,
+        html: htmlContent,
+      };
+
+    // 3. New Job Opening Posted -> Email to Admin
+    } else if (type === 'NEW_JOB') {
+      const {
+        position,
+        companyName,
+        clientCompanyName,
+        category,
+        vacancies,
+        salaryFrom,
+        salaryTo,
+        workMode,
+        location,
+        qualification,
+        jobId,
+        postedBy,
+      } = payload || {};
+
+      const adminJobsLink = 'https://infozensolve.in/admin/jobs';
+      const subject = `📢 New Job Posted: ${position} posted by ${companyName}`;
+
+      const htmlContent = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+          <div style="background: #0f172a; padding: 24px; text-align: center; border-bottom: 3px solid #f59e0b;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;">ZenSolve Superadmin Alert</h1>
+            <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 13px;">New Job Opening Published</p>
+          </div>
+
+          <div style="padding: 24px;">
+            <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 14px 18px; margin-bottom: 24px;">
+              <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 700;">
+                A new job vacancy has just been published: ${position}
+              </p>
+              <p style="margin: 6px 0 0 0; color: #b45309; font-size: 12px; line-height: 1.5;">
+                Posted by agency <strong>${companyName}</strong> for client <strong>${clientCompanyName || companyName}</strong>.
+              </p>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.6;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; width: 140px; font-weight: 600;">Job Title:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${position}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Hiring Client:</td>
+                <td style="padding: 6px 0; color: #4338ca; font-weight: 700;">${clientCompanyName || 'Direct Hire'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Staffing Agency:</td>
+                <td style="padding: 6px 0; color: #0f172a;">${companyName}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Category:</td>
+                <td style="padding: 6px 0; color: #0f172a;">${category || 'General'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Work Mode:</td>
+                <td style="padding: 6px 0; color: #0f172a;">${workMode || 'In-Office'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Open Positions:</td>
+                <td style="padding: 6px 0; color: #059669; font-weight: 700;">${vacancies || 1} Seats</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Salary Range:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 600;">₹${salaryFrom} - ₹${salaryTo}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Locations:</td>
+                <td style="padding: 6px 0; color: #0f172a;">${location || 'India'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Min. Education:</td>
+                <td style="padding: 6px 0; color: #0f172a;">${qualification || 'Not Specified'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Posted By:</td>
+                <td style="padding: 6px 0; color: #64748b; font-size: 12px;">${postedBy || 'Agency Recruiter'}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f8fafc;">
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Published At:</td>
+                <td style="padding: 6px 0; color: #64748b; font-size: 12px;">${formattedTime}</td>
+              </tr>
+            </table>
+
+            <!-- Button linking directly to Admin Jobs Panel -->
+            <div style="margin: 28px 0 16px 0; text-align: center;">
+              <a href="${adminJobsLink}" 
+                 style="background: #f59e0b; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none; padding: 13px 30px; border-radius: 8px; display: inline-block; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.25);">
+                Click to Review on Admin Panel →
+              </a>
+            </div>
+
+            <p style="text-align: center; color: #94a3b8; font-size: 11px; margin: 0;">
+              Direct URL: <a href="${adminJobsLink}" style="color: #f59e0b;">${adminJobsLink}</a>
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+            ZenSolve Automated Administration Alerts.
+          </div>
+        </div>
+      `;
+
+      mailOptions = {
+        from: `"ZenSolve Admin Alerts" <${emailUser}>`,
+        to: adminEmail,
+        subject,
+        html: htmlContent,
+      };
+
+    // 4. Newsletter Subscription -> Welcome Email
+    } else if (type === 'NEWSLETTER_WELCOME') {
+      const { email: subscriberEmail } = payload || {};
+      if (!subscriberEmail) {
+        return res.status(400).json({ error: 'Subscriber email is required.' });
+      }
+
+      const subject = `🎉 Welcome to ZenSolve Career Newsletter!`;
+      const htmlContent = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+          <div style="background: #0f172a; padding: 24px; text-align: center; border-bottom: 3px solid #6366f1;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;">ZenSolve Careers</h1>
+            <p style="color: #94a3b8; margin: 6px 0 0 0; font-size: 13px;">Official Newsletter Subscription</p>
+          </div>
+
+          <div style="padding: 24px; text-align: center;">
+            <h2 style="font-size: 18px; font-weight: 800; color: #1e293b; margin: 0 0 10px 0;">
+              Thank You for Subscribing! 🚀
+            </h2>
+            <p style="font-size: 13px; color: #475569; line-height: 1.6; margin: 0 0 20px 0;">
+              You have successfully subscribed to the ZenSolve Career Newsletter. You will now receive weekly job digests, verified employer openings, walk-in interview notices, and hiring opportunities across top companies in India.
+            </p>
+
+            <div style="margin: 24px 0;">
+              <a href="https://infozensolve.in/jobs" 
+                 style="background: #4f46e5; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none; padding: 12px 28px; border-radius: 8px; display: inline-block;">
+                Explore Verified Job Openings Now →
+              </a>
+            </div>
+          </div>
+
+          <div style="background: #f8fafc; padding: 14px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+            ZenSolve Infotech Solution Private Limited • Jamshedpur, Jharkhand.
+          </div>
+        </div>
+      `;
+
+      mailOptions = {
+        from: `"ZenSolve Careers" <${emailUser}>`,
+        to: subscriberEmail,
+        bcc: adminEmail, // Notify admin of new newsletter subscriber
+        subject,
+        html: htmlContent,
+      };
+
+    } else {
+      return res.status(400).json({ error: `Unknown email type: ${type}` });
+    }
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email dispatched successfully [${type}]:`, info.messageId);
+
+    return res.status(200).json({
+      success: true,
+      messageId: info.messageId,
+      message: `Email notification sent successfully for ${type}.`,
+    });
+  } catch (error) {
+    console.error('Error in send-email API handler:', error);
+    return res.status(500).json({
+      error: 'Failed to send email notification.',
+      details: error.message,
+    });
+  }
+}

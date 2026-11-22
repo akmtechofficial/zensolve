@@ -9,6 +9,7 @@ import {
   getCandidateApplications,
 } from '../../services/recruitmentService';
 import { uploadCandidateResume, validateResumeFile, MAX_RESUME_SIZE_MB } from '../../services/storageService';
+import { notifyCompanyOfApplication } from '../../services/emailService';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { Button } from '../../components/ui/Button';
@@ -292,6 +293,18 @@ const JobApplyPage = () => {
       }
 
       setProgress(100);
+
+      // Notify company via email with direct link to applicant in company panel
+      notifyCompanyOfApplication({
+        job,
+        applicantName,
+        applicantEmail,
+        applicantPhone,
+        isDigitalProfile: finalResumeURL === 'DIGITAL_PROFILE_CV' || finalResumeURL.startsWith('profile://'),
+        notes,
+      }).catch((mailErr) => {
+        console.warn('Company email notification background note:', mailErr);
+      });
 
       // Navigate to dedicated success confirmation screen
       navigate('/application-success', {

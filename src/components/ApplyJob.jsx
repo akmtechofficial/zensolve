@@ -10,6 +10,7 @@ import {
   MAX_RESUME_SIZE_MB,
 } from '../services/storageService';
 import { getCandidateProfile, saveCandidateProfile } from '../services/recruitmentService';
+import { notifyCompanyOfApplication } from '../services/emailService';
 import {
   FaUser,
   FaEnvelope,
@@ -342,6 +343,18 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
       await saveCandidateProfile(user.uid, {
         displayName: applicantName,
         phone: applicantPhone,
+      });
+
+      // Send email alert to the company (with direct link to company panel)
+      notifyCompanyOfApplication({
+        job,
+        applicantName,
+        applicantEmail,
+        applicantPhone,
+        isDigitalProfile: !resume && resumeURL === 'DIGITAL_PROFILE_CV',
+        notes,
+      }).catch((mailErr) => {
+        console.warn('Company email notification background note:', mailErr);
       });
 
       setProgress(100);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
 import { createJob, updateJob, getJobById } from '../../services/recruitmentService';
+import { notifyAdminOfNewJob } from '../../services/emailService';
 import { Button } from '../../components/ui/Button';
 import JobCard from '../../components/JobCard';
 import {
@@ -342,6 +343,24 @@ const DashboardPostJob = () => {
     }
 
     if (res.success) {
+      if (!isEditing) {
+        // Dispatch immediate email notification to ZenSolve Admin
+        notifyAdminOfNewJob({
+          position: payload.position,
+          companyName: payload.companyName,
+          clientCompanyName: payload.clientCompanyName,
+          category: payload.category,
+          vacancies: payload.vacancies,
+          salaryFrom: payload.salaryFrom,
+          salaryTo: payload.salaryTo,
+          workMode: payload.workMode,
+          location: payload.location,
+          qualification: payload.qualification,
+          jobId: res.id || 'new',
+          postedBy: user?.email,
+        }).catch((err) => console.warn('Admin job post email notification notice:', err));
+      }
+
       setSuccess(true);
       setTimeout(() => {
         navigate('/hr/jobs');

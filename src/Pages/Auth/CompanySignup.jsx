@@ -19,6 +19,7 @@ import {
 } from 'react-icons/fa';
 import { Button } from '../../components/ui/Button';
 import { notifyAdminNewCompany } from '../../services/notificationService';
+import { notifyAdminOfNewCompany } from '../../services/emailService';
 
 const COMPANY_TYPES = [
   'Manpower Supply & Staffing Agency',
@@ -176,7 +177,7 @@ const CompanySignup = () => {
       });
 
       // Dispatch instant email notification to admin (carezensolve@gmail.com) for review & approval
-      notifyAdminNewCompany({
+      notifyAdminOfNewCompany({
         uid: user.uid,
         companyName: formData.companyName,
         agencyName: formData.companyName,
@@ -191,7 +192,7 @@ const CompanySignup = () => {
         location: formData.location || 'India',
         website: formData.website || '',
         description: formData.description || '',
-      }).catch((notifyErr) => console.warn('Admin notification warning:', notifyErr));
+      }).catch((notifyErr) => console.warn('Admin new company notification warning:', notifyErr));
 
       // Ensure AuthContext is freshly populated with the newly created company profile
       await refreshUser();
