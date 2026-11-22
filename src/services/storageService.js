@@ -218,6 +218,69 @@ export const uploadCompanyLogo = async (companyId, file, onProgress = null) => {
 };
 
 /**
+ * Uploads a candidate profile photo / avatar
+ * Path: avatars/{userId}/{timestamp}_{cleanFileName}
+ * @param {string} userId
+ * @param {File} file
+ * @param {Function} [onProgress]
+ * @returns {Promise<{ downloadURL: string, fullPath: string, fileName: string }>}
+ */
+export const uploadCandidatePhoto = async (userId, file, onProgress = null) => {
+  const validation = validateLogoFile(file);
+  if (!validation.valid) {
+    throw new Error(validation.error);
+  }
+
+  if (!userId) {
+    throw new Error('User authentication is required to upload a profile photo.');
+  }
+
+  const timestamp = Date.now();
+  const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const storagePath = `avatars/${userId}/${timestamp}_${cleanName}`;
+  const storageRef = ref(storage, storagePath);
+
+  const metadata = {
+    contentType: file.type || 'image/jpeg',
+    customMetadata: {
+      originalName: file.name,
+      uploadedBy: userId,
+      uploadedAt: new Date().toISOString(),
+    },
+  };
+
+  const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+
+  return new Promise((resolve, reject) => {
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        if (onProgress && snapshot.totalBytes > 0) {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          onProgress(progress);
+        }
+      },
+      (error) => {
+        console.error('Firebase candidate photo upload error:', error);
+        reject(new Error(error.message || 'Failed to upload profile photo to cloud storage.'));
+      },
+      async () => {
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve({
+            downloadURL,
+            fullPath: storagePath,
+            fileName: file.name,
+          });
+        } catch (err) {
+          reject(err);
+        }
+      }
+    );
+  });
+};
+
+/**
  * Deletes a file from Firebase Storage
  * @param {string} fullPathOrUrl 
  */
