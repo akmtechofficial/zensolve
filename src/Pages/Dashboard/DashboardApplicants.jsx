@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
 import { getJobApplications, updateApplicationStatus } from '../../services/recruitmentService';
 import { Badge } from '../../components/ui/Badge';
@@ -116,6 +117,7 @@ const DashboardApplicants = () => {
                   <th className="py-3.5 px-4">Applied Date</th>
                   <th className="py-3.5 px-4">Resume / CV</th>
                   <th className="py-3.5 px-5">Hiring Status</th>
+                  <th className="py-3.5 px-5 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -123,11 +125,30 @@ const DashboardApplicants = () => {
                   <tr key={app.id} className="hover:bg-slate-50 transition">
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs">
-                          {app.applicantName ? app.applicantName.charAt(0) : <FaUser size={11} />}
-                        </div>
+                        {app.applicantPhoto || app.profileSnapshot?.photoURL ? (
+                          <img
+                            src={app.applicantPhoto || app.profileSnapshot?.photoURL}
+                            alt={app.applicantName}
+                            className="w-9 h-9 rounded-2xl object-cover border border-indigo-100 shadow-xs flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs">
+                            {app.applicantName ? app.applicantName.charAt(0) : <FaUser size={11} />}
+                          </div>
+                        )}
                         <div>
-                          <div className="font-bold text-slate-900 font-display">{app.applicantName || 'Applicant'}</div>
+                          <Link
+                            to={`/hr/applicants/${app.id}`}
+                            className="font-bold text-slate-900 font-display hover:text-indigo-600 transition flex items-center gap-1.5"
+                          >
+                            <span>{app.applicantName || 'Applicant'}</span>
+                            <FaExternalLinkAlt size={9} className="text-slate-400" />
+                          </Link>
+                          {(app.applicantHeadline || app.profileSnapshot?.headline) && (
+                            <span className="text-[11px] text-slate-500 line-clamp-1 block">
+                              {app.applicantHeadline || app.profileSnapshot?.headline}
+                            </span>
+                          )}
                           <a
                             href={`mailto:${app.applicantEmail}`}
                             className="text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1 mt-0.5"
@@ -155,19 +176,21 @@ const DashboardApplicants = () => {
                     </td>
 
                     <td className="py-4 px-4">
-                      {app.resume ? (
-                        <a
-                          href={app.resume}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {app.resume && app.resume !== 'DIGITAL_PROFILE_CV' && !app.resume.startsWith('profile://') ? (
+                        <Link
+                          to={`/hr/applicants/${app.id}`}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-surface-1 text-indigo-600 border border-indigo-200 hover:border-indigo-400 text-xs font-semibold transition shadow-xs"
                         >
                           <FaFileAlt size={12} />
                           <span>View Resume</span>
-                          <FaExternalLinkAlt size={9} />
-                        </a>
+                        </Link>
                       ) : (
-                        <span className="text-xs text-slate-400">No file</span>
+                        <Link
+                          to={`/hr/applicants/${app.id}`}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold hover:bg-emerald-100 transition"
+                        >
+                          <span>Digital Profile CV</span>
+                        </Link>
                       )}
                     </td>
 
@@ -195,11 +218,21 @@ const DashboardApplicants = () => {
                         <option value="Hired" className="bg-white text-slate-900">Hired</option>
                       </select>
                     </td>
+
+                    <td className="py-4 px-5 text-right">
+                      <Link
+                        to={`/hr/applicants/${app.id}`}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition shadow-2xs"
+                      >
+                        <span>Full Dossier</span>
+                        <FaExternalLinkAlt size={9} />
+                      </Link>
+                    </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && !loading && (
                   <tr>
-                    <td colSpan="5" className="py-12 text-center text-slate-500 text-sm">
+                    <td colSpan="6" className="py-12 text-center text-slate-500 text-sm">
                       No applications found matching this status or search.
                     </td>
                   </tr>

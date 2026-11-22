@@ -279,12 +279,14 @@ export const submitJobApplication = async (applicationData) => {
   try {
     const { jobId, userId, applicantEmail } = applicationData;
 
-    // Company account guard: Companies/Employers are not allowed to apply for jobs
+    // Retrieve candidate profile data from Firestore to attach full dossier to application
+    let candidateProfileSnapshot = {};
     if (userId) {
       try {
         const userSnap = await getDoc(doc(db, "users", userId));
         if (userSnap.exists()) {
-          const uRole = userSnap.data().role;
+          const uData = userSnap.data();
+          const uRole = uData.role;
           if (uRole === 'company' || uRole === 'employer') {
             return {
               success: false,
@@ -292,6 +294,34 @@ export const submitJobApplication = async (applicationData) => {
               error: "Company accounts are not permitted to apply for jobs. Please log in with a candidate account.",
             };
           }
+
+          candidateProfileSnapshot = {
+            displayName: uData.displayName || uData.name || '',
+            email: uData.email || '',
+            phone: uData.phone || '',
+            photoURL: uData.photoURL || uData.avatar || '',
+            location: uData.location || uData.city || '',
+            city: uData.city || '',
+            state: uData.state || '',
+            address: uData.address || '',
+            headline: uData.headline || '',
+            bio: uData.bio || uData.about || '',
+            skills: Array.isArray(uData.skills) ? uData.skills : [],
+            languages: Array.isArray(uData.languages) ? uData.languages : [],
+            education: Array.isArray(uData.education) ? uData.education : [],
+            experience: Array.isArray(uData.experience) ? uData.experience : [],
+            experienceYears: uData.experienceYears || uData.totalExperience || '',
+            currentSalary: uData.currentSalary || '',
+            expectedSalary: uData.expectedSalary || '',
+            noticePeriod: uData.noticePeriod || '',
+            gender: uData.gender || '',
+            dob: uData.dob || '',
+            portfolioURL: uData.portfolioURL || uData.portfolio || '',
+            linkedinURL: uData.linkedinURL || uData.linkedin || '',
+            githubURL: uData.githubURL || uData.github || '',
+            resumeURL: uData.resumeURL || '',
+            resumeStoragePath: uData.resumeStoragePath || '',
+          };
         }
       } catch (err) {
         console.warn("User role validation notice:", err);
@@ -316,8 +346,44 @@ export const submitJobApplication = async (applicationData) => {
     const appId = userId ? `${jobId}_${userId}` : null;
     const docRef = appId ? doc(db, "jobApplications", appId) : doc(collection(db, "jobApplications"));
 
-    await setDoc(docRef, {
+    // Deep merge application fields with candidate's full profile
+    const fullApplicationPayload = {
+      // 1. Candidate's profile base
+      ...candidateProfileSnapshot,
+      // 2. Specific application inputs
       ...cleanApplicationData,
+      // 3. Normalized top-level candidate dossier fields for recruiter view
+      applicantName: cleanApplicationData.applicantName || candidateProfileSnapshot.displayName || '',
+      applicantEmail: cleanApplicationData.applicantEmail || candidateProfileSnapshot.email || '',
+      applicantPhone: cleanApplicationData.applicantPhone || candidateProfileSnapshot.phone || '',
+      applicantPhoto: cleanApplicationData.applicantPhoto || candidateProfileSnapshot.photoURL || '',
+      applicantLocation: cleanApplicationData.applicantLocation || candidateProfileSnapshot.location || '',
+      applicantHeadline: cleanApplicationData.applicantHeadline || candidateProfileSnapshot.headline || '',
+      applicantBio: cleanApplicationData.applicantBio || candidateProfileSnapshot.bio || '',
+      skills: (cleanApplicationData.skills && cleanApplicationData.skills.length > 0)
+        ? cleanApplicationData.skills
+        : (cleanApplicationData.applicantSkills && cleanApplicationData.applicantSkills.length > 0)
+        ? cleanApplicationData.applicantSkills
+        : candidateProfileSnapshot.skills || [],
+      languages: (cleanApplicationData.languages && cleanApplicationData.languages.length > 0)
+        ? cleanApplicationData.languages
+        : candidateProfileSnapshot.languages || [],
+      education: (cleanApplicationData.education && cleanApplicationData.education.length > 0)
+        ? cleanApplicationData.education
+        : candidateProfileSnapshot.education || [],
+      experience: (cleanApplicationData.experience && cleanApplicationData.experience.length > 0)
+        ? cleanApplicationData.experience
+        : candidateProfileSnapshot.experience || [],
+      experienceYears: cleanApplicationData.experienceYears || candidateProfileSnapshot.experienceYears || '',
+      noticePeriod: cleanApplicationData.noticePeriod || candidateProfileSnapshot.noticePeriod || '',
+      portfolioURL: cleanApplicationData.portfolioURL || candidateProfileSnapshot.portfolioURL || '',
+      linkedinURL: cleanApplicationData.linkedinURL || candidateProfileSnapshot.linkedinURL || '',
+      githubURL: cleanApplicationData.githubURL || candidateProfileSnapshot.githubURL || '',
+      // 4. Nested complete profileSnapshot object
+      profileSnapshot: {
+        ...candidateProfileSnapshot,
+        ...(cleanApplicationData.profileSnapshot || {}),
+      },
       status: "Applied",
       appliedAt: serverTimestamp(),
       statusTimeline: [
@@ -327,7 +393,9 @@ export const submitJobApplication = async (applicationData) => {
           note: "Application submitted to employer recruitment queue",
         },
       ],
-    });
+    };
+
+    await setDoc(docRef, fullApplicationPayload);
 
     // Also increment application count on the job
     try {

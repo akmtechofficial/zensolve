@@ -371,6 +371,12 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
         applicantHeadline: profileData.headline || '',
         applicantSkills: profileData.skills || [],
         applicantBio: profileData.bio || '',
+        skills: profileData.skills || [],
+        languages: profileData.languages || [],
+        education: profileData.education || [],
+        experience: profileData.experience || [],
+        experienceYears: profileData.experienceYears || '',
+        noticePeriod: profileData.noticePeriod || '',
         resume: resumeURL,
         isDigitalProfile: !resume && resumeURL === 'DIGITAL_PROFILE_CV',
         profileSnapshot: {
@@ -382,13 +388,16 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
           bio: profileData.bio || '',
           skills: profileData.skills || [],
           languages: profileData.languages || [],
+          education: profileData.education || [],
+          experience: profileData.experience || [],
+          experienceYears: profileData.experienceYears || '',
+          noticePeriod: profileData.noticePeriod || '',
           photoURL: profileData.photoURL || user.photoURL || '',
         },
         notes,
         jobPosition: job.position,
         companyName: job.companyName,
         userId: user.uid,
-        languages: profileData.languages || [],
       });
 
       if (!appResult.success) {
