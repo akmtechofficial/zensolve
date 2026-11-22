@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import DashboardLayout from './DashboardLayout';
-import { createJob } from '../../services/recruitmentService';
+import { createJob, updateJob, getJobById } from '../../services/recruitmentService';
 import { Button } from '../../components/ui/Button';
 import JobCard from '../../components/JobCard';
 import {
@@ -13,6 +13,7 @@ import {
   FaUpload,
   FaPlus,
   FaTrash,
+  FaEdit,
   FaMapMarkerAlt,
   FaGraduationCap,
   FaCalendarAlt,
@@ -85,7 +86,15 @@ const FEE_TYPES = [
 
 const DashboardPostJob = () => {
   const navigate = useNavigate();
+  const { jobId } = useParams();
+  const location = useLocation();
   const { user, userData, isApprovedCompany } = useAuth();
+
+  const queryParams = new URLSearchParams(location.search);
+  const resolvedJobId = jobId || queryParams.get('id') || queryParams.get('edit');
+  const isEditing = Boolean(resolvedJobId);
+
+  const [loadingJob, setLoadingJob] = useState(isEditing);
 
   const [formData, setFormData] = useState({
     position: '',
@@ -118,6 +127,72 @@ const DashboardPostJob = () => {
   const [locationsList, setLocationsList] = useState([
     { city: userData?.location || '', seats: '1' }
   ]);
+
+  // Load existing job details when in Edit mode
+  useEffect(() => {
+    if (!resolvedJobId) return;
+
+    let isMounted = true;
+    const loadJobDetails = async () => {
+      setLoadingJob(true);
+      try {
+        let existing = location.state?.job;
+        if (!existing) {
+          existing = await getJobById(resolvedJobId);
+        }
+
+        if (existing && isMounted) {
+          let parsedLocations = [];
+          if (Array.isArray(existing.locationsList) && existing.locationsList.length > 0) {
+            parsedLocations = existing.locationsList;
+          } else if (existing.location) {
+            parsedLocations = [{ city: existing.location, seats: String(existing.vacancies || 1) }];
+          } else {
+            parsedLocations = [{ city: '', seats: '1' }];
+          }
+
+          const isStandardCategory = categories.filter((c) => c !== 'Others').includes(existing.category);
+
+          setFormData({
+            position: existing.position || '',
+            companyName: existing.companyName || userData?.companyName || userData?.companyData?.companyName || '',
+            companyLogo: existing.companyLogo || userData?.logo || userData?.companyData?.logo || '',
+            clientCompanyName: existing.clientCompanyName || '',
+            clientCompanyLocation: existing.clientCompanyLocation || '',
+            category: isStandardCategory ? existing.category : 'Others',
+            customCategory: isStandardCategory ? '' : (existing.customCategory || existing.category || ''),
+            jobType: existing.jobType || 'Full-time',
+            workMode: existing.workMode || 'In-Office / On-site',
+            weekdays: existing.weekdays || '6 Days (Mon - Sat)',
+            qualification: existing.qualification || '12th Pass / Intermediate',
+            dailyTarget: existing.dailyTarget || 'No Target (Fixed Salary)',
+            dailyTargetDetails: existing.dailyTargetDetails || '',
+            registrationFeeType: existing.registrationFeeType || '100% Free (No Registration Fees)',
+            registrationFeeAmount: existing.registrationFeeAmount || '',
+            registrationFeeNote: existing.registrationFeeNote || '',
+            location: existing.location || '',
+            vacancies: String(existing.vacancies || 1),
+            salaryFrom: existing.salaryFrom && existing.salaryFrom !== 'Not specified' ? String(existing.salaryFrom) : '',
+            salaryTo: existing.salaryTo && existing.salaryTo !== 'Not specified' ? String(existing.salaryTo) : '',
+            experience: existing.experience || '1-3 Years',
+            description: existing.description || '',
+            requirements: existing.requirements || '',
+          });
+          setLocationsList(parsedLocations);
+        }
+      } catch (err) {
+        console.error('Error fetching job to edit:', err);
+        setError('Failed to load job details: ' + err.message);
+      } finally {
+        if (isMounted) setLoadingJob(false);
+      }
+    };
+
+    loadJobDetails();
+    return () => {
+      isMounted = false;
+    };
+  }, [resolvedJobId]);
 
   const handleAddLocation = () => {
     setLocationsList((prev) => [...prev, { city: '', seats: '1' }]);
@@ -152,7 +227,7 @@ const DashboardPostJob = () => {
   };
 
   useEffect(() => {
-    if (userData) {
+    if (userData && !isEditing) {
       setFormData((prev) => ({
         ...prev,
         companyName: prev.companyName || userData.companyName || userData.companyData?.companyName || '',
@@ -166,7 +241,7 @@ const DashboardPostJob = () => {
         return prev;
       });
     }
-  }, [userData]);
+  }, [userData, isEditing]);
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -234,7 +309,8 @@ const DashboardPostJob = () => {
       : (formData.location || 'Pan India');
 
     setLoading(true);
-    const res = await createJob({
+
+    const payload = {
       ...formData,
       category: resolvedCategory,
       originalCategory: formData.category,
@@ -256,7 +332,14 @@ const DashboardPostJob = () => {
       postedBy: user?.email || null,
       salaryFrom: formData.salaryFrom || 'Not specified',
       salaryTo: formData.salaryTo || 'Not specified',
-    });
+    };
+
+    let res;
+    if (isEditing) {
+      res = await updateJob(resolvedJobId, payload);
+    } else {
+      res = await createJob(payload);
+    }
 
     if (res.success) {
       setSuccess(true);
@@ -264,16 +347,59 @@ const DashboardPostJob = () => {
         navigate('/hr/jobs');
       }, 1500);
     } else {
-      setError(res.error || 'Failed to publish job.');
+      setError(res.error || (isEditing ? 'Failed to update job.' : 'Failed to publish job.'));
       setLoading(false);
     }
   };
 
+  if (loadingJob) {
+    return (
+      <DashboardLayout
+        title="Edit Job Opening"
+        subtitle="Loading full position specifications..."
+      >
+        <div className="bg-white p-12 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3 text-slate-600">
+          <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm font-semibold">Loading job details for full-page editing...</span>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout
-      title="Post a New Job Opening"
-      subtitle="Publish an opportunity to reach verified candidates across India."
+      title={isEditing ? `Edit Job Opening` : "Post a New Job Opening"}
+      subtitle={isEditing ? `Full-page editor: update position requirements, locations, salary and eligibility.` : "Publish an opportunity to reach verified candidates across India."}
     >
+      {/* Top Banner when in Edit Mode */}
+      {isEditing && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-indigo-50/90 border border-indigo-200 rounded-2xl mb-6 shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+              <FaEdit />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-indigo-900">Full-Page Job Editor</span>
+                <span className="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
+                  Live Editing Mode
+                </span>
+              </div>
+              <p className="text-xs text-indigo-800 mt-0.5">
+                Editing: <strong>{formData.position || 'Job Opening'}</strong> for hiring client <strong>{formData.clientCompanyName || 'Client'}</strong>
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/hr/jobs')}
+            className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition self-start sm:self-auto shadow-xs"
+          >
+            Cancel & Back to Jobs
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Form Column (Span 7) */}
@@ -772,7 +898,7 @@ const DashboardPostJob = () => {
             {success && (
               <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl flex items-center gap-2">
                 <FaCheckCircle />
-                <span>Job opening successfully published! Redirecting to jobs...</span>
+                <span>{isEditing ? 'Job opening successfully updated! Redirecting to jobs...' : 'Job opening successfully published! Redirecting to jobs...'}</span>
               </div>
             )}
 
@@ -782,13 +908,15 @@ const DashboardPostJob = () => {
               size="lg"
               loading={loading}
               disabled={!isApprovedCompany}
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 font-bold"
             >
               {!isApprovedCompany ? (
                 <>
                   <FaLock className="text-xs opacity-75" />
-                  <span>Approval Required to Publish</span>
+                  <span>Approval Required to {isEditing ? 'Save' : 'Publish'}</span>
                 </>
+              ) : isEditing ? (
+                'Save Changes & Update Job'
               ) : (
                 'Publish Job Opening'
               )}
@@ -812,8 +940,11 @@ const DashboardPostJob = () => {
                 companyName: formData.companyName || 'Your Agency Name',
                 clientCompanyName: formData.clientCompanyName || 'Target Client Company (e.g. Infosys)',
                 companyLogo: formData.companyLogo,
-                category: formData.category,
+                category: formData.category === 'Others' ? (formData.customCategory || 'Custom Category') : formData.category,
                 jobType: formData.jobType,
+                workMode: formData.workMode,
+                qualification: formData.qualification,
+                registrationFeeType: formData.registrationFeeType,
                 location: formData.location || 'Location (e.g. Bangalore)',
                 vacancies: formData.vacancies,
                 salaryFrom: formData.salaryFrom || '600000',

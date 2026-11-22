@@ -321,6 +321,14 @@ const App = () => {
               }
             />
             <Route
+              path="/dashboard/jobs/:jobId/edit"
+              element={
+                <ProtectedRoute requiredRole="company" requireApproved={true}>
+                  <DashboardPostJob />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/post-job"
               element={
                 <ProtectedRoute requiredRole="company" requireApproved={true}>

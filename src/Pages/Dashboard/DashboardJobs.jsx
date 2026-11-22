@@ -4,7 +4,6 @@ import DashboardLayout from './DashboardLayout';
 import { getJobs, deleteJob, updateJob } from '../../services/recruitmentService';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Modal } from '../../components/ui/Modal';
 import {
   FaPlus,
   FaSearch,
@@ -23,8 +22,6 @@ const DashboardJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [editingJob, setEditingJob] = useState(null);
-  const [savingEdit, setSavingEdit] = useState(false);
 
   const fetchJobsList = async () => {
     if (!user) return;
@@ -58,20 +55,6 @@ const DashboardJobs = () => {
         jobs.map((j) => (j.id === job.id ? { ...j, status: newStatus } : j))
       );
     }
-  };
-
-  const handleSaveEdit = async (e) => {
-    e.preventDefault();
-    if (!editingJob) return;
-    setSavingEdit(true);
-    const res = await updateJob(editingJob.id, editingJob);
-    if (res.success) {
-      setJobs(jobs.map((j) => (j.id === editingJob.id ? editingJob : j)));
-      setEditingJob(null);
-    } else {
-      alert('Failed to update job: ' + res.error);
-    }
-    setSavingEdit(false);
   };
 
   const filteredJobs = jobs.filter((job) => {
@@ -177,9 +160,9 @@ const DashboardJobs = () => {
                     </td>
                     <td className="py-4 px-5 text-right space-x-2">
                       <button
-                        onClick={() => setEditingJob(job)}
-                        className="p-2 rounded-xl glass-surface-1 border border-slate-200 text-slate-700 hover:text-slate-900 transition shadow-xs"
-                        title="Edit Job"
+                        onClick={() => navigate(`/hr/jobs/${job.id}/edit`, { state: { job } })}
+                        className="p-2 rounded-xl glass-surface-1 border border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-300 transition shadow-xs"
+                        title="Edit Job (Full Page)"
                       >
                         <FaEdit size={13} />
                       </button>
@@ -206,131 +189,6 @@ const DashboardJobs = () => {
         </div>
 
       </div>
-
-      {/* Edit Job Modal */}
-      {editingJob && (
-        <Modal
-          isOpen={Boolean(editingJob)}
-          onClose={() => setEditingJob(null)}
-          title="Edit Job Opening"
-          subtitle={`Updating details for ${editingJob.position}`}
-          maxWidth="max-w-2xl"
-        >
-          <form onSubmit={handleSaveEdit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Job Title</label>
-                <input
-                  type="text"
-                  value={editingJob.position || ''}
-                  onChange={(e) => setEditingJob({ ...editingJob, position: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">
-                  Client / Hiring Company Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={editingJob.clientCompanyName || ''}
-                  onChange={(e) => setEditingJob({ ...editingJob, clientCompanyName: e.target.value })}
-                  placeholder="e.g. Infosys, Tata..."
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Agency Name (Staffing Partner)</label>
-                <input
-                  type="text"
-                  value={editingJob.companyName || ''}
-                  readOnly
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 focus:outline-none shadow-xs cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Category</label>
-                <input
-                  type="text"
-                  value={editingJob.category || ''}
-                  onChange={(e) => setEditingJob({ ...editingJob, category: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Job Type</label>
-                <select
-                  value={editingJob.jobType || 'Full-time'}
-                  onChange={(e) => setEditingJob({ ...editingJob, jobType: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
-                >
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Remote">Remote</option>
-                  <option value="Contract">Contract</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Location</label>
-                <input
-                  type="text"
-                  value={editingJob.location || ''}
-                  onChange={(e) => setEditingJob({ ...editingJob, location: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Salary From (₹)</label>
-                <input
-                  type="number"
-                  value={editingJob.salaryFrom || ''}
-                  onChange={(e) => setEditingJob({ ...editingJob, salaryFrom: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Salary To (₹)</label>
-                <input
-                  type="number"
-                  value={editingJob.salaryTo || ''}
-                  onChange={(e) => setEditingJob({ ...editingJob, salaryTo: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Job Description</label>
-              <textarea
-                value={editingJob.description || ''}
-                onChange={(e) => setEditingJob({ ...editingJob, description: e.target.value })}
-                rows="4"
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs"
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-3">
-              <Button variant="secondary" size="md" onClick={() => setEditingJob(null)}>
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary" size="md" loading={savingEdit}>
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
 
     </DashboardLayout>
   );
