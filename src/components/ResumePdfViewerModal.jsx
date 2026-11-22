@@ -56,6 +56,7 @@ const ResumePdfViewerModal = ({ isOpen, onClose, applicant }) => {
   const portfolioURL = applicant.portfolioURL || snapshot.portfolioURL || '';
   const linkedinURL = applicant.linkedinURL || snapshot.linkedinURL || '';
   const githubURL = applicant.githubURL || snapshot.githubURL || '';
+  const photoSrc = applicant.applicantPhoto || snapshot.photoURL || applicant.photoURL || snapshot.avatar || applicant.avatar || '';
 
   const handlePrint = () => {
     window.print();
@@ -144,9 +145,9 @@ const ResumePdfViewerModal = ({ isOpen, onClose, applicant }) => {
                 </p>
               </div>
 
-              {applicant.applicantPhoto || snapshot.photoURL ? (
+              {photoSrc ? (
                 <img
-                  src={applicant.applicantPhoto || snapshot.photoURL}
+                  src={photoSrc}
                   alt={fullName}
                   className="w-20 h-20 rounded-2xl object-cover border border-slate-200 shadow-xs flex-shrink-0"
                 />

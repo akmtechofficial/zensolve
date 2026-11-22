@@ -274,33 +274,28 @@ export const checkExistingApplication = async (jobIdOrOptions, maybeUserId, mayb
 
 /**
  * Fetch candidate's complete profile for an application
- * Combines local document snapshot with server-authorized profile fetch if legacy
+ * Always retrieves the most up-to-date candidate dossier from live user profile & application snapshot
  */
 export const fetchCandidateFullProfile = async (applicationId, fallbackData = {}) => {
-  try {
-    // If the application already has complete snapshot with education or experience or skills, use it
-    if (
-      (fallbackData?.education && fallbackData.education.length > 0) ||
-      (fallbackData?.experience && fallbackData.experience.length > 0) ||
-      (fallbackData?.profileSnapshot?.education && fallbackData.profileSnapshot.education.length > 0)
-    ) {
-      const snap = fallbackData.profileSnapshot || {};
-      return {
-        ...fallbackData,
-        ...snap,
-        skills: fallbackData.skills || snap.skills || fallbackData.applicantSkills || [],
-        languages: fallbackData.languages || snap.languages || [],
-        education: fallbackData.education || snap.education || [],
-        experience: fallbackData.experience || snap.experience || [],
-        bio: fallbackData.applicantBio || snap.bio || fallbackData.bio || '',
-        headline: fallbackData.applicantHeadline || snap.headline || fallbackData.headline || '',
-        photoURL: fallbackData.applicantPhoto || snap.photoURL || fallbackData.photoURL || '',
-        location: fallbackData.applicantLocation || snap.location || fallbackData.location || '',
-      };
-    }
+  const snap = fallbackData?.profileSnapshot || {};
 
-    // If missing from legacy doc, query secure server API
-    if (auth.currentUser) {
+  const getFirstNonEmptyArray = (...arrs) => {
+    for (const a of arrs) {
+      if (Array.isArray(a) && a.length > 0) return a;
+    }
+    return [];
+  };
+
+  const getFirstNonEmptyString = (...strs) => {
+    for (const s of strs) {
+      if (typeof s === 'string' && s.trim().length > 0) return s.trim();
+    }
+    return '';
+  };
+
+  try {
+    // 1. Query secure server API to retrieve the authoritative live candidate profile from users collection
+    if (auth.currentUser && applicationId) {
       const idToken = await auth.currentUser.getIdToken();
       const response = await fetch('/api/get-candidate-profile', {
         method: 'POST',
@@ -314,17 +309,54 @@ export const fetchCandidateFullProfile = async (applicationId, fallbackData = {}
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.profile) {
+          const prof = result.profile;
           return {
             ...fallbackData,
-            ...result.profile,
+            ...prof,
+            applicantName: getFirstNonEmptyString(prof.displayName, fallbackData.applicantName),
+            applicantEmail: getFirstNonEmptyString(prof.email, fallbackData.applicantEmail),
+            applicantPhone: getFirstNonEmptyString(prof.phone, fallbackData.applicantPhone),
+            applicantPhoto: getFirstNonEmptyString(prof.photoURL, fallbackData.applicantPhoto),
+            applicantHeadline: getFirstNonEmptyString(prof.headline, fallbackData.applicantHeadline),
+            applicantBio: getFirstNonEmptyString(prof.bio, fallbackData.applicantBio),
+            applicantLocation: getFirstNonEmptyString(prof.location, fallbackData.applicantLocation),
+            skills: getFirstNonEmptyArray(prof.skills, fallbackData.skills, fallbackData.applicantSkills),
+            languages: getFirstNonEmptyArray(prof.languages, fallbackData.languages),
+            education: getFirstNonEmptyArray(prof.education, fallbackData.education),
+            experience: getFirstNonEmptyArray(prof.experience, fallbackData.experience),
+            experienceYears: getFirstNonEmptyString(prof.experienceYears, fallbackData.experienceYears),
+            noticePeriod: getFirstNonEmptyString(prof.noticePeriod, fallbackData.noticePeriod),
+            portfolioURL: getFirstNonEmptyString(prof.portfolioURL, fallbackData.portfolioURL),
+            linkedinURL: getFirstNonEmptyString(prof.linkedinURL, fallbackData.linkedinURL),
+            githubURL: getFirstNonEmptyString(prof.githubURL, fallbackData.githubURL),
           };
         }
       }
     }
   } catch (err) {
-    console.warn('Profile fetch notice:', err);
+    console.warn('API candidate profile fetch notice, falling back to local snapshot:', err);
   }
-  return fallbackData;
+
+  // 2. Fallback to local application data and profile snapshot
+  return {
+    ...fallbackData,
+    applicantName: getFirstNonEmptyString(fallbackData.applicantName, snap.displayName, fallbackData.displayName),
+    applicantEmail: getFirstNonEmptyString(fallbackData.applicantEmail, snap.email, fallbackData.email),
+    applicantPhone: getFirstNonEmptyString(fallbackData.applicantPhone, snap.phone, fallbackData.phone),
+    applicantPhoto: getFirstNonEmptyString(fallbackData.applicantPhoto, snap.photoURL, fallbackData.photoURL),
+    applicantHeadline: getFirstNonEmptyString(fallbackData.applicantHeadline, snap.headline, fallbackData.headline),
+    applicantBio: getFirstNonEmptyString(fallbackData.applicantBio, snap.bio, fallbackData.bio),
+    applicantLocation: getFirstNonEmptyString(fallbackData.applicantLocation, snap.location, fallbackData.location),
+    skills: getFirstNonEmptyArray(fallbackData.skills, snap.skills, fallbackData.applicantSkills),
+    languages: getFirstNonEmptyArray(fallbackData.languages, snap.languages),
+    education: getFirstNonEmptyArray(fallbackData.education, snap.education),
+    experience: getFirstNonEmptyArray(fallbackData.experience, snap.experience),
+    experienceYears: getFirstNonEmptyString(fallbackData.experienceYears, snap.experienceYears),
+    noticePeriod: getFirstNonEmptyString(fallbackData.noticePeriod, snap.noticePeriod),
+    portfolioURL: getFirstNonEmptyString(fallbackData.portfolioURL, snap.portfolioURL),
+    linkedinURL: getFirstNonEmptyString(fallbackData.linkedinURL, snap.linkedinURL),
+    githubURL: getFirstNonEmptyString(fallbackData.githubURL, snap.githubURL),
+  };
 };
 
 /**

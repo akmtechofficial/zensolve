@@ -359,40 +359,62 @@ const ApplyJob = ({ job: propJob, onSuccess }) => {
 
       setProgress(80);
 
+      // Ensure we have the absolute latest complete candidate profile from Firestore
+      let latestProfile = { ...profileData };
+      try {
+        const fresh = await getCandidateProfile(effectiveUid);
+        if (fresh) {
+          latestProfile = {
+            ...latestProfile,
+            ...fresh,
+            skills: Array.isArray(fresh.skills) && fresh.skills.length > 0 ? fresh.skills : (latestProfile.skills || []),
+            languages: Array.isArray(fresh.languages) && fresh.languages.length > 0 ? fresh.languages : (latestProfile.languages || []),
+            education: Array.isArray(fresh.education) && fresh.education.length > 0 ? fresh.education : (latestProfile.education || []),
+            experience: Array.isArray(fresh.experience) && fresh.experience.length > 0 ? fresh.experience : (latestProfile.experience || []),
+          };
+        }
+      } catch (profErr) {
+        console.warn('Live profile fetch note:', profErr);
+      }
+
       // Submit application with server-level deduplication
       const appResult = await submitJobApplication({
         jobId: job.id,
         companyId: job.companyId || job.userId || 'company',
-        applicantName,
-        applicantEmail,
-        applicantPhone,
-        applicantPhoto: profileData.photoURL || user.photoURL || '',
-        applicantLocation: profileData.location || '',
-        applicantHeadline: profileData.headline || '',
-        applicantSkills: profileData.skills || [],
-        applicantBio: profileData.bio || '',
-        skills: profileData.skills || [],
-        languages: profileData.languages || [],
-        education: profileData.education || [],
-        experience: profileData.experience || [],
-        experienceYears: profileData.experienceYears || '',
-        noticePeriod: profileData.noticePeriod || '',
+        applicantName: applicantName || latestProfile.displayName || '',
+        applicantEmail: applicantEmail || latestProfile.email || '',
+        applicantPhone: applicantPhone || latestProfile.phone || '',
+        applicantPhoto: latestProfile.photoURL || user.photoURL || '',
+        applicantLocation: latestProfile.location || '',
+        applicantHeadline: latestProfile.headline || '',
+        applicantSkills: latestProfile.skills || [],
+        applicantBio: latestProfile.bio || '',
+        skills: latestProfile.skills || [],
+        languages: latestProfile.languages || [],
+        education: latestProfile.education || [],
+        experience: latestProfile.experience || [],
+        experienceYears: latestProfile.experienceYears || '',
+        noticePeriod: latestProfile.noticePeriod || '',
+        portfolioURL: latestProfile.portfolioURL || '',
+        linkedinURL: latestProfile.linkedinURL || '',
+        githubURL: latestProfile.githubURL || '',
         resume: resumeURL,
         isDigitalProfile: !resume && resumeURL === 'DIGITAL_PROFILE_CV',
         profileSnapshot: {
-          displayName: applicantName,
-          email: applicantEmail,
-          phone: applicantPhone,
-          location: profileData.location || '',
-          headline: profileData.headline || '',
-          bio: profileData.bio || '',
-          skills: profileData.skills || [],
-          languages: profileData.languages || [],
-          education: profileData.education || [],
-          experience: profileData.experience || [],
-          experienceYears: profileData.experienceYears || '',
-          noticePeriod: profileData.noticePeriod || '',
-          photoURL: profileData.photoURL || user.photoURL || '',
+          ...latestProfile,
+          displayName: applicantName || latestProfile.displayName || '',
+          email: applicantEmail || latestProfile.email || '',
+          phone: applicantPhone || latestProfile.phone || '',
+          location: latestProfile.location || '',
+          headline: latestProfile.headline || '',
+          bio: latestProfile.bio || '',
+          skills: latestProfile.skills || [],
+          languages: latestProfile.languages || [],
+          education: latestProfile.education || [],
+          experience: latestProfile.experience || [],
+          experienceYears: latestProfile.experienceYears || '',
+          noticePeriod: latestProfile.noticePeriod || '',
+          photoURL: latestProfile.photoURL || user.photoURL || '',
         },
         notes,
         jobPosition: job.position,

@@ -87,69 +87,81 @@ export default async function handler(req, res) {
       }
     }
 
+    const snap = appData.profileSnapshot || {};
+
+    const getFirstNonEmptyArray = (...arrs) => {
+      for (const a of arrs) {
+        if (Array.isArray(a) && a.length > 0) return a;
+      }
+      return [];
+    };
+
+    const getFirstNonEmptyString = (...strs) => {
+      for (const s of strs) {
+        if (typeof s === 'string' && s.trim().length > 0) return s.trim();
+      }
+      return '';
+    };
+
     // Combine candidate user profile with application snapshot
     const profile = {
-      displayName: candidateData.displayName || candidateData.name || appData.applicantName || '',
-      email: candidateData.email || appData.applicantEmail || '',
-      phone: candidateData.phone || appData.applicantPhone || '',
-      photoURL: candidateData.photoURL || candidateData.avatar || appData.applicantPhoto || '',
-      headline: candidateData.headline || appData.applicantHeadline || '',
-      bio: candidateData.bio || candidateData.about || appData.applicantBio || '',
-      location: candidateData.location || candidateData.city || appData.applicantLocation || appData.location || '',
-      city: candidateData.city || '',
-      state: candidateData.state || '',
-      address: candidateData.address || '',
-      skills: Array.isArray(candidateData.skills) && candidateData.skills.length > 0
-        ? candidateData.skills
-        : (Array.isArray(appData.skills) ? appData.skills : (appData.applicantSkills || [])),
-      languages: Array.isArray(candidateData.languages) && candidateData.languages.length > 0
-        ? candidateData.languages
-        : (Array.isArray(appData.languages) ? appData.languages : []),
-      education: Array.isArray(candidateData.education) && candidateData.education.length > 0
-        ? candidateData.education
-        : (Array.isArray(appData.education) ? appData.education : []),
-      experience: Array.isArray(candidateData.experience) && candidateData.experience.length > 0
-        ? candidateData.experience
-        : (Array.isArray(appData.experience) ? appData.experience : []),
-      experienceYears: candidateData.experienceYears || candidateData.totalExperience || appData.experienceYears || '',
-      noticePeriod: candidateData.noticePeriod || appData.noticePeriod || '',
-      currentSalary: candidateData.currentSalary || appData.currentSalary || '',
-      expectedSalary: candidateData.expectedSalary || appData.expectedSalary || '',
-      gender: candidateData.gender || appData.gender || '',
-      dob: candidateData.dob || appData.dob || '',
-      portfolioURL: candidateData.portfolioURL || candidateData.portfolio || appData.portfolioURL || '',
-      linkedinURL: candidateData.linkedinURL || candidateData.linkedin || appData.linkedinURL || '',
-      githubURL: candidateData.githubURL || candidateData.github || appData.githubURL || '',
-      resumeURL: candidateData.resumeURL || appData.resume || '',
-      isDigitalProfile: Boolean(appData.isDigitalProfile || appData.resume === 'DIGITAL_PROFILE_CV'),
+      displayName: getFirstNonEmptyString(candidateData.displayName, candidateData.name, snap.displayName, appData.applicantName),
+      email: getFirstNonEmptyString(candidateData.email, snap.email, appData.applicantEmail),
+      phone: getFirstNonEmptyString(candidateData.phone, snap.phone, appData.applicantPhone),
+      photoURL: getFirstNonEmptyString(candidateData.photoURL, candidateData.avatar, snap.photoURL, appData.applicantPhoto),
+      headline: getFirstNonEmptyString(candidateData.headline, snap.headline, appData.applicantHeadline),
+      bio: getFirstNonEmptyString(candidateData.bio, candidateData.about, snap.bio, appData.applicantBio),
+      location: getFirstNonEmptyString(candidateData.location, candidateData.city, snap.location, appData.applicantLocation, appData.location),
+      city: getFirstNonEmptyString(candidateData.city, snap.city),
+      state: getFirstNonEmptyString(candidateData.state, snap.state),
+      address: getFirstNonEmptyString(candidateData.address, snap.address),
+      skills: getFirstNonEmptyArray(candidateData.skills, snap.skills, appData.skills, appData.applicantSkills),
+      languages: getFirstNonEmptyArray(candidateData.languages, snap.languages, appData.languages),
+      education: getFirstNonEmptyArray(candidateData.education, snap.education, appData.education),
+      experience: getFirstNonEmptyArray(candidateData.experience, snap.experience, appData.experience),
+      experienceYears: getFirstNonEmptyString(candidateData.experienceYears, candidateData.totalExperience, snap.experienceYears, appData.experienceYears),
+      noticePeriod: getFirstNonEmptyString(candidateData.noticePeriod, snap.noticePeriod, appData.noticePeriod),
+      currentSalary: getFirstNonEmptyString(candidateData.currentSalary, snap.currentSalary, appData.currentSalary),
+      expectedSalary: getFirstNonEmptyString(candidateData.expectedSalary, snap.expectedSalary, appData.expectedSalary),
+      gender: getFirstNonEmptyString(candidateData.gender, snap.gender, appData.gender),
+      dob: getFirstNonEmptyString(candidateData.dob, snap.dob, appData.dob),
+      portfolioURL: getFirstNonEmptyString(candidateData.portfolioURL, candidateData.portfolio, snap.portfolioURL, appData.portfolioURL),
+      linkedinURL: getFirstNonEmptyString(candidateData.linkedinURL, candidateData.linkedin, snap.linkedinURL, appData.linkedinURL),
+      githubURL: getFirstNonEmptyString(candidateData.githubURL, candidateData.github, snap.githubURL, appData.githubURL),
+      resumeURL: getFirstNonEmptyString(candidateData.resumeURL, snap.resumeURL, appData.resume),
+      isDigitalProfile: Boolean(appData.isDigitalProfile || appData.resume === 'DIGITAL_PROFILE_CV' || appData.resume?.startsWith?.('profile://')),
       notes: appData.notes || '',
       jobPosition: appData.jobPosition || '',
       appliedAt: appData.appliedAt || null,
       status: appData.status || 'Applied',
     };
 
-    // Opportunistically backfill missing snapshot fields on legacy application doc
-    if (!appData.education || !appData.experience || !appData.skills) {
-      try {
-        await appRef.set(
-          {
-            applicantPhoto: profile.photoURL,
-            applicantHeadline: profile.headline,
-            applicantBio: profile.bio,
-            applicantLocation: profile.location,
-            skills: profile.skills,
-            languages: profile.languages,
-            education: profile.education,
-            experience: profile.experience,
-            experienceYears: profile.experienceYears,
-            noticePeriod: profile.noticePeriod,
-            profileSnapshot: profile,
-          },
-          { merge: true }
-        );
-      } catch (backfillErr) {
-        console.warn('Background backfill notice:', backfillErr);
-      }
+    // Opportunistically sync back to application doc so client never has stale data
+    try {
+      await appRef.set(
+        {
+          applicantName: profile.displayName,
+          applicantEmail: profile.email,
+          applicantPhone: profile.phone,
+          applicantPhoto: profile.photoURL,
+          applicantHeadline: profile.headline,
+          applicantBio: profile.bio,
+          applicantLocation: profile.location,
+          skills: profile.skills,
+          languages: profile.languages,
+          education: profile.education,
+          experience: profile.experience,
+          experienceYears: profile.experienceYears,
+          noticePeriod: profile.noticePeriod,
+          portfolioURL: profile.portfolioURL,
+          linkedinURL: profile.linkedinURL,
+          githubURL: profile.githubURL,
+          profileSnapshot: profile,
+        },
+        { merge: true }
+      );
+    } catch (backfillErr) {
+      console.warn('Background backfill notice:', backfillErr);
     }
 
     return res.status(200).json({ success: true, profile });

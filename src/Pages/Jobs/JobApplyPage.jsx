@@ -267,6 +267,24 @@ const JobApplyPage = () => {
 
       setProgress(80);
 
+      // Ensure we have the absolute latest complete candidate profile from Firestore
+      let latestProfile = candidateProfile || {};
+      try {
+        const fresh = await getCandidateProfile(user.uid);
+        if (fresh) {
+          latestProfile = {
+            ...latestProfile,
+            ...fresh,
+            skills: Array.isArray(fresh.skills) && fresh.skills.length > 0 ? fresh.skills : (latestProfile.skills || []),
+            languages: Array.isArray(fresh.languages) && fresh.languages.length > 0 ? fresh.languages : (latestProfile.languages || []),
+            education: Array.isArray(fresh.education) && fresh.education.length > 0 ? fresh.education : (latestProfile.education || []),
+            experience: Array.isArray(fresh.experience) && fresh.experience.length > 0 ? fresh.experience : (latestProfile.experience || []),
+          };
+        }
+      } catch (profErr) {
+        console.warn('Live profile fetch note:', profErr);
+      }
+
       const applicationPayload = {
         jobId: job.id,
         companyId: job.companyId || job.userId || 'company',
@@ -276,26 +294,41 @@ const JobApplyPage = () => {
         jobPosition: job.position,
         location: job.location || 'India',
         userId: user.uid,
-        applicantName,
-        applicantEmail,
-        applicantPhone,
-        applicantPhoto: candidateProfile?.photoURL || user.photoURL || '',
-        applicantHeadline: candidateProfile?.headline || '',
-        applicantBio: candidateProfile?.bio || '',
-        applicantLocation: candidateProfile?.location || '',
-        skills: Array.isArray(candidateProfile?.skills) ? candidateProfile.skills : [],
-        languages: Array.isArray(candidateProfile?.languages) ? candidateProfile.languages : [],
-        education: Array.isArray(candidateProfile?.education) ? candidateProfile.education : [],
-        experience: Array.isArray(candidateProfile?.experience) ? candidateProfile.experience : [],
-        portfolioURL: candidateProfile?.portfolioURL || '',
-        linkedinURL: candidateProfile?.linkedinURL || '',
-        githubURL: candidateProfile?.githubURL || '',
+        applicantName: applicantName || latestProfile.displayName || '',
+        applicantEmail: applicantEmail || latestProfile.email || '',
+        applicantPhone: applicantPhone || latestProfile.phone || '',
+        applicantPhoto: latestProfile.photoURL || user.photoURL || '',
+        applicantHeadline: latestProfile.headline || '',
+        applicantBio: latestProfile.bio || '',
+        applicantLocation: latestProfile.location || '',
+        skills: Array.isArray(latestProfile.skills) ? latestProfile.skills : [],
+        languages: Array.isArray(latestProfile.languages) ? latestProfile.languages : [],
+        education: Array.isArray(latestProfile.education) ? latestProfile.education : [],
+        experience: Array.isArray(latestProfile.experience) ? latestProfile.experience : [],
+        portfolioURL: latestProfile.portfolioURL || '',
+        linkedinURL: latestProfile.linkedinURL || '',
+        githubURL: latestProfile.githubURL || '',
         resume: finalResumeURL,
         isDigitalProfile: finalResumeURL === 'DIGITAL_PROFILE_CV' || finalResumeURL.startsWith('profile://'),
         notes,
-        experienceYears: experienceYears || candidateProfile?.experienceYears || '',
-        noticePeriod: noticePeriod || candidateProfile?.noticePeriod || '',
-        profileSnapshot: candidateProfile || {},
+        experienceYears: experienceYears || latestProfile.experienceYears || '',
+        noticePeriod: noticePeriod || latestProfile.noticePeriod || '',
+        profileSnapshot: {
+          ...latestProfile,
+          displayName: applicantName || latestProfile.displayName || '',
+          email: applicantEmail || latestProfile.email || '',
+          phone: applicantPhone || latestProfile.phone || '',
+          location: latestProfile.location || '',
+          headline: latestProfile.headline || '',
+          bio: latestProfile.bio || '',
+          skills: latestProfile.skills || [],
+          languages: latestProfile.languages || [],
+          education: latestProfile.education || [],
+          experience: latestProfile.experience || [],
+          experienceYears: experienceYears || latestProfile.experienceYears || '',
+          noticePeriod: noticePeriod || latestProfile.noticePeriod || '',
+          photoURL: latestProfile.photoURL || user.photoURL || '',
+        },
       };
 
       const result = await submitJobApplication(applicationPayload);
