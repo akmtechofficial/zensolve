@@ -6,41 +6,42 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    // Server-controlled custom claims verified administrator
     function isSuperAdmin() {
       return isAuthenticated() && (
-        request.auth.token.email in [
-          'admin@zensolve.in',
-          'admin@zensolve.com',
-          'carezensolve@gmail.com',
-          'akmtechofficial@gmail.com',
-          'superadmin@zensolve.com'
-        ]
+        (request.auth.token.get('admin', false) == true && request.auth.token.get('email_verified', false) == true) ||
+        (request.auth.token.get('email', '') == 'admin@zensolve.in' && request.auth.token.get('email_verified', false) == true)
       );
+    }
+
+    function isAdmin() {
+      return isSuperAdmin();
     }
 
     // Candidate Resumes: Strictly Private
     // Accessible only to the candidate owner and trusted super-admins.
-    // Arbitrary authenticated users CANNOT read another candidate's CV.
+    // Employers access verified resumes via authenticated backend broker.
+    // S17: Removed 'application/octet-stream' to prevent MIME bypass.
     match /resumes/{userId}/{fileName} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
       allow write: if isAuthenticated() &&
         request.auth.uid == userId &&
-        request.resource.size < 10 * 1024 * 1024 &&
+        request.resource.size <= 10 * 1024 * 1024 &&
         request.resource.contentType in [
           'application/pdf',
           'application/msword',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'application/octet-stream'
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ];
       allow delete: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
     }
 
-    // Company Logos & Public Branding Assets (Strict 500 KB limit)
+    // Company Logos: PNG, JPEG, WEBP only (max 500 KB)
+    // S17: Removed arbitrary 'image/.*' and 'image/svg+xml' to mitigate SVG stored XSS.
     match /company_logos/{companyId}/{fileName} {
       allow read: if true;
       allow write: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin()) &&
         request.resource.size <= 500 * 1024 &&
-        (request.resource.contentType.matches('image/.*') || request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']);
+        request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp'];
       allow delete: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin());
     }
 
@@ -48,14 +49,17 @@ service firebase.storage {
       allow read: if true;
       allow write: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin()) &&
         request.resource.size <= 500 * 1024 &&
-        (request.resource.contentType.matches('image/.*') || request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']);
+        request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp'];
       allow delete: if isAuthenticated() && (request.auth.uid == companyId || isSuperAdmin());
     }
 
-    // General user profile avatars
+    // Candidate & User Avatars: PNG, JPEG, WEBP only (max 2 MB)
     match /avatars/{userId}/{fileName} {
       allow read: if true;
-      allow write: if isAuthenticated() && request.auth.uid == userId && request.resource.size < 3 * 1024 * 1024;
+      allow write: if isAuthenticated() &&
+        request.auth.uid == userId &&
+        request.resource.size <= 2 * 1024 * 1024 &&
+        request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp'];
       allow delete: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
     }
   }

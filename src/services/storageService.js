@@ -1,5 +1,5 @@
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from '../firebaseConfig';
+import { storage, auth } from '../firebaseConfig';
 
 export const MAX_RESUME_SIZE_MB = 10;
 export const MAX_RESUME_SIZE_BYTES = MAX_RESUME_SIZE_MB * 1024 * 1024; // 10,485,760 bytes
@@ -7,6 +7,7 @@ export const MAX_RESUME_SIZE_BYTES = MAX_RESUME_SIZE_MB * 1024 * 1024; // 10,485
 export const MAX_LOGO_SIZE_KB = 500;
 export const MAX_LOGO_SIZE_BYTES = MAX_LOGO_SIZE_KB * 1024; // 512,000 bytes
 
+// S17: Strict MIME Types (Removed generic application/octet-stream and SVG)
 export const ALLOWED_RESUME_TYPES = [
   'application/pdf',
   'application/msword',
@@ -17,7 +18,6 @@ export const ALLOWED_LOGO_TYPES = [
   'image/jpeg',
   'image/png',
   'image/webp',
-  'image/svg+xml',
 ];
 
 /**
@@ -39,16 +39,16 @@ export const validateResumeFile = (file) => {
     };
   }
 
-  // Extension / MIME validation
+  // S17: Strict Extension and MIME validation (no generic octet-stream)
   const ext = file.name.split('.').pop()?.toLowerCase();
   const validExtensions = ['pdf', 'doc', 'docx'];
-  const isValidMime = ALLOWED_RESUME_TYPES.includes(file.type) || file.type === 'application/octet-stream';
+  const isValidMime = ALLOWED_RESUME_TYPES.includes(file.type);
   const isValidExt = validExtensions.includes(ext);
 
-  if (!isValidMime && !isValidExt) {
+  if (!isValidMime || !isValidExt) {
     return {
       valid: false,
-      error: 'Invalid file format. Please upload your resume in PDF, DOC, or DOCX format.',
+      error: 'Invalid file format. Please upload your resume in authentic PDF, DOC, or DOCX format.',
     };
   }
 
@@ -74,16 +74,16 @@ export const validateLogoFile = (file) => {
     };
   }
 
-  // Extension / MIME validation
+  // S17: Strict Extension and MIME validation (no SVG to prevent stored XSS)
   const ext = file.name.split('.').pop()?.toLowerCase();
-  const validExtensions = ['png', 'jpg', 'jpeg', 'webp', 'svg'];
-  const isValidMime = ALLOWED_LOGO_TYPES.includes(file.type) || file.type.startsWith('image/');
+  const validExtensions = ['png', 'jpg', 'jpeg', 'webp'];
+  const isValidMime = ALLOWED_LOGO_TYPES.includes(file.type);
   const isValidExt = validExtensions.includes(ext);
 
-  if (!isValidMime && !isValidExt) {
+  if (!isValidMime || !isValidExt) {
     return {
       valid: false,
-      error: 'Invalid image format. Supported formats: PNG, JPG, JPEG, WEBP, SVG.',
+      error: 'Invalid image format. Supported formats: PNG, JPG, JPEG, WEBP (SVG is not supported for security).',
     };
   }
 
@@ -294,4 +294,50 @@ export const deleteStorageFile = async (fullPathOrUrl) => {
   } catch (error) {
     console.warn('Storage delete notice (file may not exist):', error.message);
   }
+};
+
+/**
+ * S13: Authenticated secure resume retrieval
+ * Replaces public bearer download URLs with short-lived, authorization-verified signed access
+ * @param {object} params - { resumePath, applicationId }
+ * @returns {Promise<string>} Short-lived authorized download URL
+ */
+export const getSecureResumeUrl = async ({ resumePath, applicationId }) => {
+  if (!resumePath) return null;
+
+  // If already a digital CV marker
+  if (resumePath.startsWith('profile://') || resumePath === 'DIGITAL_PROFILE_CV') {
+    return resumePath;
+  }
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (auth.currentUser) {
+      const idToken = await auth.currentUser.getIdToken();
+      if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
+    }
+
+    // Extract path if full URL was passed
+    let normalizedPath = resumePath;
+    if (resumePath.includes('/o/')) {
+      const encoded = resumePath.split('/o/')[1]?.split('?')[0];
+      if (encoded) normalizedPath = decodeURIComponent(encoded);
+    }
+
+    const res = await fetch('/api/get-resume-url', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ resumePath: normalizedPath, applicationId }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) return data.url;
+    }
+  } catch (err) {
+    console.warn('Secure resume retrieval notice:', err.message);
+  }
+
+  // Graceful fallback to legacy URL if already direct link
+  return resumePath;
 };

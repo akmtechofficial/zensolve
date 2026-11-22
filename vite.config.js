@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dotenv from 'dotenv';
-import handler from './api/notify-admin.js';
 
 dotenv.config();
 
 const apiNotificationPlugin = () => ({
   name: 'api-notification-plugin',
+  apply: 'serve',
   configureServer(server) {
     server.middlewares.use('/api/notify-admin', async (req, res) => {
       let body = '';
@@ -30,6 +30,7 @@ const apiNotificationPlugin = () => ({
         };
 
         try {
+          const { default: handler } = await import('./api/notify-admin.js');
           await handler(req, res);
         } catch (err) {
           console.error('API notification error:', err);

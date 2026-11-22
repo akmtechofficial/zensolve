@@ -4,7 +4,7 @@
  */
 
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { db, auth } from '../firebaseConfig';
 
 /**
  * Send an email notification through serverless API
@@ -13,11 +13,24 @@ import { db } from '../firebaseConfig';
  */
 export const sendPlatformEmail = async (type, payload) => {
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    if (auth.currentUser) {
+      try {
+        const idToken = await auth.currentUser.getIdToken();
+        if (idToken) {
+          headers['Authorization'] = `Bearer ${idToken}`;
+        }
+      } catch (tokenErr) {
+        console.warn('ID Token fetch notice:', tokenErr);
+      }
+    }
+
     const res = await fetch('/api/send-email', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({ type, payload }),
     });
 

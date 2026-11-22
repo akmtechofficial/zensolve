@@ -24,7 +24,19 @@ import {
 export const getJobs = async (filters = {}) => {
   try {
     const jobsRef = collection(db, "jobs");
-    const snapshot = await getDocs(jobsRef);
+    let q;
+
+    // F01: Rule-compatible Firestore query
+    if (filters.companyId) {
+      q = query(jobsRef, where("companyId", "==", filters.companyId));
+    } else if (filters.isAdmin) {
+      q = jobsRef;
+    } else {
+      // Default public query must specify status == 'Active' to satisfy Firestore security rules
+      q = query(jobsRef, where("status", "==", "Active"));
+    }
+
+    const snapshot = await getDocs(q);
     let jobs = snapshot.docs.map((doc) => {
       const data = doc.data();
       return {
@@ -35,21 +47,16 @@ export const getJobs = async (filters = {}) => {
       };
     });
 
-    // Filter by active status by default for public users unless requested
-    if (filters.onlyActive) {
-      jobs = jobs.filter((job) => job.status === "Active" || !job.status);
-    }
-
     if (filters.search) {
-      const q = filters.search.toLowerCase();
+      const queryStr = filters.search.toLowerCase();
       jobs = jobs.filter(
         (job) =>
-          (job.position && job.position.toLowerCase().includes(q)) ||
-          (job.companyName && job.companyName.toLowerCase().includes(q)) ||
-          (job.clientCompanyName && job.clientCompanyName.toLowerCase().includes(q)) ||
-          (job.location && job.location.toLowerCase().includes(q)) ||
-          (job.category && job.category.toLowerCase().includes(q)) ||
-          (job.description && job.description.toLowerCase().includes(q))
+          (job.position && job.position.toLowerCase().includes(queryStr)) ||
+          (job.companyName && job.companyName.toLowerCase().includes(queryStr)) ||
+          (job.clientCompanyName && job.clientCompanyName.toLowerCase().includes(queryStr)) ||
+          (job.location && job.location.toLowerCase().includes(queryStr)) ||
+          (job.category && job.category.toLowerCase().includes(queryStr)) ||
+          (job.description && job.description.toLowerCase().includes(queryStr))
       );
     }
 
@@ -83,10 +90,6 @@ export const getJobs = async (filters = {}) => {
           job.companyName &&
           job.companyName.toLowerCase() === filters.companyName.toLowerCase()
       );
-    }
-
-    if (filters.companyId) {
-      jobs = jobs.filter((job) => job.companyId === filters.companyId);
     }
 
     return jobs;
@@ -131,7 +134,8 @@ export const createJob = async (jobData) => {
       saveCount: 0,
       createdAt: serverTimestamp(),
       status: jobData.status || "Active",
-      verified: true,
+      verified: false, // S11, S12: Employer cannot self-verify listings; verified is admin-moderated
+      applicantCount: 0,
     });
     return { success: true, id: docRef.id };
   } catch (error) {
@@ -305,9 +309,15 @@ export const submitJobApplication = async (applicationData) => {
       };
     }
 
-    const appsRef = collection(db, "jobApplications");
-    const docRef = await addDoc(appsRef, {
-      ...applicationData,
+    // S06: Ensure internalNotes is never sent on candidate application root document
+    const { internalNotes, ...cleanApplicationData } = applicationData;
+
+    // S19: Deterministic document ID (${jobId}_${userId}) for absolute deduplication
+    const appId = userId ? `${jobId}_${userId}` : null;
+    const docRef = appId ? doc(db, "jobApplications", appId) : doc(collection(db, "jobApplications"));
+
+    await setDoc(docRef, {
+      ...cleanApplicationData,
       status: "Applied",
       appliedAt: serverTimestamp(),
       statusTimeline: [
@@ -554,19 +564,48 @@ export const scheduleInterview = async (applicationId, interviewDetails) => {
 };
 
 /**
- * Save private internal HR notes for candidate
+ * S06: Save private internal HR notes in protected subcollection hrPrivate/notes
+ * Candidate has zero read/write access to this path under Firestore security rules
  */
 export const saveInternalNotes = async (applicationId, internalNotes) => {
   try {
-    const appRef = doc(db, "jobApplications", applicationId);
-    await updateDoc(appRef, {
-      internalNotes,
-      internalNotesUpdatedAt: serverTimestamp(),
-    });
+    const notesRef = doc(db, "jobApplications", applicationId, "hrPrivate", "notes");
+    await setDoc(
+      notesRef,
+      {
+        internalNotes,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
     return { success: true };
   } catch (error) {
     console.error("Error saving internal notes:", error);
     return { success: false, error: error.message };
+  }
+};
+
+/**
+ * S06: Fetch private internal HR notes from protected subcollection hrPrivate/notes
+ */
+export const getInternalNotes = async (applicationId) => {
+  try {
+    if (!applicationId) return "";
+    const notesRef = doc(db, "jobApplications", applicationId, "hrPrivate", "notes");
+    const snap = await getDoc(notesRef);
+    if (snap.exists()) {
+      return snap.data().internalNotes || "";
+    }
+    // Backward compatibility fallback to root document for unmigrated legacy notes
+    const appRef = doc(db, "jobApplications", applicationId);
+    const appSnap = await getDoc(appRef);
+    if (appSnap.exists()) {
+      return appSnap.data().internalNotes || "";
+    }
+    return "";
+  } catch (error) {
+    console.warn("Internal notes read notice:", error.message);
+    return "";
   }
 };
 
@@ -575,71 +614,47 @@ export const saveInternalNotes = async (applicationId, internalNotes) => {
    ========================================================================= */
 
 /**
- * Fetch distinct companies or registered company documents
+ * S05, F02: Fetch public company directory from sanitized publicCompanies collection
+ * Never reads private users/{uid} documents
  */
 export const getCompanies = async () => {
   try {
-    // 1. Fetch from 'companies' or 'users' collection with role 'company' / 'employer'
-    const usersRef = collection(db, "users");
-    const userSnap = await getDocs(usersRef);
-    const registeredCompanies = userSnap.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((u) => u.role === "company" || u.role === "employer");
+    const publicCompRef = collection(db, "publicCompanies");
+    const snap = await getDocs(publicCompRef);
+    let companies = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-    // 2. Fetch all jobs to gather company activity
-    const jobs = await getJobs();
-    const companyMap = new Map();
-
-    // Map registered companies first
-    registeredCompanies.forEach((comp) => {
-      const name = comp.companyName || comp.displayName || "Partner Organization";
-      companyMap.set(name.trim().toLowerCase(), {
-        id: comp.id,
-        name: comp.companyName || comp.displayName,
-        logo: comp.logo || comp.companyLogo || "/zen.jpeg",
-        location: comp.location || "India",
-        industry: comp.industry || "Technology",
-        companyType: comp.companyType || "Private Limited",
-        website: comp.website || "",
-        hrName: comp.hrName || comp.name || "HR Team",
-        businessEmail: comp.email || comp.businessEmail || "",
-        phone: comp.phone || comp.mobileNumber || "",
-        about: comp.description || comp.about || "Verified hiring partner on ZenSolve.",
-        status: comp.status || (comp.approved ? "approved" : "pending"),
-        approved: comp.approved === true || comp.status === "approved",
-        openRolesCount: 0,
-        verified: comp.approved === true,
-        rating: comp.rating || 4.8,
-        createdAt: comp.createdAt,
-      });
-    });
-
-    // Count published jobs
-    jobs.forEach((job) => {
-      if (job.companyName) {
-        const key = job.companyName.trim().toLowerCase();
-        if (companyMap.has(key)) {
-          const c = companyMap.get(key);
-          c.openRolesCount += 1;
-        } else {
-          companyMap.set(key, {
-            id: job.companyId || `comp-${key}`,
-            name: job.companyName.trim(),
-            logo: job.companyLogo || "/zen.jpeg",
-            location: job.location || "India",
-            industry: job.category || "Technology",
-            openRolesCount: 1,
-            verified: job.verified !== false,
-            approved: true,
-            status: "approved",
-            rating: job.rating || 4.8,
-            about: `Hiring employer in ${job.category || "technology & services"}.`,
-          });
+    // Fallback: if publicCompanies collection is currently empty (pre-migration)
+    if (companies.length === 0) {
+      // Safely aggregate company cards from active published jobs
+      const jobs = await getJobs({ onlyActive: true });
+      const compMap = new Map();
+      jobs.forEach((job) => {
+        if (job.companyName) {
+          const key = job.companyName.trim().toLowerCase();
+          if (compMap.has(key)) {
+            const c = compMap.get(key);
+            c.openRolesCount += 1;
+          } else {
+            compMap.set(key, {
+              id: job.companyId || `comp-${key}`,
+              name: job.companyName.trim(),
+              companyName: job.companyName.trim(),
+              logo: job.companyLogo || "/zen.jpeg",
+              location: job.location || "India",
+              industry: job.category || "Staffing & Manpower",
+              openRolesCount: 1,
+              verified: true,
+              approved: true,
+              status: "approved",
+              rating: job.rating || 4.8,
+            });
+          }
         }
-      }
-    });
+      });
+      companies = Array.from(compMap.values());
+    }
 
-    return Array.from(companyMap.values());
+    return companies;
   } catch (error) {
     console.error("Error fetching companies:", error);
     return [];
@@ -688,12 +703,36 @@ export const updateCompanyApproval = async (companyId, status, decisionNote = ""
       reviewedAt: serverTimestamp(),
     });
 
-    // Also record audit event
-    await logAuditEvent("COMPANY_STATUS_UPDATE", companyId, {
-      newStatus: status,
-      decisionNote,
-      adminEmail,
-    });
+    // S05: Sync sanitized record into publicCompanies directory upon approval
+    if (isApproved) {
+      const snap = await getDoc(compRef);
+      if (snap.exists()) {
+        const d = snap.data();
+        await setDoc(
+          doc(db, "publicCompanies", companyId),
+          {
+            id: companyId,
+            companyName: d.companyName || d.displayName || "Partner Organization",
+            name: d.companyName || d.displayName || "Partner Organization",
+            logo: d.logo || d.companyLogo || "/zen.jpeg",
+            companyLogo: d.logo || d.companyLogo || "/zen.jpeg",
+            location: d.location || "India",
+            industry: d.industry || "Staffing & Manpower",
+            companyType: d.companyType || "Private Limited",
+            website: d.website || "",
+            about: d.description || d.about || "Verified hiring partner on ZenSolve.",
+            verified: true,
+            rating: d.rating || 4.8,
+            openRolesCount: 0,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
+    } else {
+      // If suspended or rejected, remove from public directory
+      await deleteDoc(doc(db, "publicCompanies", companyId)).catch(() => {});
+    }
 
     return { success: true };
   } catch (error) {

@@ -47,10 +47,8 @@ const CandidateApplicationDetail = () => {
         if (!data) {
           setError('Application not found.');
         } else {
-          // Strict privacy check: ensure candidate owns this application
-          const isOwner =
-            (data.userId && data.userId === user?.uid) ||
-            (data.applicantEmail && data.applicantEmail.toLowerCase() === user?.email?.toLowerCase());
+          // S20: Strict tenant ownership by immutable UID only; no applicantEmail fallback
+          const isOwner = data.userId === user?.uid;
 
           if (!isOwner) {
             setError('Unauthorized: You do not have permission to view this application.');

@@ -24,6 +24,7 @@ const AuthContext = createContext({
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [claims, setClaims] = useState({});
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = useCallback(async (uid, email) => {
@@ -88,15 +89,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Error fetching user profile:", err);
-      // Fail-safe for administrators: never block admin console due to network or read failure
-      if (isSuperAdminEmail) {
-        return {
-          uid,
-          email,
-          role: 'admin',
-          isPendingProfile: false,
-        };
-      }
+      // S20: Fail closed on role-resolution failure; never synthesize admin role on error
       return {
         uid,
         email,
@@ -132,9 +125,17 @@ export const AuthProvider = ({ children }) => {
       clearTimeout(safetyTimer);
       setUser(currentUser);
       if (currentUser) {
+        try {
+          const idTokenRes = await currentUser.getIdTokenResult();
+          setClaims(idTokenRes?.claims || {});
+        } catch (claimErr) {
+          console.warn('Claims fetch notice:', claimErr.message);
+          setClaims({});
+        }
         const data = await fetchUserData(currentUser.uid, currentUser.email);
         setUserData(data);
       } else {
+        setClaims({});
         setUserData(null);
       }
       setLoading(false);
@@ -151,14 +152,20 @@ export const AuthProvider = ({ children }) => {
       await signOut(auth);
       setUser(null);
       setUserData(null);
+      setClaims({});
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
-  // Strict Super-Admin: ONLY admin@zensolve.in is granted admin privileges
-  const isSuperAdminEmail = Boolean(user?.email && user.email.trim().toLowerCase() === SUPER_ADMIN_EMAIL);
-  const isAdmin = isSuperAdminEmail;
+  // S02: Server-controlled custom claims or verified bootstrap email check
+  const hasAdminClaim = Boolean(claims.admin === true);
+  const isBootstrapAdmin = Boolean(
+    user?.email &&
+    user.email.trim().toLowerCase() === SUPER_ADMIN_EMAIL &&
+    (user.emailVerified || hasAdminClaim)
+  );
+  const isAdmin = hasAdminClaim || isBootstrapAdmin;
 
   const isCompany =
     !isAdmin && (userData?.role === 'company' || userData?.role === 'employer');

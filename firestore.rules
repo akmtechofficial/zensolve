@@ -2,7 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // ==========================================
+    // Core Security & RBAC Helper Functions
+    // ==========================================
+
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -11,209 +14,310 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isSuperAdmin() {
+    // S02: Robust Admin Verification via Custom Claims or Verified Bootstrap Email
+    function isAdmin() {
       return isAuthenticated() && (
-        request.auth.token.email in [
-          'admin@zensolve.in',
-          'admin@zensolve.com',
-          'carezensolve@gmail.com',
-          'akmtechofficial@gmail.com',
-          'superadmin@zensolve.com'
-        ] ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+        (request.auth.token.get('admin', false) == true && request.auth.token.get('email_verified', false) == true) ||
+        (request.auth.token.get('email', '') == 'admin@zensolve.in' && request.auth.token.get('email_verified', false) == true)
       );
     }
 
+    // Backward compatibility alias for isAdmin
+    function isSuperAdmin() {
+      return isAdmin();
+    }
+
+    // Account suspension check to reject suspended actors across all sensitive operations
     function isSuspended() {
       return isAuthenticated() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.suspended == true ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'suspended');
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('suspended', false) == true ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('status', '') == 'suspended');
     }
 
+    // Company verification check: ensures company is active, approved, and not suspended
     function isApprovedCompany() {
       return isAuthenticated() &&
         !isSuspended() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['company', 'employer'] &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.approved == true ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved');
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') in ['company', 'employer'] &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('approved', false) == true ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('status', '') == 'approved');
     }
 
     // ==========================================
     // 1. Users Collection
+    // S01: Prevent Privilege Escalation (role, approved, suspended, status)
+    // S05: Restrict User PII from Public Read Access
     // ==========================================
     match /users/{userId} {
-      // Anyone authenticated can read their own profile; public can read approved company profiles; super-admin reads all
-      allow read: if isOwner(userId) || isSuperAdmin() ||
-        (resource.data.role in ['company', 'employer'] &&
-         (resource.data.approved == true || resource.data.status == 'approved'));
+      // S05: Only document owner or verified administrator may read user profile
+      allow read: if isOwner(userId) || isAdmin();
 
-      // Registration: candidates and companies create their initial profile; super-admins can create any profile
-      allow create: if isAuthenticated() && (
-        isSuperAdmin() ||
-        (
-          request.auth.uid == userId &&
-          (request.resource.data.role in ['candidate', 'company', 'employer']) &&
-          (!('approved' in request.resource.data) || request.resource.data.approved == false) &&
-          (!('suspended' in request.resource.data) || request.resource.data.suspended == false)
-        )
+      // S01: Registration enforces unprivileged roles, pending/unverified status, no self-approval
+      allow create: if isAdmin() || (
+        isOwner(userId) &&
+        request.resource.data.role in ['candidate', 'company', 'employer'] &&
+        (!('approved' in request.resource.data) || request.resource.data.approved == false) &&
+        (!('status' in request.resource.data) || request.resource.data.status in ['pending', 'unverified']) &&
+        (!('suspended' in request.resource.data) || request.resource.data.suspended == false)
       );
 
-      // Updates: user can update their own permitted fields but CANNOT self-promote to admin, self-approve, or unsuspended themselves
-      allow update: if isSuperAdmin() || (
+      // S01: User cannot tamper with role, approval status, suspension state, review fields, or identities
+      allow update: if isAdmin() || (
         isOwner(userId) &&
         !isSuspended() &&
-        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
-        (!('approved' in request.resource.data) || request.resource.data.approved == resource.data.approved) &&
-        (!('suspended' in request.resource.data) || request.resource.data.suspended == resource.data.suspended)
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'role', 'approved', 'status', 'suspended', 'reviewedBy', 'reviewedAt', 'uid', 'email'
+        ])
       );
 
-      // Only super-admin can delete user profiles
-      allow delete: if isSuperAdmin();
+      // Only administrators can hard-delete user profiles
+      allow delete: if isAdmin();
     }
 
     // ==========================================
-    // 2. Jobs Collection
+    // 2. Public Companies Collection (Sanitized Directory)
+    // S05: Public Directory without Exposing Private PII
+    // ==========================================
+    match /publicCompanies/{companyId} {
+      // Public directory is openly readable
+      allow read: if true;
+
+      // Only verified/approved company or administrator can create its sanitized directory entry
+      allow create: if isAdmin() || (
+        isApprovedCompany() &&
+        request.auth.uid == companyId &&
+        (!('verified' in request.resource.data) || request.resource.data.verified == false) &&
+        (!('rating' in request.resource.data) || request.resource.data.rating == 0)
+      );
+
+      // Company cannot tamper with platform verification flag or computed rating
+      allow update: if isAdmin() || (
+        isApprovedCompany() &&
+        request.auth.uid == companyId &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['id', 'verified', 'rating'])
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 3. Jobs Collection
+    // S11: Prevent Verification & Applicant Count Spoofing
+    // S12: Restrict Inactive/Unapproved Job Visibility
     // ==========================================
     match /jobs/{jobId} {
-      // Public can read active verified listings; company owner or super-admin can read drafts/closed
-      allow read: if resource.data.status == 'Active' ||
-        resource.data.status == null ||
-        isSuperAdmin() ||
-        (isAuthenticated() && resource.data.companyId == request.auth.uid);
+      // S12: Public can only view active jobs; company owner or admin can view drafts and closed listings
+      allow read: if resource.data.get('status', '') == 'Active' ||
+        isAdmin() ||
+        (isAuthenticated() && resource.data.get('companyId', '') == request.auth.uid);
 
-      // Only approved companies or super-admin can publish jobs
-      allow create: if isSuperAdmin() || (
+      // S11 & S12: Only approved company can post; cannot self-verify or spoof applicant counts
+      allow create: if isAdmin() || (
         isApprovedCompany() &&
-        request.resource.data.companyId == request.auth.uid
+        request.resource.data.companyId == request.auth.uid &&
+        (!('verified' in request.resource.data) || request.resource.data.verified == false) &&
+        (!('applicantCount' in request.resource.data) || request.resource.data.applicantCount == 0)
       );
 
-      // Only job owner or super-admin can update listings (cannot forge companyId)
-      allow update: if isSuperAdmin() || (
+      // S11: Only posting company can edit; cannot reassign companyId or alter verification/moderation status
+      allow update: if isAdmin() || (
         isApprovedCompany() &&
         resource.data.companyId == request.auth.uid &&
-        (!('companyId' in request.resource.data) || request.resource.data.companyId == resource.data.companyId)
+        request.resource.data.companyId == resource.data.companyId &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['companyId', 'verified', 'moderationStatus'])
       );
 
-      // Only job owner or super-admin can delete listings
-      allow delete: if isSuperAdmin() || (
-        isAuthenticated() &&
-        !isSuspended() &&
+      // Posting company or admin can delete listing
+      allow delete: if isAdmin() || (
+        isApprovedCompany() &&
         resource.data.companyId == request.auth.uid
       );
     }
 
     // ==========================================
-    // 3. Job Applications Collection
+    // 4. Job Applications Collection
+    // S04: Prevent Candidate Status Tampering
+    // S06: Prevent Candidate Access to Internal HR Notes
+    // S07: Isolation Across Employers & Unapproved Actors
+    // S08: Cross-Tenant Application Validation
+    // S09: Prevent Recruiter Overwriting Candidate Data
     // ==========================================
     match /jobApplications/{applicationId} {
-      // Strictly private: Candidate owner, Target company employer, or Super-Admin
-      allow read: if isSuperAdmin() || (
-        isAuthenticated() && (
-          resource.data.userId == request.auth.uid ||
-          resource.data.companyId == request.auth.uid
+      // S07: Only candidate owner, approved target employer, or admin can read application
+      allow read: if isAdmin() || (
+        isAuthenticated() &&
+        !isSuspended() &&
+        (
+          resource.data.get('userId', '') == request.auth.uid ||
+          (resource.data.get('companyId', '') == request.auth.uid && isApprovedCompany())
         )
       );
 
-      // Candidates can submit applications (must bind userId and initial status 'Applied' or 'Pending')
+      // S04, S08, S06: Candidate submits application; must bind to authentic job and companyId, no internalNotes
       allow create: if isAuthenticated() &&
         !isSuspended() &&
         request.resource.data.userId == request.auth.uid &&
-        (request.resource.data.status in ['Applied', 'Pending']);
+        request.resource.data.status in ['Applied', 'Pending'] &&
+        exists(/databases/$(database)/documents/jobs/$(request.resource.data.jobId)) &&
+        request.resource.data.companyId == get(/databases/$(database)/documents/jobs/$(request.resource.data.jobId)).data.get('companyId', '') &&
+        !('internalNotes' in request.resource.data);
 
-      // Updates:
-      // 1. Super-admin full access
-      // 2. Candidate withdrawing their active application (cannot alter target company or job)
-      // 3. Target company recruiter updating status, interview, or internal notes
-      allow update: if isSuperAdmin() || (
+      // S04, S07, S09, S06: Strict role-based updates with diff whitelist validation
+      allow update: if isAdmin() || (
         isAuthenticated() && !isSuspended() && (
+          // Candidate withdrawal: can only transition to 'Withdrawn' if not in terminal states, restricted field whitelist
           (
             resource.data.userId == request.auth.uid &&
             request.resource.data.status == 'Withdrawn' &&
-            resource.data.status != 'Withdrawn' &&
-            resource.data.status != 'Selected' &&
-            resource.data.status != 'Rejected' &&
+            resource.data.status in ['Applied', 'Pending', 'Shortlisted', 'Interview Scheduled'] &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'withdrawnAt', 'withdrawalReason', 'statusTimeline']) &&
             request.resource.data.userId == resource.data.userId &&
-            request.resource.data.jobId == resource.data.jobId
+            request.resource.data.jobId == resource.data.jobId &&
+            request.resource.data.companyId == resource.data.companyId
           ) ||
+          // Employer review: approved employer can update lifecycle fields, but cannot modify candidate fields or root internalNotes
           (
+            isApprovedCompany() &&
             resource.data.companyId == request.auth.uid &&
             request.resource.data.userId == resource.data.userId &&
-            request.resource.data.jobId == resource.data.jobId
+            request.resource.data.jobId == resource.data.jobId &&
+            request.resource.data.companyId == resource.data.companyId &&
+            request.resource.data.status in ['Applied', 'Pending', 'Shortlisted', 'Interview Scheduled', 'Selected', 'Rejected', 'On Hold'] &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusTimeline', 'interview', 'statusUpdatedAt', 'feedback']) &&
+            !('internalNotes' in request.resource.data.diff(resource.data).affectedKeys())
           )
         )
       );
 
-      allow delete: if isSuperAdmin();
+      allow delete: if isAdmin();
+
+      // S06: Subcollection for confidential internal HR notes (candidate has zero access)
+      match /hrPrivate/{docId} {
+        allow read, write: if isAdmin() || (
+          isAuthenticated() &&
+          !isSuspended() &&
+          isApprovedCompany() &&
+          get(/databases/$(database)/documents/jobApplications/$(applicationId)).data.get('companyId', '') == request.auth.uid
+        );
+      }
     }
 
     // ==========================================
-    // 4. Testimonials Collection
+    // 5. Testimonials Collection
+    // S16: Moderation Enforced (Only Approved Testimonials Readable by Public)
     // ==========================================
     match /testimonials/{testimonialId} {
-      allow read: if true;
-      allow create: if isAuthenticated() || true;
-      allow update, delete: if isSuperAdmin();
+      // S16: Public can only view approved testimonials; admin can view all
+      allow read: if resource.data.get('status', '') == 'approved' || isAdmin();
+
+      // Authenticated users can submit pending testimonials with bounded length
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll(['name', 'role', 'text', 'rating', 'createdAt']) &&
+        request.resource.data.text.size() <= 1000 &&
+        (!('status' in request.resource.data) || request.resource.data.status == 'pending');
+
+      allow update, delete: if isAdmin();
     }
 
     // ==========================================
-    // 5. Audit Logs (Super-Admin only)
+    // 6. Audit Logs Collection
+    // S10: Prevent Client-Side Tampering (Admin SDK / Server Only Writes)
     // ==========================================
     match /auditLogs/{logId} {
-      allow read: if isSuperAdmin();
-      allow create: if isAuthenticated();
-      allow update, delete: if false; // Immutable audit log
+      allow read: if isAdmin();
+      // S10: Clients cannot inject, forge, or delete audit logs
+      allow create, update, delete: if false;
     }
 
     // ==========================================
-    // 6. Reports & Platform Settings
+    // 7. Reports Collection
     // ==========================================
     match /reports/{reportId} {
-      allow read: if isSuperAdmin();
-      allow create: if isAuthenticated();
-      allow update, delete: if isSuperAdmin();
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
     }
 
+    // ==========================================
+    // 8. Platform Settings & Metadata
+    // ==========================================
     match /platformSettings/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /images/{imageId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // ==========================================
-    // 7. Data Deletion Requests (DPDP Act)
+    // 9. Data Deletion Requests (DPDP Act Compliance)
     // ==========================================
     match /deletionRequests/{requestId} {
-      allow read: if isSuperAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
-      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || request.resource.data.userId == null);
-      allow update, delete: if isSuperAdmin();
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.get('userId', '') == request.auth.uid);
+      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
     }
 
     // ==========================================
-    // 8. Grievance Redressal Tickets (IT Rules)
+    // 10. Grievance Redressal Tickets (IT Rules Compliance)
+    // S18: Input Bounds & DoS Prevention
     // ==========================================
     match /grievanceRequests/{requestId} {
-      allow read: if isSuperAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
-      allow create: if true;
-      allow update, delete: if isSuperAdmin();
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.get('userId', '') == request.auth.uid);
+      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'description', 'createdAt']) &&
+        request.resource.data.description.size() <= 3000;
+      allow update, delete: if isAdmin();
     }
 
     // ==========================================
-    // 9. Job Fraud & Scam Reports
+    // 11. Job Fraud & Scam Reports
+    // S18: Input Bounds & DoS Prevention
     // ==========================================
     match /fraudReports/{reportId} {
-      allow read: if isSuperAdmin();
-      allow create: if true;
-      allow update, delete: if isSuperAdmin();
+      allow read: if isAdmin();
+      allow create: if request.resource.data.keys().hasAll(['reporterEmail', 'jobId', 'reason', 'createdAt']) &&
+        request.resource.data.reason.size() <= 3000;
+      allow update, delete: if isAdmin();
     }
 
     // ==========================================
-    // 10. Cookie & Consent Audit Logs
+    // 12. Cookie & Consent Audit Logs
+    // S18: Consent Trail Auditing
     // ==========================================
     match /consentLogs/{logId} {
       allow create: if true;
-      allow read, update, delete: if isSuperAdmin();
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 13. Newsletter Subscribers
+    // F03: Validation and Type Safety
+    // ==========================================
+    match /newsletterSubscribers/{subId} {
+      allow read, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasAll(['email', 'subscribedAt']) &&
+        request.resource.data.email is string;
+      allow update: if isAdmin();
+    }
+
+    // ==========================================
+    // 14. Contact Us Messages
+    // F03: Validation and Type Safety
+    // ==========================================
+    match /contactMessages/{msgId} {
+      allow read, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'message', 'createdAt']) &&
+        request.resource.data.message.size() <= 3000;
+      allow update: if isAdmin();
     }
   }
 }

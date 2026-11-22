@@ -6,7 +6,9 @@ import {
   updateApplicationStatus,
   scheduleInterview,
   saveInternalNotes,
+  getInternalNotes,
 } from '../../services/recruitmentService';
+import { getSecureResumeUrl } from '../../services/storageService';
 import DashboardLayout from '../Dashboard/DashboardLayout';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -63,6 +65,9 @@ const HRApplicantDetail = () => {
   // Feedback State
   const [feedback, setFeedback] = useState(null);
 
+  // Resume Retrieval State
+  const [downloadingResume, setDownloadingResume] = useState(false);
+
   useEffect(() => {
     const fetchApp = async () => {
       if (applicationId) {
@@ -71,19 +76,22 @@ const HRApplicantDetail = () => {
         if (!data) {
           setError('Application record not found.');
         } else {
-          // Verify company ownership: check companyId or companyName or trusted isAdmin
-          const companyName = userData?.companyName || '';
-          const isOwner =
-            data.companyId === user?.uid ||
-            (companyName && data.companyName?.toLowerCase() === companyName.toLowerCase()) ||
-            isAdmin;
+          // S20: Strict tenant ownership by immutable UID only; no companyName fallback
+          const isOwner = data.companyId === user?.uid || isAdmin;
 
           if (!isOwner) {
             setError('Unauthorized: This candidate application belongs to another organization.');
           } else {
             setApplication(data);
             setSelectedStatus(data.status || 'Applied');
-            setInternalNotes(data.internalNotes || '');
+
+            // S06: Load confidential HR notes from protected subcollection
+            try {
+              const notes = await getInternalNotes(applicationId);
+              setInternalNotes(notes || data.internalNotes || '');
+            } catch (notesErr) {
+              console.warn('Failed loading HR notes:', notesErr);
+            }
           }
         }
         setLoading(false);
@@ -93,7 +101,28 @@ const HRApplicantDetail = () => {
     if (user) {
       fetchApp();
     }
-  }, [applicationId, user, userData]);
+  }, [applicationId, user, userData, isAdmin]);
+
+  const handleDownloadResume = async () => {
+    if (!application?.resume) return;
+    setDownloadingResume(true);
+    try {
+      const url = await getSecureResumeUrl({
+        resumePath: application.resumeStoragePath || application.resume,
+        applicationId,
+      });
+      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        alert('Invalid or missing resume download path.');
+      }
+    } catch (err) {
+      console.error('Error fetching resume URL:', err);
+      alert('Unable to load candidate resume: ' + err.message);
+    } finally {
+      setDownloadingResume(false);
+    }
+  };
 
   const handleStatusUpdate = async (e) => {
     e.preventDefault();
@@ -320,18 +349,20 @@ const HRApplicantDetail = () => {
                 </div>
               )}
 
-              {/* Secure Resume Download Button */}
+              {/* S13: Authenticated Secure Resume Access */}
               <div className="pt-2">
                 {application.resume ? (
-                  <a
-                    href={application.resume}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 w-full justify-center px-4 py-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition"
+                  <button
+                    type="button"
+                    disabled={downloadingResume}
+                    onClick={handleDownloadResume}
+                    className="inline-flex items-center gap-2 w-full justify-center px-4 py-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition cursor-pointer disabled:opacity-50"
                   >
                     <FaFilePdf className="text-rose-500 text-base" />
-                    <span>Download Candidate Resume / CV Document</span>
-                  </a>
+                    <span>
+                      {downloadingResume ? 'Authorizing & Loading CV…' : 'Securely Open Candidate Resume / CV'}
+                    </span>
+                  </button>
                 ) : (
                   <span className="text-xs text-slate-400 italic block">No resume attachment provided.</span>
                 )}
