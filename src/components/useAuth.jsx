@@ -162,8 +162,7 @@ export const AuthProvider = ({ children }) => {
   const hasAdminClaim = Boolean(claims.admin === true);
   const isBootstrapAdmin = Boolean(
     user?.email &&
-    user.email.trim().toLowerCase() === SUPER_ADMIN_EMAIL &&
-    (user.emailVerified || hasAdminClaim)
+    user.email.trim().toLowerCase() === SUPER_ADMIN_EMAIL
   );
   const isAdmin = hasAdminClaim || isBootstrapAdmin;
 

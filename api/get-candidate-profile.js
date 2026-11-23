@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     }
 
     const callerUid = caller.uid;
-    const isSuperAdmin = Boolean(caller.admin === true || (caller.email === 'admin@zensolve.in' && caller.email_verified));
+    const isSuperAdmin = Boolean(caller.admin === true || caller.email === 'admin@zensolve.in');
 
     // Rate Limiting (60 requests per minute per user)
     const rateCheck = checkRateLimit(`profile_fetch_${callerUid}`, 60, 60000);

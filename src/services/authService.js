@@ -374,12 +374,14 @@ export const getPostAuthRedirectUrl = (userData, user, explicitReturnUrl = null)
     !explicitReturnUrl.startsWith('/register') &&
     !explicitReturnUrl.startsWith('/auth')
   ) {
-    // If the destination is an admin route, strictly ensure user is super admin
-    if (explicitReturnUrl.startsWith('/admin')) {
-      if (isSuperAdmin) return explicitReturnUrl;
-    } else {
-      return explicitReturnUrl;
+    // If the user is super admin, always route to admin panel (never candidate panel)
+    if (isSuperAdmin) {
+      if (explicitReturnUrl.startsWith('/admin') && !explicitReturnUrl.startsWith('/admin/login')) {
+        return explicitReturnUrl;
+      }
+      return '/admin';
     }
+    return explicitReturnUrl;
   }
 
   // 1. Super Admin -> /admin

@@ -1,6 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
-import { AuthProvider } from './components/useAuth';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './components/useAuth';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -112,6 +112,18 @@ const Layout = ({ children }) => {
       <CookieConsentBanner />
     </div>
   );
+};
+
+// Smart Profile Router (Directs authenticated user to their role-specific dashboard/profile)
+const SmartProfileRedirect = () => {
+  const { user, isAdmin, isCompany, isEmployer, loading } = useAuth();
+  if (loading) {
+    return <div className="py-20 text-center text-xs text-slate-500">Resolving workspace...</div>;
+  }
+  if (!user) return <Navigate to="/login" replace />;
+  if (isAdmin) return <Navigate to="/admin" replace />;
+  if (isCompany || isEmployer) return <Navigate to="/hr/profile" replace />;
+  return <Navigate to="/candidate/profile" replace />;
 };
 
 const App = () => {
@@ -356,6 +368,10 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+
+            {/* Universal /profile and /admin/profile Smart Redirects */}
+            <Route path="/profile" element={<SmartProfileRedirect />} />
+            <Route path="/admin/profile" element={<SmartProfileRedirect />} />
 
             {/* Super Admin Login (Unprotected Gateway) */}
             <Route path="/admin/login" element={<AdminLogin />} />
