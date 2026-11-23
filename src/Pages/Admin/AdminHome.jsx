@@ -207,7 +207,7 @@ const AdminHome = () => {
                       <td className="py-3 font-semibold text-slate-900">
                         {app.applicantName || app.applicantEmail || 'Candidate'}
                       </td>
-                      <td className="py-3 text-slate-600">{app.jobTitle || 'Role'}</td>
+                      <td className="py-3 text-slate-600">{app.jobPosition || app.jobTitle || 'Role'}</td>
                       <td className="py-3 text-slate-600 font-medium">{app.companyName || '—'}</td>
                       <td className="py-3">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
