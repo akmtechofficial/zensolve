@@ -33,23 +33,50 @@ const ResumePdfViewerModal = ({ isOpen, onClose, applicant }) => {
   const email = applicant.applicantEmail || snapshot.email || applicant.email || '';
   const phone = applicant.applicantPhone || snapshot.phone || applicant.phone || '';
   const location = snapshot.location || snapshot.city || applicant.applicantLocation || applicant.city || applicant.location || '';
-  const bio = applicant.applicantBio || snapshot.bio || applicant.bio || '';
+  const bio = applicant.applicantBio || snapshot.bio || applicant.bio || snapshot.about || applicant.about || '';
   
-  const skills = Array.isArray(applicant.skills) && applicant.skills.length > 0
-    ? applicant.skills
-    : (Array.isArray(snapshot.skills) ? snapshot.skills : (applicant.applicantSkills || []));
+  const safeArray = (val) => {
+    if (Array.isArray(val) && val.length > 0) return val;
+    if (typeof val === 'string' && val.trim().length > 0) {
+      try {
+        const parsed = JSON.parse(val);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        return val.split(',').map((s) => s.trim()).filter(Boolean);
+      }
+    }
+    return [];
+  };
 
-  const languages = Array.isArray(applicant.languages) && applicant.languages.length > 0
-    ? applicant.languages
-    : (Array.isArray(snapshot.languages) ? snapshot.languages : []);
+  const getFirstArray = (...sources) => {
+    for (const src of sources) {
+      const arr = safeArray(src);
+      if (arr.length > 0) return arr;
+    }
+    return [];
+  };
 
-  const education = Array.isArray(applicant.education) && applicant.education.length > 0
-    ? applicant.education
-    : (Array.isArray(snapshot.education) ? snapshot.education : []);
+  const skills = getFirstArray(
+    applicant.skills,
+    snapshot.skills,
+    applicant.applicantSkills,
+    snapshot.applicantSkills
+  );
 
-  const experience = Array.isArray(applicant.experience) && applicant.experience.length > 0
-    ? applicant.experience
-    : (Array.isArray(snapshot.experience) ? snapshot.experience : []);
+  const languages = getFirstArray(
+    applicant.languages,
+    snapshot.languages
+  );
+
+  const education = getFirstArray(
+    applicant.education,
+    snapshot.education
+  );
+
+  const experience = getFirstArray(
+    applicant.experience,
+    snapshot.experience
+  );
 
   const experienceYears = applicant.experienceYears || snapshot.experienceYears || applicant.totalExperience || '';
   const noticePeriod = applicant.noticePeriod || snapshot.noticePeriod || '';
@@ -253,30 +280,38 @@ const ResumePdfViewerModal = ({ isOpen, onClose, applicant }) => {
                 <span>Work Experience & Employment History</span>
               </h2>
               <div className="space-y-4">
-                {experience.map((exp, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-xs font-bold text-slate-900">
-                        {exp.role || exp.title || 'Role'}
-                      </h3>
-                      {(exp.duration || exp.years) && (
-                        <span className="text-[10px] font-semibold text-slate-500">
-                          {exp.duration || exp.years}
-                        </span>
+                {experience.map((exp, idx) => {
+                  const isObj = typeof exp === 'object' && exp !== null;
+                  const role = isObj ? (exp.role || exp.title || 'Role') : String(exp);
+                  const duration = isObj ? (exp.duration || exp.years || '') : '';
+                  const company = isObj ? (exp.company || exp.companyName || '') : '';
+                  const description = isObj ? (exp.description || '') : '';
+
+                  return (
+                    <div key={idx} className="space-y-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-xs font-bold text-slate-900">
+                          {role}
+                        </h3>
+                        {duration && (
+                          <span className="text-[10px] font-semibold text-slate-500">
+                            {duration}
+                          </span>
+                        )}
+                      </div>
+                      {company && (
+                        <p className="text-xs font-semibold text-indigo-700">
+                          {company}
+                        </p>
+                      )}
+                      {description && (
+                        <p className="text-[11px] text-slate-600 leading-relaxed pt-0.5 whitespace-pre-line">
+                          {description}
+                        </p>
                       )}
                     </div>
-                    {(exp.company || exp.companyName) && (
-                      <p className="text-xs font-semibold text-indigo-700">
-                        {exp.company || exp.companyName}
-                      </p>
-                    )}
-                    {exp.description && (
-                      <p className="text-[11px] text-slate-600 leading-relaxed pt-0.5 whitespace-pre-line">
-                        {exp.description}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -289,30 +324,38 @@ const ResumePdfViewerModal = ({ isOpen, onClose, applicant }) => {
                 <span>Education & Academic Credentials</span>
               </h2>
               <div className="space-y-3">
-                {education.map((edu, idx) => (
-                  <div key={idx} className="space-y-0.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-xs font-bold text-slate-900">
-                        {edu.degree || edu.qualification || 'Qualification'}
-                      </h3>
-                      {edu.year && (
-                        <span className="text-[10px] font-semibold text-slate-500">
-                          {edu.year}
+                {education.map((edu, idx) => {
+                  const isObj = typeof edu === 'object' && edu !== null;
+                  const degree = isObj ? (edu.degree || edu.qualification || 'Qualification') : String(edu);
+                  const year = isObj ? (edu.year || '') : '';
+                  const school = isObj ? (edu.school || edu.college || edu.institution || '') : '';
+                  const grade = isObj ? (edu.grade || edu.percentage || '') : '';
+
+                  return (
+                    <div key={idx} className="space-y-0.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-xs font-bold text-slate-900">
+                          {degree}
+                        </h3>
+                        {year && (
+                          <span className="text-[10px] font-semibold text-slate-500">
+                            {year}
+                          </span>
+                        )}
+                      </div>
+                      {school && (
+                        <p className="text-xs text-slate-600">
+                          {school}
+                        </p>
+                      )}
+                      {grade && (
+                        <span className="text-[10px] font-semibold text-emerald-700 block">
+                          Grade / Percentage: {grade}
                         </span>
                       )}
                     </div>
-                    {(edu.school || edu.college || edu.institution) && (
-                      <p className="text-xs text-slate-600">
-                        {edu.school || edu.college || edu.institution}
-                      </p>
-                    )}
-                    {(edu.grade || edu.percentage) && (
-                      <span className="text-[10px] font-semibold text-emerald-700 block">
-                        Grade / Percentage: {edu.grade || edu.percentage}
-                      </span>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

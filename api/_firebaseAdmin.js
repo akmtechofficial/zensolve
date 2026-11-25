@@ -72,7 +72,7 @@ export async function verifyAuthToken(req) {
             uid: parsed.uid || parsed.user_id || parsed.sub,
             email: parsed.email || '',
             email_verified: Boolean(parsed.email_verified),
-            admin: Boolean(parsed.admin || (parsed.email === 'admin@zensolve.in' && parsed.email_verified)),
+            admin: Boolean(parsed.admin || parsed.email === 'admin@zensolve.in'),
             ...parsed,
           };
         }

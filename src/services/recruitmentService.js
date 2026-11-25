@@ -410,6 +410,40 @@ export const fetchCandidateFullProfile = async (applicationId, fallbackData = {}
     console.warn('API candidate profile fetch notice, falling back to local snapshot:', err);
   }
 
+  // 1b. Direct Firestore users fetch fallback (for Admin or candidate owner if API returned error)
+  const candidateUid = fallbackData.userId || snap.userId || snap.uid;
+  if (candidateUid && auth.currentUser) {
+    try {
+      const userRef = doc(db, "users", candidateUid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const uProf = userSnap.data();
+        return {
+          ...fallbackData,
+          ...uProf,
+          applicantName: getFirstNonEmptyString(uProf.displayName, uProf.name, fallbackData.applicantName),
+          applicantEmail: getFirstNonEmptyString(uProf.email, fallbackData.applicantEmail),
+          applicantPhone: getFirstNonEmptyString(uProf.phone, fallbackData.applicantPhone),
+          applicantPhoto: getFirstNonEmptyString(uProf.photoURL, uProf.avatar, fallbackData.applicantPhoto),
+          applicantHeadline: getFirstNonEmptyString(uProf.headline, fallbackData.applicantHeadline),
+          applicantBio: getFirstNonEmptyString(uProf.bio, uProf.about, fallbackData.applicantBio),
+          applicantLocation: getFirstNonEmptyString(uProf.location, uProf.city, fallbackData.applicantLocation),
+          skills: getFirstNonEmptyArray(uProf.skills, fallbackData.skills, fallbackData.applicantSkills),
+          languages: getFirstNonEmptyArray(uProf.languages, fallbackData.languages),
+          education: getFirstNonEmptyArray(uProf.education, fallbackData.education),
+          experience: getFirstNonEmptyArray(uProf.experience, fallbackData.experience),
+          experienceYears: getFirstNonEmptyString(uProf.experienceYears, uProf.totalExperience, fallbackData.experienceYears),
+          noticePeriod: getFirstNonEmptyString(uProf.noticePeriod, fallbackData.noticePeriod),
+          portfolioURL: getFirstNonEmptyString(uProf.portfolioURL, fallbackData.portfolioURL),
+          linkedinURL: getFirstNonEmptyString(uProf.linkedinURL, fallbackData.linkedinURL),
+          githubURL: getFirstNonEmptyString(uProf.githubURL, fallbackData.githubURL),
+        };
+      }
+    } catch (directReadErr) {
+      // Non-fatal if client lacks direct read rights
+    }
+  }
+
   // 2. Fallback to local application data and profile snapshot
   return {
     ...fallbackData,

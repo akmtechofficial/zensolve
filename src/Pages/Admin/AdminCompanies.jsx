@@ -13,6 +13,7 @@ import {
   FaClock,
   FaGlobe,
   FaMapMarkerAlt,
+  FaPlus,
 } from 'react-icons/fa';
 
 const AdminCompanies = () => {
@@ -270,6 +271,15 @@ const AdminCompanies = () => {
                       {/* Actions */}
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            to={`/admin/jobs/new?companyId=${c.id}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] transition-colors"
+                            title={`Post job on behalf of ${c.companyName || 'this company'}`}
+                          >
+                            <FaPlus className="text-[9px]" />
+                            <span>Post Job</span>
+                          </Link>
+
                           <Link
                             to={`/admin/companies/${c.id}`}
                             className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-colors"

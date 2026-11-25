@@ -54,6 +54,7 @@ import AdminCompanies from './Pages/Admin/AdminCompanies';
 import AdminCompanyDetail from './Pages/Admin/AdminCompanyDetail';
 import AdminUsers from './Pages/Admin/AdminUsers';
 import AdminJobs from './Pages/Admin/AdminJobs';
+import AdminPostJob from './Pages/Admin/AdminPostJob';
 import AdminApplications from './Pages/Admin/AdminApplications';
 import AdminReports from './Pages/Admin/AdminReports';
 import AdminSettings from './Pages/Admin/AdminSettings';
@@ -416,6 +417,14 @@ const App = () => {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminJobs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/jobs/new"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminPostJob />
                 </ProtectedRoute>
               }
             />

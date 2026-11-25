@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import { getJobs, moderateJob } from '../../services/recruitmentService';
 import { useAuth } from '../../components/useAuth';
@@ -13,10 +13,13 @@ import {
   FaMapMarkerAlt,
   FaBuilding,
   FaShieldAlt,
+  FaPlus,
+  FaUserShield,
 } from 'react-icons/fa';
 
 const AdminJobs = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,6 +27,7 @@ const AdminJobs = () => {
   const [moderationModal, setModerationModal] = useState(null); // { job, action: 'Approved' | 'Rejected' | 'delete' }
   const [moderationReason, setModerationReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [flashMessage, setFlashMessage] = useState(location.state?.successMessage || null);
 
   const fetchJobs = async () => {
     setLoading(true);
@@ -100,48 +104,74 @@ const AdminJobs = () => {
   return (
     <AdminLayout
       title="Job Moderation & Listings Catalog"
-      subtitle="Supervise published job listings across all companies, detect fraudulent posts, and remove non-compliant content."
+      subtitle="Supervise published job listings across all companies, detect fraudulent posts, and publish jobs on behalf of registered employers."
     >
-      {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 p-1.5 glass-surface-2 rounded-2xl border border-slate-200/90 overflow-x-auto">
-          {[
-            { id: 'all', label: 'All Listings', count: jobs.length },
-            {
-              id: 'active',
-              label: 'Active & Published',
-              count: jobs.filter((j) => j.status === 'Active' || !j.status).length,
-            },
-            {
-              id: 'closed',
-              label: 'Closed / Inactive',
-              count: jobs.filter((j) => j.status === 'Closed').length,
-            },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setStatusFilter(tab.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
-                statusFilter === tab.id
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span
-                className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+      {/* Success Flash Toast */}
+      {flashMessage && (
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-xs animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <FaCheckCircle className="text-emerald-600 text-sm" />
+            <span>{flashMessage}</span>
+          </div>
+          <button
+            onClick={() => setFlashMessage(null)}
+            className="text-slate-400 hover:text-slate-600 font-bold ml-4 cursor-pointer"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Top Actions & Filters Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/admin/jobs/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-xs font-bold transition shadow-sm cursor-pointer"
+          >
+            <FaPlus className="text-[10px]" />
+            <span>Post Job for a Company</span>
+          </Link>
+
+          <div className="flex items-center gap-1.5 p-1 glass-surface-2 rounded-2xl border border-slate-200/90 overflow-x-auto">
+            {[
+              { id: 'all', label: 'All Listings', count: jobs.length },
+              {
+                id: 'active',
+                label: 'Active',
+                count: jobs.filter((j) => j.status === 'Active' || !j.status).length,
+              },
+              {
+                id: 'closed',
+                label: 'Closed',
+                count: jobs.filter((j) => j.status === 'Closed').length,
+              },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setStatusFilter(tab.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                   statusFilter === tab.id
-                    ? 'bg-white/20 text-white'
-                    : 'bg-slate-200/80 text-slate-700'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
                 }`}
               >
-                {tab.count}
-              </span>
-            </button>
-          ))}
+                <span>{tab.label}</span>
+                <span
+                  className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                    statusFilter === tab.id
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-200/80 text-slate-700'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="relative w-full md:w-72">
+        <div className="relative w-full lg:w-72">
           <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
           <input
             type="text"
@@ -184,8 +214,17 @@ const AdminJobs = () => {
                 {filteredJobs.map((job) => (
                   <tr key={job.id} className="hover:bg-slate-50/60 transition-colors">
                     <td className="py-4 px-6">
-                      <div className="font-bold text-slate-900 font-display text-sm">
-                        {job.position}
+                      <div className="font-bold text-slate-900 font-display text-sm flex items-center gap-2">
+                        <span>{job.position}</span>
+                        {job.postedByAdmin && (
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200"
+                            title={`Posted on behalf of ${job.companyName || 'company'} by Super-Admin`}
+                          >
+                            <FaUserShield className="text-[9px]" />
+                            <span>Posted by Admin</span>
+                          </span>
+                        )}
                       </div>
                       <div className="text-[11px] text-slate-600 mt-0.5">
                         Exp: {job.experience || 'Not specified'} • Vacancies: {job.vacancies || 1}
